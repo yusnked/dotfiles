@@ -1,0 +1,18 @@
+# chezmoi golang templates reference
+# https://www.chezmoi.io/user-guide/templating/
+# https://www.chezmoi.io/reference/templates/
+
+# Set nix system value
+# nix: https://github.com/NixOS/nixpkgs/blob/master/lib/systems/doubles.nix
+# chezmoi: https://pkg.go.dev/internal/goarch#GOARCH
+{{- $nixSystem := "" }}
+{{- if eq .chezmoi.arch "arm64" }}
+{{-   $nixSystem = (printf "%s%s" "aarch64-" .chezmoi.os) }}
+{{- else if eq .chezmoi.arch "amd64" }}
+{{-   $nixSystem = (printf "%s%s" "x86_64-" .chezmoi.os) }}
+{{- else }}
+{{-   $nixSystem = "null" }}
+{{- end }}
+
+[data]
+chezmoi.nixSystem = {{ $nixSystem | quote }}
