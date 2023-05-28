@@ -1,10 +1,10 @@
-# chezmoi golang templates reference
-# https://www.chezmoi.io/user-guide/templating/
-# https://www.chezmoi.io/reference/templates/
+{{/* chezmoi golang templates reference */}}
+{{/* https://www.chezmoi.io/user-guide/templating/ */}}
+{{/* https://www.chezmoi.io/reference/templates/ */}}
 
-# Set nix system value
-# nix: https://github.com/NixOS/nixpkgs/blob/master/lib/systems/doubles.nix
-# chezmoi: https://pkg.go.dev/internal/goarch#GOARCH
+{{/* Set nix system value */}}
+{{/* nix: https://github.com/NixOS/nixpkgs/blob/master/lib/systems/doubles.nix */}}
+{{/* chezmoi: https://pkg.go.dev/internal/goarch#GOARCH */}}
 {{- $nixSystem := "" }}
 {{- if eq .chezmoi.arch "arm64" }}
 {{-   $nixSystem = (printf "%s%s" "aarch64-" .chezmoi.os) }}
@@ -14,5 +14,10 @@
 {{-   $nixSystem = "null" }}
 {{- end }}
 
+{{/* Set nix user mode */}}
+{{- $nixUserMode := output "bash" (joinPath .chezmoi.sourceDir "../install_scripts/get_nix_user_mode.sh") | trim }}
+
 [data]
 chezmoi.nixSystem = {{ $nixSystem | quote }}
+chezmoi.nixUserMode = {{ $nixUserMode | quote }}
+
