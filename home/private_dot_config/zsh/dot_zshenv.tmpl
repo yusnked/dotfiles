@@ -1,0 +1,39 @@
+{{/* bash,zsh 共通env読み込み */}}
+{{- output "cat" (joinPath .chezmoi.sourceDir "private_dot_config/_b-shell/env.sh") -}}
+
+{{/* -Uで重複するパスを追加しない。-gオプションはグローバルを参照
+   * -xで環境変数化(-gオプションを暗黙的に含む 打ち消したければ+g)
+   * 関数内でtypesetを呼び出すとローカル変数を作る */}}
+typeset -xU PATH path FPATH fpath
+
+{{/* ========== Darwin ========== */}}
+{{- if (eq .chezmoi.os "darwin") }}
+{{/* Macでは/etc/zprofileで基本的なPATHが追加され、
+   * それらがzshenvで設定したPATHより優先度が高くなってしまうので
+   * etc系のファイルを一旦読み込まず、.zshrcの先頭で読み込む */}}
+unsetopt GLOBAL_RCS
+
+# /etc/zprofileで呼ばれる基本的なPATHを追加するコマンドを実行
+if [[ -x /usr/libexec/path_helper ]]; then
+    eval $(/usr/libexec/path_helper -s)
+fi
+
+{{/* Homebrew PATH */}}
+path=(
+    /opt/homebrew/bin(N-/)
+    /opt/homebrew/sbin(N-/)
+    /usr/local/bin(N-/)
+    /usr/local/sbin(N-/)
+    $path
+)
+{{ end -}}
+{{/* ========== Darwin ========== */}}
+
+{{/* Nix, Home-manager source */}}
+{{- output "cat" (joinPath .chezmoi.sourceDir "private_dot_config/_b-shell/source_nix.sh") -}}
+
+path=(
+    ${HOME}/.local/bin(N-/)
+    $path
+)
+
