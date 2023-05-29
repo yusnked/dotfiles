@@ -12,5 +12,5 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 # ユーザー個別の状態ファイルをが書き込まれるディレクトリ (/var/lib と類似).
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-export EDTOR=nvim
+export EDITOR=nvim
 
