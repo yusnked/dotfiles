@@ -8,14 +8,22 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    mypkgs = {
+      url = "{{ joinPath .chezmoi.homeDir ".config/nix/mypkgs" }}";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, home-manager, ... }:
+  outputs = { nixpkgs, home-manager, mypkgs, ... }:
     let
-      system = "{{- .chezmoi.nixSystem -}}";
-      pkgs = nixpkgs.legacyPackages.${system};
+      system = "{{ .chezmoi.nixSystem }}";
+      pkgs = import nixpkgs {
+        overlays =
+          [ (final: prev: { __mypkgs = mypkgs.packages.${system}; }) ];
+        inherit system;
+      };
     in {
-      homeConfigurations."{{- .chezmoi.username -}}" =
+      homeConfigurations."{{ .chezmoi.username }}" =
         home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
 
