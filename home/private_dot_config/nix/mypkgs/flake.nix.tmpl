@@ -1,0 +1,31 @@
+{{ $packages := output "ls" (joinPath .chezmoi.sourceDir "private_dot_config/nix/mypkgs/packages") |
+  trimAll "\n" | splitList "\n" | sortAlpha -}}
+
+{
+  description = "mypkgs: Packages not included in nixpkgs.";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        packages = rec {
+          {{ range $packages -}}
+          {{ . | trimSuffix ".nix" }} = import ./packages/{{ . }} { inherit pkgs; };
+          {{ end -}}
+        };
+        apps = rec {
+          {{ range $packages -}}
+          {{ . | trimSuffix ".nix" }} = flake-utils.lib.mkApp { drv = self.packages.${system}.{{ . |
+            trimSuffix ".nix" }}; };
+          {{ end -}}
+        };
+      }
+    );
+}
+
