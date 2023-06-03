@@ -1,4 +1,4 @@
-{{ $packages := output "ls" (joinPath .chezmoi.sourceDir "private_dot_config/nix/mypkgs/packages") |
+{{ $packages := output "ls" (output "chezmoi" "source-path" (joinPath .chezmoi.mypkgsDir "packages") | trim) |
   trimAll "\n" | splitList "\n" | sortAlpha -}}
 
 {
