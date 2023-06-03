@@ -7,7 +7,36 @@
   home.homeDirectory = "{{- .chezmoi.homeDir -}}";
 
   # Packages that should be installed to the user profile.
-  home.packages = with pkgs; [ home-manager ];
+  home.packages = with pkgs;
+    [
+      bash
+      bat
+      cacert
+      chezmoi
+      coreutils
+      diffutils
+      fd
+      findutils
+      gawk
+      git
+      gnugrep
+      gnused
+      gnutar
+      gzip
+      home-manager
+      neovim
+      p7zip
+      tmux
+      tree
+      zsh
+      zsh-completions
+      zsh-vi-mode
+    ] ++
+    
+    # Packages not included in nixpkgs.
+    (with __mypkgs; [
+      zsh-defer
+    ]);
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
