@@ -37,7 +37,7 @@ setopt PUSHD_IGNORE_DUPS
 
 ### variables
 # cdpath <S> <Z> (CDPATH <S>): cd コマンドの検索パスを指定するディレクトリの配列。
-cdpath=($HOME)
+cdpath=()
 
 # DIRSTACKSIZE: ディレクトリスタックの最大保持数。AUTO_PUSHDを使用する場合は設定した方が良い。
 DIRSTACKSIZE=20
