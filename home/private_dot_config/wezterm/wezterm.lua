@@ -23,7 +23,7 @@ local modules = {
     'status',
 }
 
-for _k, v in pairs(modules) do
+for _, v in ipairs(modules) do
     require(v).apply_to_config(config)
 end
 

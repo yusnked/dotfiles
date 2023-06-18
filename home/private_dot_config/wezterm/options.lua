@@ -1,12 +1,12 @@
 local module = {}
 
 local quickSelectPatterns = {
-    [[[0-9a-z]{52}]], -- nix nar hash
+    [["[0-9a-z]{52}"]], -- nix-prefetch-git hash
 }
 
 local options = {
-    -- automatically_reload_config = false,
     audible_bell = 'Disabled',
+    automatically_reload_config = false,
     check_for_updates = false,
     detect_password_input = true,
     key_map_preference = 'Physical',
