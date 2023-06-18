@@ -17,6 +17,10 @@ alias lai='lla -i'
 alias nix-hash-git="nix run 'nixpkgs#nix-prefetch-git' --"
 {{ end -}}
 
+{{ if lookPath "wezterm" -}}
+alias imgcat='wezterm imgcat'
+{{ end -}}
+
 {{ if lookPath "nvim" -}}
 alias vi='nvim'
 alias vim='nvim'
