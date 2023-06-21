@@ -12,6 +12,7 @@ config.default_prog = { script }
 
 local modules = {
     'appearance',
+    'events',
     'keybinds',
     'options',
     'status',
