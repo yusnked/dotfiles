@@ -5,8 +5,9 @@ function module.apply_to_config(_)
     -- Change font size according to dpi
     wezterm.on('window-focus-changed', function(window, _)
         local dpi = window:get_dimensions().dpi
+        local key = 'prevDpi' .. tostring(window:window_id())
 
-        if dpi == wezterm.GLOBAL.prevDpi then
+        if dpi == wezterm.GLOBAL[key] then
             return
         end
 
@@ -15,7 +16,7 @@ function module.apply_to_config(_)
 
         window:set_config_overrides(overrides)
 
-        wezterm.GLOBAL.prevDpi = dpi
+        wezterm.GLOBAL[key] = dpi
     end)
 
 end
