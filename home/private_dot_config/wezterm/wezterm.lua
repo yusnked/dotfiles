@@ -7,7 +7,7 @@ if wezterm.config_builder then
 end
 
 -- use zsh installed by nix if it exists
-local script = wezterm.config_dir .. '/run_shell.sh'
+local script = wezterm.home_dir .. '/.config/wezterm/run_shell.sh'
 config.default_prog = { script }
 
 local modules = {
