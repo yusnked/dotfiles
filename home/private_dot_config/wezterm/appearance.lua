@@ -19,9 +19,9 @@ local options = {
     },
 
     -- Window
-    window_decorations = "INTEGRATED_BUTTONS|RESIZE",
-
-    -- Tab
+    window_decorations = 'INTEGRATED_BUTTONS|RESIZE',
+    integrated_title_button_alignment = 'Left',
+    integrated_title_buttons = { 'Close' },
 
     -- Visual Bell
     visual_bell = {
