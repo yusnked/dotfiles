@@ -1,3 +1,13 @@
-export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+typeset -xU PATH path FPATH fpath
+
+export DOTFILES_OS="${DOTFILES_OS:-$(uname -s)}"
+if [[ $DOTFILES_OS == Darwin ]]; then
+    unsetopt GLOBAL_RCS
+    if [[ -x /usr/libexec/path_helper ]]; then
+        eval $(/usr/libexec/path_helper -s)
+    fi
+fi
+
+source "$HOME/.config/_b-shell/env.sh"
 export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
-source "$ZDOTDIR/.zshenv"
+
