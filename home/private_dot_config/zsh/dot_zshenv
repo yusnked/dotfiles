@@ -1,0 +1,12 @@
+typeset -xU path PATH
+
+export DOTFILES_OS="${DOTFILES_OS:-$(uname -s)}"
+if [[ $DOTFILES_OS == Darwin ]]; then
+    unsetopt GLOBAL_RCS
+    if [[ -x /usr/libexec/path_helper ]]; then
+        eval $(/usr/libexec/path_helper -s)
+    fi
+fi
+
+source "$HOME/.config/_b-shell/env.sh"
+
