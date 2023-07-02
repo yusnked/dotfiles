@@ -285,7 +285,7 @@ setopt SHARE_HISTORY
 #histchars='!^#'
 
 # HISTFILE: 端末利用しているzshのヒストリの保存ファイル。デフォルトは~/.zsh_history
-HISTFILE=$ZDOTDIR/.zsh_history
+HISTFILE="$XDG_DATA_HOME/zsh/.zsh_history"
 
 # HISTSIZE: シェルのメモリ内に記憶しておくヒストリの最大イベント数
 HISTSIZE=10000
