@@ -1,0 +1,61 @@
+_brackets_and_quotes_expantion_count_key() {
+    local without_key=$(echo $BUFFER | tr -d "$1")
+    echo $((${#BUFFER}-${#without_key}))
+}
+
+# ブラケットとクォート展開判定の本体
+_brackets_and_quotes_expantion_main() {
+    local pre_char=${LBUFFER[-1]}
+    local next_char=${RBUFFER[1]}
+
+    if [[ $1 == $2 ]]; then
+        # もしカーソル右の文字がクォートなら移動するだけ
+        [[ $next_char = $1 ]] && CURSOR=$((CURSOR+1)) && return 0
+        # クォートが奇数ならクォートを一個入力するだけ
+        if [[ $(($(_brackets_and_quotes_expantion_count_key "$KEYS") % 2)) -eq 1 ]]; then
+            zle self-insert
+            return 0
+        fi
+    else
+        # 開始カッコが閉じカッコより少なければ開始カッコのみを入力する
+        if [[ $(( $(_brackets_and_quotes_expantion_count_key "$1") - $(_brackets_and_quotes_expantion_count_key "$2") )) -lt 0 ]]; then
+            BUFFER="${LBUFFER}${1}${RBUFFER}"
+            CURSOR=$((CURSOR+1))
+            return 0
+        fi
+    fi
+
+  # 入力位置の前の文字が空白または＄で後ろの文字が空白以外の文字だったら開始カッコのみ又はクォート一個を入力する
+  if [[ (-z $pre_char || $pre_char == ' ' || $pre_char == '$') && -n $next_char && $next_char != ' ' ]]; then
+      BUFFER="${LBUFFER}${1}${RBUFFER}"
+      CURSOR=$((CURSOR+1))
+  else
+      BUFFER="${LBUFFER}${1}${2}${RBUFFER}"
+      CURSOR=$((CURSOR+1))
+  fi
+}
+
+case "$KEYS" in
+    [\'\"\`])
+        _brackets_and_quotes_expantion_main "$KEYS" "$KEYS"
+        ;;
+        \()
+        _brackets_and_quotes_expantion_main '(' ')'
+        ;;
+    \{)
+        _brackets_and_quotes_expantion_main '{' '}'
+        ;;
+    \[)
+        _brackets_and_quotes_expantion_main '[' ']'
+        ;;
+    [\)\}\]])
+        # 入力する閉じカッコと次の文字が同じカッコじゃなければ入力する。
+        if [ "${RBUFFER[1]}" != "$KEYS" ]; then
+            zle self-insert
+        else
+            CURSOR=$((CURSOR+1))
+        fi
+        ;;
+esac
+zle reset-prompt
+

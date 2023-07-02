@@ -1,0 +1,19 @@
+local pre_char=${LBUFFER[-1]}
+case "$pre_char" in
+    [\'\"\`])
+        # カーソルの左右のクォートが同じなら一緒に削除。[]だとエラーになるのに[[]]だとなぜかいける。
+        [[ ${(q)RBUFFER[1]} == ${(q)pre_char} ]] && CURSOR=$((CURSOR+1)) && zle backward-delete-char
+        ;;
+    \()
+        # カーソルが対応するカッコで挟まれていたら一緒に削除。==だとエラーになるのに=~だとなぜかいける。
+        [[ ${(q)RBUFFER[1]} =~ ')' ]] && CURSOR=$((CURSOR+1)) && zle backward-delete-char
+        ;;
+    \{)
+        [[ ${(q)RBUFFER[1]} =~ '}' ]] && CURSOR=$((CURSOR+1)) && zle backward-delete-char
+        ;;
+    \[)
+        [[ ${(q)RBUFFER[1]} =~ '\]' ]] && CURSOR=$((CURSOR+1)) && zle backward-delete-char
+        ;;
+esac
+zle backward-delete-char
+
