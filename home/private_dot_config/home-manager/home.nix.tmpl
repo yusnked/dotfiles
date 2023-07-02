@@ -10,29 +10,43 @@
   home.packages = with pkgs;
     [
       bash
+      bashInteractive
       bat
       cacert
       chezmoi
+      cmigemo
       coreutils
       diffutils
+      exa
       fd
       findutils
+      fzf
       gawk
       git
       gnugrep
       gnused
       gnutar
       gzip
+      hexyl
       home-manager
+      lf
       neovim
       p7zip
+      ripgrep
       tmux
-      tree
+      xdg-utils
+      xsel
       zsh
       zsh-completions
+      zsh-syntax-highlighting
       zsh-vi-mode
     ] ++
-    
+
+    # Fonts
+    [
+      hackgen-nf-font
+    ] ++
+
     # Packages not included in nixpkgs.
     (with __mypkgs; [
       zsh-defer
