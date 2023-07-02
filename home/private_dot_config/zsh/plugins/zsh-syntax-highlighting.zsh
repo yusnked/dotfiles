@@ -140,8 +140,13 @@ typeset -xA ZSH_HIGHLIGHT_REGEXP
     ZSH_HIGHLIGHT_STYLES[bracket-level-4]="fg=213"
 
     # highlighters/regexp
-    ZSH_HIGHLIGHT_REGEXP+=('\$[0-9A-Za-z!#\$\*@\?_-][0-9A-Za-z_]*' "$co_arg")
-    ZSH_HIGHLIGHT_REGEXP+=('\${(\${[^}]+})?[^}]+}' "$co_arg")
+    # $var
+    ZSH_HIGHLIGHT_REGEXP+=('\$[!#$*@?_-]' "$co_arg")
+    ZSH_HIGHLIGHT_REGEXP+=('\$[#^=~+]?[A-Za-z][0-9A-Za-z_]*' "$co_arg")
+    # ${var}
+    ZSH_HIGHLIGHT_REGEXP+=('\$\{[!#$*@?_-]\}' "$co_arg")
+    ZSH_HIGHLIGHT_REGEXP+=('\$\{[#^=~+]?[A-Za-z][0-9A-Za-z_]*(\[(-?[1-9][0-9]*|0|\*|@)\])?\}' "$co_arg")
+    ZSH_HIGHLIGHT_REGEXP+=('\$\{[A-Za-z_][0-9A-Za-z_]*(\[(-?[1-9][0-9]*|0|\*|@)\])?((:?[-=+?]|::=|(#{1,2}[^#]|%{1,2}[^%]|/{1,2}[^/]))[^}]*)?\}' "$co_arg")
 }
 
 source "$NIX_DATA_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
