@@ -1,0 +1,34 @@
+if [[ $DOTFILES_OS == Darwin && -r /etc/zshrc ]]; then
+    source '/etc/zshrc'
+fi
+
+typeset -xU fpath FPATH
+fpath=(
+    "$ZDOTDIR/functions"(N-/)
+    "$NIX_DATA_DIR/zsh/site-functions"(N-/)
+    '/nix/var/nix/profiles/default/share/zsh/site-functions'(N-/)
+    $fpath
+)
+
+source "$XDG_CONFIG_HOME/_b-shell/env_interactive.sh"
+
+source "$ZDOTDIR/rc/options.zsh"
+source "$ZDOTDIR/rc/prompt.zsh"
+
+# zsh-vi-mode
+source "$ZDOTDIR/plugins/zsh-vi-mode.zsh"
+
+# zsh-defer
+source "$NIX_DATA_DIR/zsh-defer/zsh-defer.plugin.zsh"
+# ===== Delayed loading from here down =====
+zsh-defer -p source "$ZDOTDIR/rc/alias.zsh"
+zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"
+zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"
+zsh-defer -p source "$ZDOTDIR/rc/functions.zsh"
+
+# zsh-syntax-highlighting
+zsh-defer -p source "$ZDOTDIR/plugins/zsh-syntax-highlighting.zsh"
+
+# fzf
+zsh-defer -p source "$XDG_CONFIG_HOME/fzf/fzf.sh"
+
