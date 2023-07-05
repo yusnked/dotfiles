@@ -51,7 +51,7 @@ e.g.)
 EOS
 
     echo -e ' \\e[38;5;123mhello world!\\e[0m -> \e[38;5;123mhello world!\e[0m'
-    echo -e ' \\e[48;5;226m\\e[38;5;129mhello\\e[49m world!\\e[0m -> \e[48;5;226m\e[38;5;129mhello\e[49m world!\e[0m'
+    echo -e ' \\e[48;5;226;38;5;129mhello\\e[49m world!\\e[0m -> \e[48;5;226;38;5;129mhello\e[49m world!\e[0m'
     echo -e '\nhttps://en.wikipedia.org/wiki/ANSI_escape_code#8-bit'
 }
 
@@ -96,7 +96,7 @@ e.g.)
 EOS
 
     echo -e ' \\e[38;2;255;0;0mhello world!\\e[0m\n -> \e[38;2;255;0;0mhello world!\e[0m'
-    echo -e ' \\e[48;2;0;153;153m\\e[38;2;255;0;0mhello\\e[49m world!\\e[0m\n -> \e[48;2;0;153;153m\e[38;2;255;0;0mhello\e[49m world!\e[0m'
+    echo -e ' \\e[48;2;0;153;153;38;2;255;0;0mhello\\e[49m world!\\e[0m\n -> \e[48;2;0;153;153;38;2;255;0;0mhello\e[49m world!\e[0m'
     echo -e '\nhttps://en.wikipedia.org/wiki/ANSI_escape_code#24-bit'
 }
 
