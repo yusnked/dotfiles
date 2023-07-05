@@ -1,0 +1,51 @@
+# パイプステータスを装飾してプロンプト用に表示する。129~159をシグナル名にする (zshシェル変数のsignalsを使用)
+typeset -ar +g exit_status=( ${pipestatus[*]} )
+local status_string
+local command_status
+
+# 色設定 color256コマンドを参照
+typeset -r +g turecolor='%F{070}'
+typeset -r +g falsecolor='%F{124}'
+typeset -r +g sigcolor='%F{136}'
+typeset -r +g normalcolor='%F{247}'
+
+for command_status in $exit_status[@]; do
+    case $command_status in
+        0) status_string+=" ${turecolor}${command_status}%f" ;;
+        129) status_string+=" ${sigcolor}${signals[2]}%f" ;;
+        130) status_string+=" ${sigcolor}${signals[3]}%f" ;;
+        131) status_string+=" ${sigcolor}${signals[4]}%f" ;;
+        132) status_string+=" ${sigcolor}${signals[5]}%f" ;;
+        133) status_string+=" ${sigcolor}${signals[6]}%f" ;;
+        134) status_string+=" ${sigcolor}${signals[7]}%f" ;;
+        135) status_string+=" ${sigcolor}${signals[8]}%f" ;;
+        136) status_string+=" ${sigcolor}${signals[9]}%f" ;;
+        137) status_string+=" ${sigcolor}${signals[10]}%f" ;;
+        138) status_string+=" ${sigcolor}${signals[11]}%f" ;;
+        139) status_string+=" ${sigcolor}${signals[12]}%f" ;;
+        140) status_string+=" ${sigcolor}${signals[13]}%f" ;;
+        141) status_string+=" ${sigcolor}${signals[14]}%f" ;;
+        142) status_string+=" ${sigcolor}${signals[15]}%f" ;;
+        143) status_string+=" ${sigcolor}${signals[16]}%f" ;;
+        144) status_string+=" ${sigcolor}${signals[17]}%f" ;;
+        145) status_string+=" ${sigcolor}${signals[18]}%f" ;;
+        146) status_string+=" ${sigcolor}${signals[19]}%f" ;;
+        147) status_string+=" ${sigcolor}${signals[20]}%f" ;;
+        148) status_string+=" ${sigcolor}${signals[21]}%f" ;;
+        149) status_string+=" ${sigcolor}${signals[22]}%f" ;;
+        150) status_string+=" ${sigcolor}${signals[23]}%f" ;;
+        151) status_string+=" ${sigcolor}${signals[24]}%f" ;;
+        152) status_string+=" ${sigcolor}${signals[25]}%f" ;;
+        153) status_string+=" ${sigcolor}${signals[26]}%f" ;;
+        154) status_string+=" ${sigcolor}${signals[27]}%f" ;;
+        155) status_string+=" ${sigcolor}${signals[28]}%f" ;;
+        156) status_string+=" ${sigcolor}${signals[29]}%f" ;;
+        157) status_string+=" ${sigcolor}${signals[30]}%f" ;;
+        158) status_string+=" ${sigcolor}${signals[31]}%f" ;;
+        159) status_string+=" ${sigcolor}${signals[32]}%f" ;;
+        *) status_string+=" ${falsecolor}${command_status}%f" ;;
+    esac
+done
+
+typeset -g _prompt_pipestatus_var="${normalcolor}[%f${status_string[2,-1]}${normalcolor}]%f"
+

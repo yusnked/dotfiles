@@ -1,13 +1,6 @@
-{{/* git */}}
-autoload -Uz vcs_info
-zstyle ':vcs_info:git:*' check-for-changes true
-zstyle ':vcs_info:git:*' stagedstr "%F{magenta}!"
-zstyle ':vcs_info:git:*' unstagedstr "%F{yellow}+"
-zstyle ':vcs_info:*' formats "%F{cyan}%c%u[%b]%f"
-zstyle ':vcs_info:*' actionformats '[%b|%a]'
-precmd () { vcs_info }
+autoload -Uz add-zsh-hook
 
-{{/* OSC 133 */}}
+# OSC 133
 _prompt_executing=""
 function __osc133_precmd() {
     local ret="$?"
@@ -31,22 +24,57 @@ function __osc133_preexec() {
     printf "\033]133;C;\007"
     _prompt_executing=1
 }
-
-autoload -Uz add-zsh-hook
 add-zsh-hook precmd __osc133_precmd
 add-zsh-hook preexec __osc133_preexec
 
-{{/* 左プロンプト 終了ステータスはPIPE_FAILオプションを設定している。 */}}
-PROMPT='
-[%B%F{red}%n%f%b:%F{green}%~%f]%F{cyan}$vcs_info_msg_0_%f
+# git
+autoload -Uz vcs_info
+zstyle ':vcs_info:git:*' check-for-changes true
+zstyle ':vcs_info:git:*' stagedstr "%F{magenta}!"
+zstyle ':vcs_info:git:*' unstagedstr "%F{yellow}+"
+zstyle ':vcs_info:*' formats "%F{cyan}%c%u[%b]%f"
+zstyle ':vcs_info:*' actionformats '[%b|%a]'
+precmd () { vcs_info }
+
+autoload -Uz _prompt-truncated-path
+
+function _prompt-shlvl() {
+    if [[ $SHLVL != 1 ]]; then
+        print "$SHLVL"
+    fi
+}
+
+function toggle-prompt() {
+    local -r file="$XDG_STATE_HOME/zsh/no_arrow_prompt"
+    if [[ -e $file ]]; then
+        rm "$file"
+    else
+        touch "$file"
+    fi
+    exec zsh
+}
+
+# '' 0xe0b0 Solid Right Arrow
+# '' 0xe0b1 Right Arrow
+# '' 0xe0b2 Solid Left Arrow
+# '' 0xe0b3 Left Arrow
+
+if ! [[ -e "$XDG_STATE_HOME/zsh/no_arrow_prompt" ]]; then
+    # Arrow prompt
+    PROMPT=$'
+%{\e[38;5;243m\e[1;38;5;231;48;5;243m%T\e[38;5;243;48;5;23m $(_prompt-truncated-path 50 231 220) \e[38;5;23;48;5;220m\e[38;5;232m$(_prompt-shlvl)\e[38;5;220;49m \e[m%F{cyan}$vcs_info_msg_0_%f%}
 %F{220}${mode_stat:- }%f%B%(?|%F{040}|%F{197})%#%f%b '
+else
+    # Non Arrow prompt
+    PROMPT='
+%B%F{243}<%T>%f%b $(_prompt-truncated-path 50 2 3) %F{220}$(_prompt-shlvl)%f %F{cyan}$vcs_info_msg_0_%f
+%F{220}${mode_stat:- }%f%B%(?|%F{040}|%F{197})%#%f%b '
+fi
 
-{{/* 右プロンプト 129~159をシグナル名にしてパイプステータスを色付き表示する。 */}}
-autoload -Uz add-zsh-hook _decoration_pipestatus
-add-zsh-hook precmd _decoration_pipestatus
-RPROMPT='$_decoration_pipestatus_var'
+autoload -Uz _prompt-pipestatus
+add-zsh-hook precmd _prompt-pipestatus
+RPROMPT='$_prompt_pipestatus_var'
 
-{{/*
 ##### <エスケープシーケンス>
 ## prompt_bang が有効な場合、!=現在の履歴イベント番号, !!='!' (リテラル)
 # ${WINDOW:+"[$WINDOW]"} = screen 実行時にスクリーン番号を表示 (prompt_subst が必要)
@@ -115,5 +143,4 @@ RPROMPT='$_decoration_pipestatus_var'
 # magenta 5
 # cyan    6
 # white   7
-*/}}
 
