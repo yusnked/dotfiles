@@ -1,0 +1,48 @@
+#!/usr/bin/env zsh
+# 省略したカレントディレクトリのパスを表示する
+# $1: Length
+# $2: (Color)? - ANSI SGR 8bit color 0-255
+# $3: (Prefix color)? - 省略された時の"PREFIX/…"の部分の色
+
+local -r LENGTH=${1:?Length argument is required}
+if [[ -n $2 ]]; then
+    local -r COLOR="%{\e[38;5;${2}m%}"
+    local -r PREFIX_COLOR="%{\e[38;5;${3:-$2}m%}"
+    local -r COLOR_RESET="%{\e[39m%}"
+fi
+
+local CURRENT_PATH="$(print -P '%~')"
+if [[ $CURRENT_PATH =~ ^/ ]]; then
+    # ^/
+    CURRENT_PATH="${CURRENT_PATH:1}"
+    if [[ $CURRENT_PATH =~ .+/.+ ]]; then
+        local -r HEAD="/${CURRENT_PATH%%/*}/"
+        local -r TAIL="${CURRENT_PATH#*/}"
+    else
+        local -r HEAD=''
+        local -r TAIL="/${CURRENT_PATH}"
+    fi
+else
+    # ^~
+    if [[ $CURRENT_PATH =~ .+/.+ ]]; then
+        local -r HEAD="${CURRENT_PATH%%/*}/"
+        local -r TAIL="${CURRENT_PATH#*/}"
+    else
+        local -r HEAD=''
+        local -r TAIL="${CURRENT_PATH}"
+    fi
+fi
+
+local -r TAIL_LENGTH=$((LENGTH - ${#HEAD}))
+CURRENT_PATH=$(print -P "${HEAD}%${TAIL_LENGTH}<…<${TAIL}")
+if [[ -z $COLOR ]]; then
+    print "$CURRENT_PATH"
+    return 0
+fi
+
+if ! [[ $CURRENT_PATH =~ … ]]; then
+    print -P "${COLOR}${CURRENT_PATH}${COLOR_RESET}"
+else
+    print -P "${PREFIX_COLOR}${HEAD}%${TAIL_LENGTH}<…<${COLOR}${TAIL}${COLOR_RESET}"
+fi
+
