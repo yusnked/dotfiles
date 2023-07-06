@@ -1,4 +1,5 @@
-#!/usr/bin/env bash -eu
+#!/usr/bin/env bash
+set -eu
 
 if [[ -z $1 ]]; then exit 1; fi
 target="$1"
