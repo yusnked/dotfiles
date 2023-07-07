@@ -4,21 +4,30 @@ local module = {}
 local statusBar = function(window, _)
     -- Each element holds the text for a cell in a "powerline" style << fade
     local cells = {}
+    local keyFlag = false
+
+    if window:leader_is_active() then
+        keyFlag = true
+        table.insert(cells, ' LEADER ')
+    end
 
     local activeKeyTable = window:active_key_table()
     if activeKeyTable then
+        keyFlag = true
         activeKeyTable = string.gsub(activeKeyTable, '_', ' ')
         activeKeyTable = string.upper(activeKeyTable)
         table.insert(cells, ' ' .. activeKeyTable .. ' ')
     end
 
-    local workspace = window:mux_window():get_workspace()
-    if workspace then
-        table.insert(cells,  workspace .. ' ')
-    end
+    if not keyFlag then
+        local workspace = window:mux_window():get_workspace()
+        if workspace then
+            table.insert(cells,  workspace .. ' ')
+        end
 
-    local date = wezterm.strftime '%b %-d %H:%M '
-    table.insert(cells, date)
+        local date = wezterm.strftime '%b %-d %H:%M '
+        table.insert(cells, date)
+    end
 
     local cellsLength = #cells
 
@@ -46,7 +55,7 @@ local statusBar = function(window, _)
         }
 
         if isFocused then
-            if activeKeyTable then
+            if keyFlag then
                 return wezterm.color.parse(colors[cellsLength - index + 1]):adjust_hue_fixed(180)
             else
                 return colors[cellsLength - index + 1]
