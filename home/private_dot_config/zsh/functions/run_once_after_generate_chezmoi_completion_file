@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-mkdir -p "$HOME/.config/zsh/functions" > /dev/null 2>&1
-chezmoi completion zsh > "$HOME/.config/zsh/functions/_chezmoi"
-

@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -eu
+
+{{ $funcDir := joinPath .chezmoi.homeDir ".config/zsh/functions" -}}
+{{ $commandLines := list
+    "chezmoi completion zsh"
+    "wezterm shell-completion --shell zsh"
+    -}}
+{{ range $commandLines -}}
+{{   $command := first (splitList " " .) -}}
+{{   $completionFile := print $funcDir "/_" $command -}}
+
+{{   if and (lookPath $command) (not (lstat $completionFile)) -}}
+{{     . }} > {{ $completionFile }}
+{{   end -}}
+
+{{ end -}}
+
