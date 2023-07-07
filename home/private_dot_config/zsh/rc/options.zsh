@@ -9,7 +9,7 @@ setopt AUTO_CD
 #setopt AUTO_PUSHD
 
 # CDABLE_VARS: /で始まらなく、存在しないディレクトリ名が入力されたときに~展開(名前付きディレクトリ)を試みる。
-#setopt CDABLE_VARS
+setopt CDABLE_VARS
 
 # CD_SILENT: 例えば cd - などをしたときにどこにcdするかを表示しない。POSIX_CDを上書きする?
 setopt CD_SILENT

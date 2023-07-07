@@ -15,6 +15,11 @@ source "$XDG_CONFIG_HOME/_b-shell/env_interactive.sh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/prompt.zsh"
 
+# Flatpak
+if [[ $DOTFILES_OS == Linux ]]; then
+    source "$XDG_CONFIG_HOME/flatpak/generate_flatpak_app_func.sh"
+fi
+
 # zsh-vi-mode
 source "$ZDOTDIR/plugins/zsh-vi-mode.zsh"
 
@@ -24,6 +29,7 @@ source "$NIX_DATA_DIR/zsh-defer/zsh-defer.plugin.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/alias.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"
+zsh-defer -p source "$ZDOTDIR/rc/directories.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/functions.zsh"
 
 # zsh-syntax-highlighting
