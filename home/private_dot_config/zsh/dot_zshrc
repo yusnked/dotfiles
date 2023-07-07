@@ -12,6 +12,7 @@ fpath=(
 
 source "$XDG_CONFIG_HOME/_b-shell/env_interactive.sh"
 
+source "$ZDOTDIR/rc/directories.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/prompt.zsh"
 
@@ -29,7 +30,6 @@ source "$NIX_DATA_DIR/zsh-defer/zsh-defer.plugin.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/alias.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"
-zsh-defer -p source "$ZDOTDIR/rc/directories.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/functions.zsh"
 
 # zsh-syntax-highlighting
@@ -37,4 +37,7 @@ zsh-defer -p source "$ZDOTDIR/plugins/zsh-syntax-highlighting.zsh"
 
 # fzf
 zsh-defer -p source "$XDG_CONFIG_HOME/fzf/fzf.sh"
+
+# zoxide
+zsh-defer -p source "$XDG_CONFIG_HOME/zoxide/zoxide.sh"
 

@@ -59,7 +59,7 @@ DIRSTACKSIZE=20
 
 # AUTO_NAME_DIRS: ディレクトリの絶対パスを設定した変数を代入直後から名前付きディレクトリとして~{変数}で補完できるようにする。
 # このオプションが設定されていないと、一回手動で~{変数}を参照しないと名前付きディレクトリにならない。
-setopt AUTO_NAME_DIRS
+#setopt AUTO_NAME_DIRS
 
 # AUTO_PARAM_KEYS <D>: 補完時自動でスペース等が追加されたとき、次の入力文字が名前の直後でないとダメな文字なら自動的に追加した文字を削除する。
 #unsetopt AUTO_PARAM_KEYS
