@@ -15,6 +15,19 @@ function cdr() {
     fi
 }
 
+# Chezmoi toggle source-path <-> target-path
+function cheztgl() {
+    local dir="$(chezmoi target-path "$PWD" 2> /dev/null || chezmoi source-path "$PWD" 2> /dev/null)"
+    if [[ -z $dir ]]; then
+        if [[ $PWD == $HOME ]]; then
+            builtin cd "$(chezmoi source-path)"
+        else
+            return 1
+        fi
+    fi
+    builtin cd "$dir"
+}
+
 # nixpkgs run
 function nprun() {
     local pname="${1}"
