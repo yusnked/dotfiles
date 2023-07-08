@@ -4,6 +4,11 @@
     # viinsモードの[^G]はプレフィクスキーとして使いたいので自身に割り当てられてるものを削除する。
     bindkey -M viins -r '^g'
 
+    bindkey -M viins '^gq' push-line-or-edit
+    bindkey -M viins '^g^q' push-line-or-edit
+    bindkey -M viins '^gh' run-help
+    bindkey -M viins '^g^h' run-help
+
     # ' " ` ( { [ を入力したときに閉じる記号も入力し、すぐ削除したときに閉じる記号も削除するウィジェット
     autoload -Uz _brackets-and-quotes-expantion _backward-delete-char-or-expantion
     zle -N brackets-and-quotes-expantion _brackets-and-quotes-expantion
