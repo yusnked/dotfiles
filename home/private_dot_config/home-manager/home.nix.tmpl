@@ -9,7 +9,6 @@
   # Packages that should be installed to the user profile.
   home.packages = with pkgs;
     [
-      bash
       bashInteractive
       bat
       cacert
@@ -29,6 +28,7 @@
       gzip
       hexyl
       home-manager
+      jq
       lf
       mmv-go
       neovim
@@ -51,6 +51,7 @@
 
     # Packages not included in nixpkgs.
     (with __mypkgs; [
+      yabai-zsh-completions
       zsh-defer
     ]);
 
