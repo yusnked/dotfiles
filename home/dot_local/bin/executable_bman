@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -eu
+
+if [[ -z $1 ]]; then
+    echo '[error] Missing argument.' >&2
+    exit 1
+fi
+
+file="$(man -w "$@")"
+
+readonly tempfile="$(mktemp ${TMPDIR}XXXXXXXXXX.html)"
+trap "(sleep 1; rm -f $tempfile) &" 0 1 2 3 15
+
+groff -mandoc -Thtml "$file" > "$tempfile"
+
+"$BROWSER" "$tempfile"
+

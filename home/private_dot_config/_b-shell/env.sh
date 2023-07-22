@@ -20,6 +20,8 @@ if [[ $DOTFILES_OS == Darwin ]]; then
     add-2path '/usr/local/bin' unshift exists
     add-2path '/opt/homebrew/sbin' unshift exists
     add-2path '/opt/homebrew/bin' unshift exists
+
+    export BROWSER='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 fi
 
 # Nix multi-user mode
