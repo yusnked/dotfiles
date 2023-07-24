@@ -10,11 +10,11 @@ export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
 export NIX_DATA_DIR="$HOME/.nix-profile/share"
 
-export DOTFILES_OS="${DOTFILES_OS:-$(uname -s)}"
+export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 
 # PATH
 source "$XDG_CONFIG_HOME/_b-shell/add-2path.sh"
-if [[ $DOTFILES_OS == Darwin ]]; then
+if [[ $DOTS_OS == Darwin ]]; then
     # Homebrew
     add-2path '/usr/local/sbin' unshift exists
     add-2path '/usr/local/bin' unshift exists

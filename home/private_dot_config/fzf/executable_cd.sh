@@ -14,9 +14,5 @@ fi
 
 # それ以外の場合はサブシェルでそのディレクトリを開く
 cd "$dir"
-if [[ $(ps $PPID) =~ zsh ]]; then
-    exec zsh
-elif [[ $(ps $PPID) =~ bash ]]; then
-    exec bash
-fi
+exec "$DOTS_ISHELL"
 

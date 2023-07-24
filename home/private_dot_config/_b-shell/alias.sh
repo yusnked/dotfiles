@@ -7,7 +7,7 @@ alias chezmoi-reset-once='chezmoi state delete-bucket --bucket=scriptState'
 alias nix-hash-git="nix run 'nixpkgs#nix-prefetch-git' --"
 
 ### xsel -b
-if [[ $DOTFILES_OS != Darwin ]]; then
+if [[ $DOTS_OS != Darwin ]]; then
     alias pbcopy='xsel -b'
     alias pbpaste='xsel -b'
 fi
