@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# renban {start number} {target file regex}
+set -eu
+
+readonly uniq_prefix="${$}${RANDOM}"
+
+function get_sorted_files() {
+    find . -maxdepth 1 -type f -regextype posix-egrep -regex "$regex" -a -not -name '.*' -type f -printf '%T@ %p\n' | sort | cut -d' ' -f2-
+}
+
+function rename_without_ext() {
+    local -r orig=${1#./}
+    local -r ext=${orig##*.}
+    if [[ $ext != $orig ]]; then
+        mv "$orig" "${2}.$ext"
+    else
+        mv "$orig" "$2"
+    fi
+}
+
+if [[ $(uname -s) != 'Darwin' ]] && ! which xsel &> /dev/null; then
+    echo 'Error: xsel not installed' >&2
+    exit 1
+fi
+
+readonly start_number=${1:-1}
+if ! (( start_number >= 0 )); then
+    echo 'Error: need $1 >= 0' >&2
+    exit 1
+fi
+
+readonly regex=${2:-.\*}
+
+files=( $(get_sorted_files) )
+readonly last_number=$((${#files[*]} + start_number))
+count=$start_number
+for file in "${files[@]}"; do
+    rename_without_ext "$file" "$(printf "%d_%0${#last_number}d" $uniq_prefix $count)"
+    count=$((count + 1))
+done
+
+files=( $(get_sorted_files) )
+if [[ $(uname -s) == Darwin ]]; then
+    readonly clipboard="$(pbpaste)"
+else
+    readonly clipboard="$(xsel -bo)"
+fi
+
+if [[ -z $clipboard ]]; then
+    echo 'Error: clipboard is empty' >&2
+    exit 1
+fi
+
+for file in "${files[@]}"; do
+    without_prefix="${file#./$uniq_prefix}"
+    mv "$file" "${clipboard}${without_prefix}"
+done
+
