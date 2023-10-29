@@ -1,26 +1,24 @@
-local opts = { noremap = true, silent = true }
+local keymap = vim.keymap.set
 
-local keymap = vim.api.nvim_set_keymap
+-- leader key
+keymap('', '<Space>', '<Nop>')
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
 
---Remap space as leader key
-keymap("", "<Space>", "<Nop>", opts)
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+-- Normal mode
+keymap('n', 'j', 'gj')
+keymap('n', 'k', 'gk')
+keymap('n', 'gj', 'j')
+keymap('n', 'gk', 'k')
+keymap('n', '<Esc><Esc>', ':<C-u>nohlsearch<CR>', { silent = true, desc = 'nohlsearch' })
 
--- Modes
---   normal_mode = 'n',
---   insert_mode = 'i',
---   visual_mode = 'v',
---   visual_block_mode = 'x',
---   term_mode = 't',
---   command_mode = 'c',
-
--- Normal
-keymap('n', 's', '<NOP>', opts)
--- ESCを2回押しでハイライトを解除
-keymap("n", "<Esc><Esc>", ":<C-u>nohlsearch<Return>", opts)
-
--- Visual
+-- Visual mode
 -- *で選択範囲で検索
-keymap("v", "*", '"vy/\\V<C-r>=substitute(escape(@v,"\\/"),"\\n","\\\\n","g")<CR><CR>', opts)
+-- keymap('v', '*', '"vy/\\V<C-r>=substitute(escape(@v,"\\/"),"\\n","\\\\n","g")<CR><CR>',
+--     { silent = true, desc = '' })
+
+-- Command line
+-- 履歴の<C-n><C-p>がnvim-cmpと競合する為
+keymap('c', '<C-j>', '<Down>')
+keymap('c', '<C-k>', '<Up>')
 
