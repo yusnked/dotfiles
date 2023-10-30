@@ -29,7 +29,16 @@ local options = {
     smartcase = true,
 }
 
+local vsoptions = {
+    isprint = '1-255'
+}
+
 for k, v in pairs(options) do
     vim.opt[k] = v
 end
 
+if not NOT_VSCODE then
+    for k, v in pairs(vsoptions) do
+        vim.opt[k] = v
+    end
+end
