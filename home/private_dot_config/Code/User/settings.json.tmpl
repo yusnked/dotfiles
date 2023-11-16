@@ -1,0 +1,43 @@
+{
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "editor.detectIndentation": false,
+    "editor.fontFamily": "HackGen Console NF",
+    "editor.fontSize": 14,
+    "editor.formatOnSave": true,
+    "editor.guides.bracketPairs": true,
+    "editor.guides.bracketPairsHorizontal": true,
+    "editor.renderControlCharacters": true,
+    "editor.renderWhitespace": "all",
+    "editor.roundedSelection": false,
+    "editor.tabSize": 4,
+    "editor.tokenColorCustomizations": {
+        "comments": "#999",
+    },
+    "editor.unicodeHighlight.includeComments": false,
+    "explorer.compactFolders": false,
+    "explorer.confirmDelete": false,
+    "files.autoGuessEncoding": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "search.smartCase": true,
+    "terminal.integrated.fontSize": 14,
+    "workbench.colorTheme": "Default Dark+",
+    "workbench.editor.empty.hint": "hidden",
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.reduceMotion": "on",
+    "workbench.tree.renderIndentGuides": "always",
+
+    // Lua (Lua Language Server)
+    "Lua.diagnostics.globals": [
+        "mp", // mpv
+        "vim" // neovim
+    ],
+
+    // VSCode Neovim
+    "vscode-neovim.neovimExecutablePaths.darwin": "{{ .chezmoi.homeDir }}/.nix-profile/bin/nvim",
+    "vscode-neovim.neovimInitVimPaths.darwin": "{{ .chezmoi.homeDir }}/.config/nvim/init.lua",
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    }
+}
