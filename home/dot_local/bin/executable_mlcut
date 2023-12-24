@@ -1,0 +1,97 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+    cat <<-END
+
+  mlcut (Movie Lossless Cut) Ver 1.0 2022-2-24
+
+  Use ffmpeg. Only mp4.
+
+  e.g.) mlcut src-file.mp4
+END
+    exit 0
+fi
+
+if [ ! -e "$1" ]; then
+    echo "The source file does not exist."
+    exit 1
+fi
+
+input_file_name=${1%.*}
+input_file_ext=${1##*.}
+
+# 切り取り開始時間の配列
+declare -a __mlcut_start_time_array=()
+# 切り取り終了時間の配列
+declare -a __mlcut_stop_time_array=()
+
+#入力値をhh:mm:ss形式に補正する関数(強引)
+mlcut_time_formatting() {
+    if [ ${#__mlcut_time} -eq 1 ]; then
+        __mlcut_time="00:00:0$__mlcut_time"
+    elif [ ${#__mlcut_time} -eq 2 ]; then
+        __mlcut_time="00:00:$__mlcut_time"
+    elif [ ${#__mlcut_time} -eq 4 ]; then
+        __mlcut_time="00:0$__mlcut_time"
+    elif [ ${#__mlcut_time} -eq 5 ]; then
+        __mlcut_time="00:$__mlcut_time"
+    elif [ ${#__mlcut_time} -eq 7 ]; then
+        __mlcut_time="0$__mlcut_time"
+    fi
+}
+
+declare -i count=0
+declare -i skip_flag=0
+time_pattern='[0-9][0-9]:[0-5][0-9]:[0-5][0-9]'
+format_error_msg='\nFormat is [[hh:]mm:]ss\npls again.\n'
+while :; do
+    if [ $skip_flag -eq 0 ]; then
+
+        echo -n "start > "
+        read __mlcut_time
+
+        #入力終了コマンドを検知
+        if [[ $__mlcut_time =~ ^(q|quit|exit|bye|end)$ ]]; then
+            break
+        fi
+
+        mlcut_time_formatting #入力値を整形
+
+        if [[ ! $__mlcut_time =~ $time_pattern ]]; then
+            echo -e $format_error_msg
+            continue
+        fi
+        __mlcut_start_time_array+=($__mlcut_time)
+        skip_flag=1
+    fi
+
+    echo -n "stop > "
+    read __mlcut_time
+    mlcut_time_formatting #入力値を整形
+
+    if [[ ! $__mlcut_time =~ $time_pattern ]]; then
+        echo -e $format_error_msg
+        continue
+    fi
+
+    # 終了時刻が開始時刻以前ならやり直させる
+    if [[ ! $__mlcut_time > ${__mlcut_start_time_array[$count]} ]]; then
+        echo 'The end time should be later than the start time!'
+        continue
+    fi
+
+    __mlcut_stop_time_array+=($__mlcut_time)
+    skip_flag=0
+    count+=1
+done
+
+# 動画の切り出し
+for count in $(seq 0 $(expr ${#__mlcut_start_time_array[@]} - 1)); do
+    ffmpeg -ss ${__mlcut_start_time_array[$count]} -to ${__mlcut_stop_time_array[$count]} -i "$1" -c:v copy -c:a copy -async 1 "${input_file_name}_clip_${count}.${input_file_ext}"
+    echo "file '${input_file_name}_clip_${count}.${input_file_ext}'" >>"${input_file_name}_clips.txt"
+done
+
+# 切り出した動画を結合
+ffmpeg -safe 0 -f concat -i "${input_file_name}_clips.txt" -c:v copy -c:a copy -map 0:v -map 0:a "${input_file_name}_clips.${input_file_ext}"
+
+rm "${input_file_name}_clips.txt"
