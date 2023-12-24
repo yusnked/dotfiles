@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ $# -eq 0 ]; then
     cat <<-END
 
-  mlcut (Movie Lossless Cut) Ver 1.0 2022-2-24
+  mlcut (Movie Lossless Cut) Ver 1.1 2023-12-24
 
   Use ffmpeg. Only mp4.
 
@@ -86,12 +86,28 @@ while :; do
 done
 
 # 動画の切り出し
-for count in $(seq 0 $(expr ${#__mlcut_start_time_array[@]} - 1)); do
-    ffmpeg -ss ${__mlcut_start_time_array[$count]} -to ${__mlcut_stop_time_array[$count]} -i "$1" -c:v copy -c:a copy -async 1 "${input_file_name}_clip_${count}.${input_file_ext}"
-    echo "file '${input_file_name}_clip_${count}.${input_file_ext}'" >>"${input_file_name}_clips.txt"
+clips_count=$((${#__mlcut_start_time_array[@]} - 1))
+if ! [[ $clips_count > -1 ]]; then
+    exit 1
+fi
+
+function get_output_filename() {
+    local count=$1
+    if [[ $clips_count == 0 ]]; then
+        echo "${input_file_name}_clip.${input_file_ext}"
+    elif [[ $clips_count > 0 ]]; then
+        echo "${input_file_name}_clip_${count}.${input_file_ext}"
+    fi
+}
+
+for count in $(seq 0 ${clips_count}); do
+    ffmpeg -ss ${__mlcut_start_time_array[$count]} -to ${__mlcut_stop_time_array[$count]} -i "$1" -c:v copy -c:a copy -async 1 "$(get_output_filename $count)"
+    echo "file '$(get_output_filename $count)'" >>"${input_file_name}_clips.txt"
 done
 
 # 切り出した動画を結合
-ffmpeg -safe 0 -f concat -i "${input_file_name}_clips.txt" -c:v copy -c:a copy -map 0:v -map 0:a "${input_file_name}_clips.${input_file_ext}"
+if [[ ${clips_count} > 0 ]]; then
+    ffmpeg -safe 0 -f concat -i "${input_file_name}_clips.txt" -c:v copy -c:a copy -map 0:v -map 0:a "${input_file_name}_clips.${input_file_ext}"
+fi
 
 rm "${input_file_name}_clips.txt"
