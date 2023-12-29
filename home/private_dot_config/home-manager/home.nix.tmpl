@@ -16,11 +16,12 @@
       cmigemo
       coreutils
       diffutils
-      exa
+      eza
       fd
       findutils
       fzf
       gawk
+      gh
       git
       gnugrep
       gnused
@@ -30,7 +31,6 @@
       hexyl
       home-manager
       jq
-      lf
       mmv-go
       neovim
       p7zip
@@ -43,6 +43,9 @@
       zsh-completions
       zsh-syntax-highlighting
       zsh-vi-mode
+      {{ if eq .chezmoi.os "linux" }}
+      mpv-unwrapped
+      {{ end }}
     ] ++
 
     # Fonts
@@ -52,6 +55,8 @@
 
     # Packages not included in nixpkgs.
     (with __mypkgs; [
+      anime4k
+      mpv-prescalers
       yabai-zsh-completions
       zsh-defer
     ]);
@@ -66,4 +71,3 @@
   # changes in each release.
   home.stateVersion = "22.11";
 }
-
