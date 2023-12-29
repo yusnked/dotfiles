@@ -1,5 +1,4 @@
 ### chezmoi
-alias chezmoi-apply-zsh='chezmoi apply && sleep 1 && exec zsh'
 # run_once属性はファイルの内容が変更されたとき一度だけ実行される。それをリセットするコマンド
 alias chezmoi-reset-once='chezmoi state delete-bucket --bucket=scriptState'
 
@@ -13,7 +12,7 @@ if [[ $DOTS_OS != Darwin ]]; then
 fi
 
 ### ls   exaが存在すればlsを置き換える
-if which exa &> /dev/null; then
+if which exa &>/dev/null; then
     alias ls='exa --color=auto --time-style=long-iso --icons --group --git'
     alias la='ls -a'
     alias ll='ls -l'
@@ -22,7 +21,7 @@ if which exa &> /dev/null; then
     alias lai='lla -i'
     alias lt='ls -T'
 else
-    if ls --version &> /dev/null; then
+    if ls --version &>/dev/null; then
         # gnu-ls
         alias ls="ls --color=auto --time-style='+%Y-%m-%d %H:%M'"
     else
@@ -38,13 +37,13 @@ else
     alias lai='lla -i'
 fi
 
-if which nvim &> /dev/null; then
+if which nvim &>/dev/null; then
     alias vi='nvim'
     alias vim='nvim'
     alias view='nvim -R'
 fi
 
-if which wezterm &> /dev/null; then
+if which wezterm &>/dev/null; then
     alias imgcat='wezterm imgcat'
 fi
 
@@ -56,4 +55,3 @@ alias dcv='docker-compose down && docker-compose up'
 alias dce='docker-compose exec'
 alias dcr='docker-compose run --user=${UID} --no-deps'
 alias dcR='docker-compose run --user=${UID} --no-deps --rm'
-

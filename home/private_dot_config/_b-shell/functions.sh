@@ -15,6 +15,10 @@ function cdr() {
     fi
 }
 
+function reload() {
+    chezmoi apply && sleep 1 && exec zsh
+}
+
 # Chezmoi toggle source-path <-> target-path
 function cheztgl() {
     local dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/dev/null)"
@@ -44,6 +48,17 @@ function npinstall() {
 
 function nplist() {
     nix profile list | cut -d ' ' -f 1,4 --output-delimiter=' - '
+}
+
+function home-manager() {
+    case $1 in
+    "upgrade")
+        nix flake update ~/.config/home-manager && command home-manager switch
+        ;;
+    *)
+        command home-manager "$@"
+        ;;
+    esac
 }
 
 # ANSI color
