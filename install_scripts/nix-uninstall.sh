@@ -55,7 +55,7 @@ EOF
     # これによりマウントポイント用の空の /nix ディレクトリの自動生成を停止
     target_file='/etc/synthetic.conf'
     temp_file="$(mktemp)"
-    sed '/^nix$/d' "$target_file" > "$tempfile"
+    sed '/^nix$/d' "$target_file" >"$tempfile"
     sudo mv "$tempfile" "$target_file"
     sudo chown 'root:wheel' "$target_file"
     sudo chmod 644 "$target_file"
@@ -71,7 +71,7 @@ EOF
 
     # Nix によって作成されたファイルの削除
     sudo rm -rf /etc/nix /var/root/.nix-profile /var/root/.nix-defexpr /var/root/.nix-channels \
-        ~/.nix-profile ~/.nix-defexpr ~/.nix-channels
+        ~/.nix-profile ~/.nix-defexpr ~/.nix-channels ~/.local/state/nix
 
     # Nixによって書き換えられた/etc以下の設定ファイルがあれば戻す
     restore_etc_files_from_backup
@@ -89,7 +89,7 @@ elif [ "$kernel_name" = 'Linux' ]; then
 
     # Nixによって作成されたファイルを削除
     sudo rm -rf /nix /etc/nix /etc/profile/nix.sh /etc/profile.d/nix.sh ~root/.nix-profile ~root/.nix-defexpr \
-        ~root/.nix-channels ~/.nix-profile ~/.nix-defexpr ~/.nix-channels
+        ~root/.nix-channels ~/.nix-profile ~/.nix-defexpr ~/.nix-channels ~/.local/state/nix
 
     # ビルドユーザーとそのグループを削除
     for i in $(seq 1 32); do
@@ -100,4 +100,3 @@ elif [ "$kernel_name" = 'Linux' ]; then
     # Nixによって書き換えられた/etc以下の設定ファイルがあれば戻す
     restore_etc_files_from_backup
 fi
-
