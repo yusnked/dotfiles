@@ -7,7 +7,7 @@ function mkcd() {
 
 # gitリポジトリのルートに移動
 function cdr() {
-    local git_root="$(git rev-parse --show-toplevel 2> /dev/null || true)"
+    local git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
     if [[ -n $git_root ]]; then
         cd "$git_root"
     else
@@ -17,7 +17,7 @@ function cdr() {
 
 # Chezmoi toggle source-path <-> target-path
 function cheztgl() {
-    local dir="$(chezmoi target-path "$PWD" 2> /dev/null || chezmoi source-path "$PWD" 2> /dev/null)"
+    local dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/dev/null)"
     if [[ -z $dir ]]; then
         if [[ $PWD == $HOME ]]; then
             builtin cd "$(chezmoi source-path)"
@@ -85,7 +85,7 @@ function ansi-color-24bit() {
             [[ $green == $((INTERVAL * COUNT)) ]] && green=$MAX
             red=0
             while ((red <= MAX)); do
-                if [[ $red == $((INTERVAL * COUNT)) ]];then
+                if [[ $red == $((INTERVAL * COUNT)) ]]; then
                     red=$MAX
                     printf '\e[38;2;%d;%d;%dm #%02X%02X%02X\e[m\n' $red $green $blue $red $green $blue
                 else
@@ -112,4 +112,3 @@ EOS
     echo -e ' \\e[48;2;0;153;153;38;2;255;0;0mhello\\e[49m world!\\e[0m\n -> \e[48;2;0;153;153;38;2;255;0;0mhello\e[49m world!\e[0m'
     echo -e '\nhttps://en.wikipedia.org/wiki/ANSI_escape_code#24-bit'
 }
-
