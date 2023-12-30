@@ -1,3 +1,5 @@
+# vim: ts=2
+
 {{ $packages := output "ls" (output "chezmoi" "source-path" (joinPath .chezmoi.mypkgsDir "packages") | trim) |
   trimAll "\n" | splitList "\n" | sortAlpha -}}
 
@@ -28,4 +30,3 @@
       }
     );
 }
-
