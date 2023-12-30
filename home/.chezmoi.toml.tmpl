@@ -16,5 +16,4 @@
 
 [data]
 chezmoi.nixSystem = {{ $nixSystem | quote }}
-chezmoi.nixUserMode = {{ $nixUserMode | quote }}
 chezmoi.mypkgsDir = {{ joinPath .chezmoi.homeDir ".config/nix/mypkgs" | quote }}
