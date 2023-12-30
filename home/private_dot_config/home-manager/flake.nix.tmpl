@@ -24,10 +24,10 @@
           (final: prev: { __mypkgs = mypkgs.packages.${system}; })
           {{ $overlaysDir := joinPath .chezmoi.sourceDir "private_dot_config/home-manager/overlays" -}}
           {{ if stat $overlaysDir -}}
-          {{   $overlays := output "find" $overlaysDir "-type" "f" "-a" "-not" "-name" ".*" "-printf" "%f\n" | trimAll "\n" | splitList "\n" | sortAlpha -}}
+          {{   $overlays := glob (joinPath $overlaysDir "[^.]*") | sortAlpha -}}
           {{   range $overlays -}}
           {{     if . -}}
-          (import {{ joinPath "./overlays" . }})
+          (import {{ . | replaceAllRegex "^.*/" "./overlays/" }})
           {{     end -}}
           {{   end -}}
           {{ end -}}
