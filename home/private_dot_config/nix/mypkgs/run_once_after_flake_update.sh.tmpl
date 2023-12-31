@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-{{ output "find" (joinPath .chezmoi.mypkgsDir "packages")
-    "-type" "f" "-name" "*" "-exec" "sha256sum" "{}" "+" | comment "# " -}}
+# {{ if lookPath "sha256sum" }}
+# {{   output "find" (joinPath .chezmoi.mypkgsDir "packages") "-type" "f" "-name" "*" "-exec" "sha256sum" "{}" "+" | comment "# " }}
+# {{ end }}
 
-if which nix > /dev/null 2>&1; then
-    nix flake update "{{ joinPath .chezmoi.homeDir ".config/home-manager" }}"
+if which nix >/dev/null 2>&1; then
+    nix flake update --flake "{{ joinPath .chezmoi.homeDir ".config/home-manager" }}"
 fi
-
