@@ -17,3 +17,4 @@
 [data]
 chezmoi.nixSystem = {{ $nixSystem | quote }}
 chezmoi.mypkgsDir = {{ joinPath .chezmoi.homeDir ".config/nix/mypkgs" | quote }}
+chezmoi.mypkgsPackagesSource = {{ joinPath .chezmoi.sourceDir "private_dot_config/nix/mypkgs/packages" | quote }}

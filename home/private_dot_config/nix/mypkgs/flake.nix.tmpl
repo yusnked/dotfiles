@@ -1,7 +1,7 @@
 # vim: ts=2
 
-{{ $packages := output "ls" (output "chezmoi" "source-path" (joinPath .chezmoi.mypkgsDir "packages") | trim) |
-  trimAll "\n" | splitList "\n" | sortAlpha -}}
+{{ $packages := glob (joinPath .chezmoi.mypkgsPackagesSource "[^.]*") | sortAlpha -}}
+{{ $pattern := "^.*/(.+?)\\.nix$" -}}
 
 {
   description = "mypkgs: Packages not included in nixpkgs.";
@@ -18,13 +18,13 @@
       in {
         packages = rec {
           {{ range $packages -}}
-          {{ . | trimSuffix ".nix" }} = import ./packages/{{ . }} { inherit pkgs; };
+          {{ . | replaceAllRegex $pattern "${1}" }} = import {{ . | replaceAllRegex "^.*/" "./packages/" }} { inherit pkgs; };
           {{ end -}}
         };
         apps = rec {
           {{ range $packages -}}
-          {{ . | trimSuffix ".nix" }} = flake-utils.lib.mkApp { drv = self.packages.${system}.{{ . |
-            trimSuffix ".nix" }}; };
+          {{ . | replaceAllRegex $pattern "${1}" }} = flake-utils.lib.mkApp { drv = self.packages.${system}.{{ . |
+            replaceAllRegex $pattern "${1}" }}; };
           {{ end -}}
         };
       }
