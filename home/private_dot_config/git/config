@@ -1,0 +1,43 @@
+[alias]
+	a   = add
+	ap  = add -p
+	b   = branch
+	ca  = commit --amend
+	can = commit --amend --no-edit
+	cm  = commit
+	cmm = commit -m
+	d   = diff
+	ds  = diff --staged
+	l   = log --graph --pretty=format:'%C(yellow)%h%Creset%Cred%d%Creset %Cgreen[%ad] %C(bold blue)<%an>%Creset%n %s%n' --date=format:"%y/%m/%d" --all --abbrev-commit
+	lo  = log --graph --pretty=format:'%C(yellow)%h%Creset -%Cred%d%Creset %s %Cgreen[%ad] %C(bold blue)<%an>%Creset' --date=format:"%y/%m/%d" --all --abbrev-commit
+	r   = restore
+	rs  = restore --source
+	re  = reset --mixed
+	reh = reset --hard
+	res = reset --soft
+	rl  = reflog
+	s   = status -sb
+	sw  = switch
+[color]
+	ui = true
+[commit]
+	gpgsign = true
+[core]
+	autocrlf     = false
+	safecrlf     = true
+	quotepath    = false
+[credential]
+	helper = store
+[init]
+	defaultBranch = main
+[log]
+	date = iso
+[pull]
+	ff     = only
+	rebase = false
+[push]
+	default = current
+[user]
+	name       = yusnked
+	email      = yusnked@gmail.com
+	signingkey = 09200DF2AB9E02AC!
