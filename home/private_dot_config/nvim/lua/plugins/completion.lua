@@ -2,7 +2,7 @@ return {
     {
         'hrsh7th/nvim-cmp',
         dependencies = {
-            'L3MON4D3/LuaSnip',
+            { 'L3MON4D3/LuaSnip', version = 'v2.*' },
             'hrsh7th/cmp-buffer',
             'hrsh7th/cmp-calc',
             'hrsh7th/cmp-cmdline',
@@ -22,7 +22,8 @@ return {
             local has_words_before = function()
                 unpack = unpack or table.unpack
                 local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-                return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+                return col ~= 0 and
+                    vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
             end
 
             local luasnip = require('luasnip')
@@ -67,7 +68,7 @@ return {
                     ['<C-n>'] = cmp.mapping(function(fallback)
                         if cmp.visible() then
                             cmp.select_next_item()
-                            -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable() 
+                            -- You could replace the expand_or_jumpable() calls with expand_or_locally_jumpable()
                             -- they way you will only jump inside the snippet region
                         elseif has_words_before() then
                             cmp.complete()
@@ -140,4 +141,3 @@ return {
         end
     },
 }
-
