@@ -24,15 +24,10 @@ for _, v in ipairs(bundledPlugins) do
     vim.g[v] = 1
 end
 
-if vim.g.vscode then
-    NOT_VSCODE = false
-else
-    NOT_VSCODE = true
-end
+NOT_VSCODE = vim.g.vscode ~= 1
 
 require('options')
 require('keymaps')
-require('commands')
 
 -- lazy.nvim
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
@@ -48,4 +43,3 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 require('lazy').setup('plugins')
-
