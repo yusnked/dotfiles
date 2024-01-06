@@ -5,7 +5,7 @@ return {
         dependencies = {
             'nvim-treesitter/nvim-treesitter-textobjects',
             'JoosepAlviste/nvim-ts-context-commentstring',
-            { 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim', version = '*' }
+            { 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim', version = '*', cond = NOT_VSCODE }
         },
         -- event = 'FileType',
         build = function()
