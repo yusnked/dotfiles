@@ -3,10 +3,7 @@ return {
         'numToStr/Comment.nvim',
         version = '*',
         dependencies = 'JoosepAlviste/nvim-ts-context-commentstring',
-        keys = {
-            { 'gc', mode = { 'n', 'v' } },
-            { 'gb', mode = { 'n', 'v' } },
-        },
+        keys = { { 'gc', mode = { 'n', 'v' } }, { 'gb', mode = { 'n', 'v' } } },
         config = function()
             require('Comment').setup({
                 pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
@@ -16,16 +13,8 @@ return {
     {
         'kylechui/nvim-surround',
         version = '*',
-        keys = {
-            { 'ys', mode = 'n' },
-            { 'yS', mode = 'n' },
-            { 'ds', mode = 'n' },
-            { 'cs', mode = 'n' },
-            { 'cS', mode = 'n' },
-            { 'S', mode = 'v' },
-            { 'gS', mode = 'v' },
-        },
-        config = true,
+        keys = { 'ys', 'yS', 'ds', 'cs', 'cS', { 'S', mode = 'v' }, { 'gS', mode = 'v' } },
+        opts = {},
     },
     {
         'gbprod/substitute.nvim',
@@ -81,72 +70,52 @@ return {
         keys = {
             {
                 '<C-a>',
-                function()
-                    return require('dial.map').inc_normal()
-                end,
-                mode = 'n',
+                function() return require('dial.map').inc_normal() end,
                 expr = true,
                 desc = 'Increment'
             },
             {
                 '<C-x>',
-                function()
-                    return require('dial.map').dec_normal()
-                end,
-                mode = 'n',
+                function() return require('dial.map').dec_normal() end,
                 expr = true,
                 desc = 'Decrement'
             },
             {
                 'g<C-a>',
-                function()
-                    return require('dial.map').inc_gnormal()
-                end,
-                mode = 'n',
+                function() return require('dial.map').inc_gnormal() end,
                 expr = true,
                 desc = 'Increment'
             },
             {
                 'g<C-x>',
-                function()
-                    return require('dial.map').dec_gnormal()
-                end,
-                mode = 'n',
+                function() return require('dial.map').dec_gnormal() end,
                 expr = true,
                 desc = 'Decrement'
             },
             {
                 '<C-a>',
-                function()
-                    return require('dial.map').inc_visual()
-                end,
+                function() return require('dial.map').inc_visual() end,
                 mode = 'v',
                 expr = true,
                 desc = 'Increment'
             },
             {
                 '<C-x>',
-                function()
-                    return require('dial.map').dec_visual()
-                end,
+                function() return require('dial.map').dec_visual() end,
                 mode = 'v',
                 expr = true,
                 desc = 'Decrement'
             },
             {
                 'g<C-a>',
-                function()
-                    return require('dial.map').inc_gvisual()
-                end,
+                function() return require('dial.map').inc_gvisual() end,
                 mode = 'v',
                 expr = true,
                 desc = 'Increment'
             },
             {
                 'g<C-x>',
-                function()
-                    return require('dial.map').dec_gvisual()
-                end,
+                function() return require('dial.map').dec_gvisual() end,
                 mode = 'v',
                 expr = true,
                 desc = 'Decrement'
@@ -171,6 +140,15 @@ return {
         end,
     },
     {
+        'echasnovski/mini.align',
+        version = '*',
+        keys = {
+            { 'gA', mode = { 'n', 'v' }, desc = 'mini.align start with preview' },
+            { 'ga', mode = { 'n', 'v' }, desc = 'mini.align start' },
+        },
+        opts = {},
+    },
+    {
         'echasnovski/mini.bracketed',
         version = '*',
         opts = {},
@@ -191,10 +169,7 @@ return {
             },
         },
     },
-    {
-        'bronson/vim-visual-star-search',
-        keys = { '*', mode = 'v', desc = 'vim visual star search' },
-    },
+    { 'bronson/vim-visual-star-search', keys = { '*', mode = 'v', desc = 'vim visual star search' } },
     {
         'windwp/nvim-autopairs',
         event = 'VeryLazy',
@@ -202,40 +177,4 @@ return {
         -- <C-h>で空の括弧やクォートなどを一気に消せるようにする
         opts = { map_c_h = true },
     },
-    -- {
-    --     'gbprod/yanky.nvim',
-    --     version = '*',
-    --     dependencies = 'kkharji/sqlite.lua',
-    --     keys = {
-    --         'y', 'd',
-    --         { 'p', '<Plug>(YankyPutAfter)', mode = { 'n', 'x' }, silent = true, desc = 'YankyPutAfter' },
-    --         { 'P', '<Plug>(YankyPutBefore)', mode = { 'n', 'x' }, silent = true, desc = 'YankyPutBefore' },
-    --         { 'gp', '<Plug>(YankyGPutAfter)', mode = { 'n', 'x' }, silent = true, desc = 'YankyGPutAfter' },
-    --         { 'gP', '<Plug>(YankyGPutBefore)', mode = { 'n', 'x' }, silent = true, desc = 'YankyGPutBefore' },
-    --         { '<C-n>', '<Plug>(YankyCycleForward)', mode = 'n', silent = true, desc = 'YankyCycleForward' },
-    --         { '<C-p>', '<Plug>(YankyCycleBackward)', mode = 'n', silent = true, desc = 'YankyCycleBackward' },
-    --
-    --         { ']p', '<Plug>(YankyPutIndentAfterLinewise)', mode = 'n', silent = true, desc = 'YankyPutIndentAfterLinewise' },
-    --         { '[p', '<Plug>(YankyPutIndentBeforeLinewise)', mode = 'n', silent = true, desc = 'YankyPutIndentBeforeLinewise' },
-    --         { ']P', '<Plug>(YankyPutIndentAfterLinewise)', mode = 'n', silent = true, desc = 'YankyPutIndentAfterLinewise' },
-    --         { '[P', '<Plug>(YankyPutIndentBeforeLinewise)', mode = 'n', silent = true, desc = 'YankyPutIndentBeforeLinewise' },
-    --
-    --         { '>p', '<Plug>(YankyPutIndentAfterShiftRight)', mode = 'n', silent = true, desc = 'YankyPutIndentAfterShiftRight' },
-    --         { '<p', '<Plug>(YankyPutIndentAfterShiftLeft)', mode = 'n', silent = true, desc = 'YankyPutIndentAfterShiftLeft' },
-    --         { '>P', '<Plug>(YankyPutIndentBeforeShiftRight)', mode = 'n', silent = true, desc = 'YankyPutIndentBeforeShiftRight' },
-    --         { '<P', '<Plug>(YankyPutIndentBeforeShiftLeft)', mode = 'n', silent = true, desc = 'YankyPutIndentBeforeShiftLeft' },
-    --
-    --         { '=p', '<Plug>(YankyPutAfterFilter)', mode = 'n', silent = true, desc = 'YankyPutAfterFilter' },
-    --         { '=P', '<Plug>(YankyPutBeforeFilter)', mode = 'n', silent = true, desc = 'YankyPutBeforeFilter' },
-    --     },
-    --     opts = {
-    --         ring = {
-    --             history_length = 30,
-    --             storage = 'sqlite',
-    --             sync_with_numbered_registers = true,
-    --             cancel_event = 'update',
-    --         },
-    --     },
-    -- },
 }
-
