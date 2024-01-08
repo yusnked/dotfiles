@@ -9,8 +9,8 @@ export FZF_DEFAULT_OPTS='
     --preview="\"$XDG_CONFIG_HOME/fzf/preview.sh\" {}"
     --preview-window="up,hidden,~3"
     --bind="ctrl-d:preview-half-page-down"
+    --bind="ctrl-g:become(\"$XDG_CONFIG_HOME/fzf/cd.sh\" {})"
     --bind="ctrl-o:execute-silent(xdg-open {})"
-    --bind="ctrl-q:become(\"$XDG_CONFIG_HOME/fzf/cd.sh\" {})"
     --bind="ctrl-t:toggle-preview"
     --bind="ctrl-u:preview-half-page-up"
     --bind="ctrl-v:become($EDITOR {+})"
@@ -27,4 +27,3 @@ elif [[ -n $BASH_VERSION ]]; then
     source "$NIX_DATA_DIR/fzf/completion.bash"
     source "$NIX_DATA_DIR/fzf/key-bindings.bash"
 fi
-

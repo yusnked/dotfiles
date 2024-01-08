@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
-set -eu
 
-dir="$1"
-if ! [[ -d $dir ]]; then
-    dir="${dir%/*}"
+dir='.'
+if [[ -d $1 ]]; then
+    dir="$1"
+else
+    replaced="${1%/*}"
+    if [[ $replaced != $1 ]]; then
+        dir="$replaced"
+    fi
 fi
 
-# Weztermを使用している場合はペインに文字を送って現在のプロセスでcdする
-if [[ $TERM_PROGRAM == WezTerm ]]; then
-    exec echo "cd \"$dir\"" | wezterm cli send-text --no-paste
-    exit
-fi
-
-# それ以外の場合はサブシェルでそのディレクトリを開く
-cd "$dir"
-exec "$DOTS_ISHELL"
-
+case $DOTS_TERMINAL in
+wezterm)
+    echo "cd \"$dir\"" | wezterm cli send-text --no-paste
+    ;;
+*)
+    cd "$dir" && exec "$DOTS_ISHELL"
+    ;;
+esac
