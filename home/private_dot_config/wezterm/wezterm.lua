@@ -10,6 +10,10 @@ end
 local script = wezterm.home_dir .. '/.config/wezterm/run_shell.sh'
 config.default_prog = { script }
 
+config.set_environment_variables = {
+    DOTS_TERMINAL = 'wezterm',
+}
+
 local modules = {
     'appearance',
     'events',
@@ -23,4 +27,3 @@ for _, v in ipairs(modules) do
 end
 
 return config
-
