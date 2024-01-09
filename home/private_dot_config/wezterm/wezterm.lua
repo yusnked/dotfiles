@@ -6,9 +6,13 @@ if wezterm.config_builder then
     config = wezterm.config_builder()
 end
 
--- use zsh installed by nix if it exists
-local script = wezterm.home_dir .. '/.config/wezterm/run_shell.sh'
-config.default_prog = { script }
+local get_shell_path = wezterm.home_dir .. '/.local/bin/get-shell-path'
+local pcall_result, success, stdout, _ = pcall(wezterm.run_child_process, { get_shell_path })
+local shell_path = '/bin/bash'
+if pcall_result and success then
+    shell_path = stdout
+end
+config.default_prog = { shell_path, '-l' }
 
 config.set_environment_variables = {
     DOTS_TERMINAL = 'wezterm',

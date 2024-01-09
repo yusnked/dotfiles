@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+PATH="$HOME/.nix-profile/bin:$PATH"
+shell_path="$(command -v zsh 2>/dev/null)"
+if [[ -z $shell_path ]]; then
+    shell_path="$(command -v bash 2>/dev/null)"
+fi
+
+echo -n $shell_path
