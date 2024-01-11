@@ -11,11 +11,12 @@
 	l   = log --graph --pretty=format:'%C(yellow)%h%Creset%Cred%d%Creset %Cgreen[%ad] %C(bold blue)<%an>%Creset%n %s%n' --date=format:"%y/%m/%d" --all --abbrev-commit
 	lo  = log --graph --pretty=format:'%C(yellow)%h%Creset -%Cred%d%Creset %s %Cgreen[%ad] %C(bold blue)<%an>%Creset' --date=format:"%y/%m/%d" --all --abbrev-commit
 	r   = restore
-	rs  = restore --source
-	re  = reset --mixed
+	re  = reset
+	rea = reset HEAD
 	reh = reset --hard
 	res = reset --soft
 	rl  = reflog
+	rs  = restore --source
 	s   = status -sb
 	sw  = switch
 [color]
@@ -23,9 +24,9 @@
 [commit]
 	gpgsign = true
 [core]
-	autocrlf     = false
-	safecrlf     = true
-	quotepath    = false
+	autocrlf  = false
+	safecrlf  = true
+	quotepath = false
 [credential]
 	helper = store
 [init]
