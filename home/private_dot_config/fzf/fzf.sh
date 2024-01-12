@@ -21,7 +21,6 @@ FZF_DEFAULT_OPTS="--history=\"$XDG_DATA_HOME/fzf/history\" $FZF_DEFAULT_OPTS"
 if [[ -n $ZSH_VERSION ]]; then
     source "$NIX_DATA_DIR/fzf/completion.zsh"
     source "$NIX_DATA_DIR/fzf/key-bindings.zsh"
-    bindkey -M main -r '^T'
     bindkey -M main -r '^[c'
 elif [[ -n $BASH_VERSION ]]; then
     source "$NIX_DATA_DIR/fzf/completion.bash"
