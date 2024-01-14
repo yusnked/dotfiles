@@ -1,6 +1,7 @@
 {{ if ne .chezmoi.os "darwin" -}}
-Library
+.chezmoiscripts/darwin/**
 .local/bin/bman
+Library
 {{ end -}}
 {{ if ne .chezmoi.os "linux" -}}
 .config/flatpak

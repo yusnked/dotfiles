@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -eufo pipefail
+
+{{ $brews := list
+     "mpv"
+     "sheldon"
+     "zsh"
+-}}
+{{ $casks := list
+     "alfred"
+     "bettertouchtool"
+     "deepl"
+     "fuse-t"
+     "google-chrome"
+     "karabiner-elements"
+     "visual-studio-code"
+     "vlc"
+     "wezterm"
+-}}
+
+brew bundle --no-lock --file=/dev/stdin <<EOF
+{{ range ($brews | sortAlpha | uniq) -}}
+brew "{{ . }}"
+{{ end -}}
+{{ range ($casks | sortAlpha | uniq) -}}
+cask "{{ . }}"
+{{ end -}}
+EOF
