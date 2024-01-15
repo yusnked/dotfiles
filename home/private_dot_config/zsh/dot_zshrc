@@ -16,28 +16,36 @@ source "$ZDOTDIR/rc/directories.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/prompt.zsh"
 
+# sheldon
+zsh-defer() { source "${*#* source }"; }
+if type sheldon &>/dev/null; then
+    () {
+        export SHELDON_CONFIG_DIR="$XDG_CONFIG_HOME/sheldon"
+        export SHELDON_CONFIG_FILE="$SHELDON_CONFIG_DIR/zsh-plugins.toml"
+        local cache_dir="$XDG_CACHE_HOME/sheldon"
+        local cache_file="$cache_dir/zsh-plugins.zsh"
+        if [[ ! -r $cache_file || $SHELDON_CONFIG_FILE -nt $cache_file ]]; then
+            mkdir -p $cache_dir
+            sheldon source > $cache_file
+        fi
+        source "$cache_file"
+    }
+fi
+
+# ===== Delayed loading from here down =====
+
 # Flatpak
 if [[ $DOTS_OS == Linux ]]; then
     source "$XDG_CONFIG_HOME/flatpak/generate_flatpak_app_func.sh"
 fi
 
-# zsh-vi-mode
-source "$ZDOTDIR/plugins/zsh-vi-mode.zsh"
-
-# zsh-defer
-source "$NIX_DATA_DIR/zsh-defer/zsh-defer.plugin.zsh"
-# ===== Delayed loading from here down =====
 zsh-defer -p source "$ZDOTDIR/rc/alias.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/functions.zsh"
-
-# zsh-syntax-highlighting
-zsh-defer -p source "$ZDOTDIR/plugins/zsh-syntax-highlighting.zsh"
 
 # fzf
 zsh-defer -p source "$XDG_CONFIG_HOME/fzf/fzf.sh"
 
 # zoxide
 zsh-defer -p source "$XDG_CONFIG_HOME/zoxide/zoxide.sh"
-

@@ -38,16 +38,18 @@
       ripgrep
       tmux
       xdg-utils
-      xsel
       zoxide
-      zsh
-      zsh-completions
-      zsh-syntax-highlighting
-      zsh-vi-mode
-      {{ if eq .chezmoi.os "linux" }}
-      mpv-unwrapped
-      {{ end }}
     ] ++
+
+    {{- if eq .chezmoi.os "linux" }}
+    # Linux only
+    [
+      mpv-unwrapped
+      sheldon
+      xsel
+      zsh
+    ] ++
+    {{- end }}
 
     # Fonts
     [
@@ -59,7 +61,6 @@
       anime4k
       mpv-prescalers
       yabai-zsh-completions
-      zsh-defer
     ]);
 
   # This value determines the Home Manager release that your

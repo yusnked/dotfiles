@@ -1,5 +1,3 @@
-### zsh-syntax-highlighting の色設定
-# これ以上の文字数のコマンドラインをハイライトしない
 typeset -x ZSH_HIGHLIGHT_MAXLENGTH=512
 # 有効化するタイプライター main brackets pattern regexp cursor root line
 typeset -x ZSH_HIGHLIGHT_HIGHLIGHTERS
@@ -148,6 +146,3 @@ typeset -xA ZSH_HIGHLIGHT_REGEXP
     ZSH_HIGHLIGHT_REGEXP+=('\$\{[#^=~+]?[A-Za-z][0-9A-Za-z_]*(\[(-?[1-9][0-9]*|0|\*|@)\])?\}' "$co_arg")
     ZSH_HIGHLIGHT_REGEXP+=('\$\{[A-Za-z_][0-9A-Za-z_]*(\[(-?[1-9][0-9]*|0|\*|@)\])?((:?[-=+?]|::=|(#{1,2}[^#]|%{1,2}[^%]|/{1,2}[^/]))[^}]*)?\}' "$co_arg")
 }
-
-source "$NIX_DATA_DIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
-
