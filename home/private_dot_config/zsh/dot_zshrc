@@ -16,8 +16,11 @@ source "$ZDOTDIR/rc/directories.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/prompt.zsh"
 
+# zsh-defer dummy
+autoload -Uz _zsh-defer-dummy
+zsh-defer() { _zsh-defer-dummy "$@"; }
+
 # sheldon
-zsh-defer() { source "${*#* source }"; }
 if type sheldon &>/dev/null; then
     () {
         export SHELDON_CONFIG_DIR="$XDG_CONFIG_HOME/sheldon"
@@ -49,3 +52,8 @@ zsh-defer -p source "$XDG_CONFIG_HOME/fzf/fzf.sh"
 
 # zoxide
 zsh-defer -p source "$XDG_CONFIG_HOME/zoxide/zoxide.sh"
+
+zsh-defer -p ensure_zcompiled "$ZDOTDIR/.zshrc"
+zsh-defer -p unset -f ensure_zcompiled source
+
+# zprof | less

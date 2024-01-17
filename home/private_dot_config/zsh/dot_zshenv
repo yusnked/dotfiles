@@ -1,3 +1,21 @@
+# zmodload zsh/zprof && zprof >/dev/null
+
+function ensure_zcompiled {
+    local compiled="$1.zwc"
+    if [[ ! -r "$compiled" || "$1" -nt "$compiled" ]]; then
+        local pattern1="^${HOME}/\.config/.*$"
+        local pattern2="^${HOME}/\.local/share/sheldon.*$"
+        if [[ $1 =~ $pattern1 || $1 =~ $pattern2 ]]; then
+            zcompile $1
+        fi
+    fi
+}
+
+function source {
+    ensure_zcompiled $1
+    builtin source $1
+}
+
 typeset -xU path PATH
 
 export DOTS_OS="${DOTS_OS:-$(uname -s)}"
@@ -10,3 +28,4 @@ fi
 
 source "$HOME/.config/_b-shell/env.sh"
 
+ensure_zcompiled $ZDOTDIR/.zshenv

@@ -1,0 +1,26 @@
+local pattern="^[+-][12dmshpra]+$"
+while [[ $# > 0 ]]; do
+    case $1 in
+    [-+][12dmshpra]*)
+        if [[ $1 =~ $pattern ]]; then
+            shift
+        else
+            break
+        fi
+        ;;
+    -t)
+        shift
+        shift
+        ;;
+    -c)
+        shift
+        eval "$@"
+        return
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+
+"$@"
