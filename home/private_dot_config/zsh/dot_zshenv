@@ -3,8 +3,8 @@
 function ensure_zcompiled {
     local compiled="$1.zwc"
     if [[ ! -r "$compiled" || "$1" -nt "$compiled" ]]; then
-        local pattern1="^${HOME}/\.config/.*$"
-        local pattern2="^${HOME}/\.local/share/sheldon.*$"
+        local pattern1="^${XDG_CONFIG_HOME//./\\.}/.*$"
+        local pattern2="^${${XDG_DATA_HOME:-$HOME/.local/share}//./\\.}/sheldon/.*$"
         if [[ $1 =~ $pattern1 || $1 =~ $pattern2 ]]; then
             zcompile $1
         fi
