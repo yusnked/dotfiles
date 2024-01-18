@@ -1,0 +1,48 @@
+# Documentation: https://sheldon.cli.rs/Introduction.html
+
+shell = 'zsh'
+
+[plugins.zsh-defer]
+profiles = ['zsh']
+github = 'romkatv/zsh-defer'
+
+[plugins.zsh-vi-mode]
+profiles = ['zsh']
+github = 'jeffreytse/zsh-vi-mode'
+tag = 'v0.11.0'
+hooks.pre = 'source "$SHELDON_CONFIG_DIR/zsh-vi-mode-settings.zsh"'
+
+[plugins.bd]
+profiles = ['zsh']
+github = 'Tarrasch/zsh-bd'
+use = ['bd.zsh']
+apply = ["defer"]
+
+[plugins.zsh-completions]
+profiles = ['zsh']
+github = 'zsh-users/zsh-completions'
+apply = ['defer']
+
+[plugins.fzf-zsh]
+profiles = ['zsh']
+github = 'junegunn/fzf'
+use = ['*.zsh']
+apply = ['defer']
+hooks.pre = 'zsh-defer -p source "$SHELDON_CONFIG_DIR/fzf/fzf-settings.sh"'
+hooks.post = 'zsh-defer -p bindkey -M main -r "^[c"'
+
+[plugins.fzf-bash]
+profiles = ['bash']
+github = 'junegunn/fzf'
+use = ['*.bash']
+hooks.pre = 'source "$SHELDON_CONFIG_DIR/fzf/fzf-settings.sh"'
+
+[plugins.syntax-highlight]
+profiles = ['zsh']
+github = 'zsh-users/zsh-syntax-highlighting'
+tag = '0.8.0'
+apply = ['defer']
+hooks.pre = 'zsh-defer -p source "$SHELDON_CONFIG_DIR/zsh-syntax-highlight-settings.zsh"'
+
+[templates]
+defer = "{{ hooks | get: \"pre\" | nl }}{% for file in files %}zsh-defer -p source \"{{ file }}\"\n{% endfor %}{{ hooks | get: \"post\" | nl }}"

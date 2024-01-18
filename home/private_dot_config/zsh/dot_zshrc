@@ -21,19 +21,7 @@ autoload -Uz _zsh-defer-dummy
 zsh-defer() { _zsh-defer-dummy "$@"; }
 
 # sheldon
-if type sheldon &>/dev/null; then
-    () {
-        export SHELDON_CONFIG_DIR="$XDG_CONFIG_HOME/sheldon"
-        export SHELDON_CONFIG_FILE="$SHELDON_CONFIG_DIR/zsh-plugins.toml"
-        local cache_dir="$XDG_CACHE_HOME/sheldon"
-        local cache_file="$cache_dir/zsh-plugins.zsh"
-        if [[ ! -r $cache_file || $SHELDON_CONFIG_FILE -nt $cache_file ]]; then
-            mkdir -p $cache_dir
-            sheldon source > $cache_file
-        fi
-        source "$cache_file"
-    }
-fi
+source "$XDG_CONFIG_HOME/_b-shell/plugins.sh"
 
 # ===== Delayed loading from here down =====
 
@@ -47,11 +35,8 @@ zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/functions.zsh"
 
-# fzf
-zsh-defer -p source "$XDG_CONFIG_HOME/fzf/fzf.sh"
-
 # zoxide
-zsh-defer -p source "$XDG_CONFIG_HOME/zoxide/zoxide.sh"
+type zoxide &>/dev/null && zsh-defer -p -c 'eval "$(zoxide init zsh --hook pwd)"'
 
 zsh-defer -p ensure_zcompiled "$ZDOTDIR/.zshrc"
 zsh-defer -p unset -f ensure_zcompiled source
