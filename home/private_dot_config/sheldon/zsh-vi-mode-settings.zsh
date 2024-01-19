@@ -4,9 +4,10 @@ function zvm_config() {
 }
 
 # 遅延キーバインドが有効になっている場合、normalとvisualモードにキーバインドしたい場合はこの関数内でbindする。
-# function zvm_after_lazy_keybindings() {
-
-# }
+function zvm_after_lazy_keybindings() {
+    autoload -Uz bind-widget
+    bind-widget vicmd 'q' push-line-or-edit-and-enter-insert-mode
+}
 
 # zsh-vi-modeがモード変更したときに実行される関数
 function zvm_after_select_vi_mode() {

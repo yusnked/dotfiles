@@ -1,23 +1,26 @@
+# This file must be loaded after "zsh-vi-mode" is loaded.
+
 () {
-    # zsh-vi-modeを導入しているのでそっちでもキーバインドが追加される。viins以外はそっちに書く。
-    bindkey -v
-    # viinsモードの[^G]はプレフィクスキーとして使いたいので自身に割り当てられてるものを削除する。
-    bindkey -M viins -r '^g'
+    autoload -Uz bind-widget
 
-    bindkey -M viins '^gq' push-line-or-edit
-    bindkey -M viins '^g^q' push-line-or-edit
-    bindkey -M viins '^gh' run-help
-    bindkey -M viins '^g^h' run-help
+    if [[ -n $ZVM_VERSION ]]; then
+        local keymap='viins'
+        bindkey -v
+    else
+        local keymap='emacs'
+        bindkey -e
+    fi
 
-    # ' " ` ( { [ を入力したときに閉じる記号も入力し、すぐ削除したときに閉じる記号も削除するウィジェット
-    autoload -Uz _brackets-and-quotes-expantion _backward-delete-char-or-expantion
-    zle -N brackets-and-quotes-expantion _brackets-and-quotes-expantion
+    # ^g keybindings
+    bindkey -M $keymap -r '^g'
+    bindkey -M $keymap '^gh' run-help
+    bindkey -M $keymap '^g^h' run-help
+
     local key
     for key in \' \" \` \( \) \{ \} \[ \]; do
-        bindkey -M viins $key brackets-and-quotes-expantion
+        bind-widget $keymap $key brackets-and-quotes-expantion
     done
-    zle -N backward-delete-char-or-expantion _backward-delete-char-or-expantion
-    bindkey -M viins '^h' backward-delete-char-or-expantion
-    bindkey -M viins '^?' backward-delete-char-or-expantion
-}
+    bind-widget $keymap '^h' backward-delete-char-or-expantion
+    bind-widget $keymap '^?' backward-delete-char-or-expantion
 
+}

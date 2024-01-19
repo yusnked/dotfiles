@@ -1,0 +1,2 @@
+zle push-line-or-edit
+zle zvm_enter_insert_mode

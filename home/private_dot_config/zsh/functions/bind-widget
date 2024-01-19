@@ -1,0 +1,7 @@
+local keymap="$1"
+local string="$2"
+local widget="$3"
+
+autoload -Uz "_$widget"
+zle -N "$widget" "_$widget"
+bindkey -M "$keymap" "$string" "$widget"
