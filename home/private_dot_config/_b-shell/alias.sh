@@ -43,7 +43,7 @@ if which nvim &>/dev/null; then
     alias view='nvim -R'
 fi
 
-if which wezterm &>/dev/null; then
+if type wezterm &>/dev/null; then
     alias imgcat='wezterm imgcat'
 fi
 

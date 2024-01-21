@@ -25,11 +25,6 @@ source "$XDG_CONFIG_HOME/_b-shell/plugins.sh"
 
 # ===== Delayed loading from here down =====
 
-# Flatpak
-if [[ $DOTS_OS == Linux ]]; then
-    source "$XDG_CONFIG_HOME/flatpak/generate_flatpak_app_func.sh"
-fi
-
 zsh-defer -p source "$ZDOTDIR/rc/alias.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"

@@ -22,6 +22,8 @@ if [[ $DOTS_OS == Darwin ]]; then
     add-2path '/opt/homebrew/bin' unshift exists
 
     export BROWSER='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+elif [[ $DOTS_OS == Linux ]]; then
+    add-2path "$HOME/.local/flatpak" push exists
 fi
 
 # Nix multi-user mode
@@ -37,4 +39,3 @@ if [[ -r "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
 fi
 
 add-2path "$HOME/.local/bin" unshift exists
-
