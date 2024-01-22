@@ -1,0 +1,6 @@
+if [[ $(uname -s) == Linux ]]; then
+    export XCURSOR_PATH=/usr/share/icons
+    export XCURSOR_THEME=DMZ-Black
+fi
+
+[[ -r $HOME/.bashrc ]] && source "$HOME/.bashrc"
