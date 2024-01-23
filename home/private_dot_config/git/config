@@ -1,11 +1,14 @@
 [alias]
 	a   = add
+	aa  = add -A
+	ai  = add -i
 	ap  = add -p
+	au  = add -u
 	b   = branch
+	c   = commit
 	ca  = commit --amend
 	can = commit --amend --no-edit
-	cm  = commit
-	cmm = commit -m
+	cm  = commit -m
 	d   = diff
 	ds  = diff --staged
 	l   = log --graph --pretty=format:'%C(yellow)%h%Creset%Cred%d%Creset %Cgreen[%ad] %C(bold blue)<%an>%Creset%n %s%n' --date=format:"%y/%m/%d" --all --abbrev-commit
@@ -19,6 +22,11 @@
 	rs  = restore --source
 	s   = status -sb
 	sw  = switch
+	swc = switch -c
+	x   = commit --no-gpg-sign
+	xa  = commit --no-gpg-sign --amend
+	xan = commit --no-gpg-sign --amend --no-edit
+	xm  = commit --no-gpg-sign -m
 [color]
 	ui = true
 [commit]
