@@ -1,0 +1,14 @@
+local ret="$?"
+
+if [[ $_prompt_osc133_executing != 0 ]]; then
+    _PROMPT_OSC133_SAVE_PS1="$PS1"
+    _PROMPT_OSC133_SAVE_PS2="$PS2"
+    PS1=$'%{\e]133;P;k=i\a%}'$PS1$'%{\e]133;B\a\e]122;> \a%}'
+    PS2=$'%{\e]133;P;k=s\a%}'$PS2$'%{\e]133;B\a%}'
+fi
+
+if [[ -n $_prompt_osc133_executing ]]; then
+    printf '\e]133;D;%s;aid=%s\a' "$ret" "$$"
+fi
+printf '\e]133;A;cl=m;aid=%s\a' "$$"
+_prompt_osc133_executing=0
