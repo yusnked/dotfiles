@@ -1,0 +1,184 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+[](fg:arrow1)\
+[$os( (\\[$shell\\])$username(@$hostname) )](bold fg:black bg:arrow1)\
+[](fg:arrow1 bg:arrow2)\
+[ $directory](bold fg:black bg:arrow2)\
+[](fg:arrow2 bg:arrow3)\
+[( $git_branch$git_commit$git_state$git_status)](bold fg:white bg:arrow3)\
+[](fg:arrow3 bg:arrow4)\
+[( $shlvl$status$sudo)](bold fg:white bg:arrow4)\
+[](fg:arrow4) \
+$all
+"""
+palette = 'cyberpunk'
+
+[aws]
+symbol = ' '
+
+[directory]
+disabled = false
+format = "$path $read_only"
+read_only = ' '
+truncation_symbol = '…/'
+
+[docker_context]
+symbol = ' '
+
+[git_branch]
+disabled = false
+format = "$symbol$branch(:$remote_branch) "
+only_attached = true
+
+[git_commit]
+disabled = false
+format = "((󰜘 $hash)$tag )"
+tag_disabled = false
+tag_symbol = ' 󰓹 '
+
+[git_state]
+disabled = false
+format = "\\($state( $progress_current/$progress_total)\\) "
+
+[git_status]
+disabled = false
+format = "(\\[$all_status$ahead_behind\\] )"
+
+[golang]
+symbol = '󰟓 '
+
+[hostname]
+disabled = false
+format = "$hostname"
+ssh_only = true
+
+[lua]
+symbol = ' '
+
+[nix_shell]
+symbol = ' '
+
+[nodejs]
+symbol = ' '
+
+[os]
+disabled = false
+format = " $symbol"
+[os.symbols]
+Alpaquita = ' '
+Alpine = ' '
+Amazon = ' '
+Android = ' '
+Arch = ' '
+Artix = ' '
+CentOS = ' '
+Debian = ' '
+DragonFly = ' '
+Emscripten = ' '
+EndeavourOS = ' '
+Fedora = ' '
+FreeBSD = ' '
+Garuda = '󰛓 '
+Gentoo = ' '
+HardenedBSD = '󰞌 '
+Illumos = '󰈸 '
+Linux = ' '
+Mabox = ' '
+Macos = ' '
+Manjaro = ' '
+Mariner = ' '
+MidnightBSD = ' '
+Mint = ' '
+NetBSD = ' '
+NixOS = ' '
+OpenBSD = '󰈺 '
+openSUSE = ' '
+OracleLinux = '󰌷 '
+Pop = ' '
+Raspbian = ' '
+Redhat = ' '
+RedHatEnterprise = ' '
+Redox = '󰀘 '
+Solus = '󰠳 '
+SUSE = ' '
+Ubuntu = ' '
+Unknown = ' '
+Windows = '󰍲 '
+
+[php]
+symbol = ' '
+
+[python]
+symbol = ' '
+
+[ruby]
+symbol = ' '
+
+[rust]
+symbol = ' '
+
+[shell]
+disabled = false
+format = '$indicator'
+zsh_indicator = ''
+
+[shlvl]
+disabled = false
+format = "$symbol$shlvl "
+symbol = " "
+
+[status]
+disabled = false
+format = "$symbol$status ($signal_name )"
+symbol = "󱖫 "
+
+[sudo]
+disabled = false
+format = "$symbol "
+symbol = "#"
+
+[username]
+disabled = false
+format = "$user"
+show_always = false
+
+[custom.os]
+command = '''
+symbol=$(starship module os)
+if sudo -n true 2>/dev/null; then
+    echo -ne "\\e[38;2;255;215;0m${symbol}\\e[0m"
+else
+    echo -ne "\\e[38;2;09;12;12m${symbol}\\e[0m"
+fi
+'''
+disabled = true
+format = "$output"
+shell = ['bash']
+when = ':'
+
+# https://www.color-hex.com/color-palette/14887
+[palettes.cyberpunk]
+arrow1 = '#00ff9f'
+arrow2 = '#00b8ff'
+arrow3 = '#001eff'
+arrow4 = '#bd00ff'
+black = '#090c0c'
+blue = '#001eff'
+cyan = '#00b8ff'
+green = '#00ff9f'
+red = '#ff4040'
+white = '#ffffff'
+yellow = '#ffd34d'
+
+### Nerd Font
+#   \ue0b0     nf-pl-left_hard_divider
+#   \ue0b1     nf-pl-left_soft_divider
+#   \ue0b2     nf-pl-right_hard_divider
+#   \ue0b3     nf-pl-right_soft_divider
+#   \ue0b4     nf-ple-right_half_circle_thick
+#   \ue0b6     nf-ple-left_half_circle_thick
+#   \ue0b8     nf-ple-lower_left_triangle
+#   \ue0ba     nf-ple-lower_right_triangle
+#   \ue0bc     nf-ple-upper_left_triangle
+#   \ue0be     nf-ple-upper_right_triangle
