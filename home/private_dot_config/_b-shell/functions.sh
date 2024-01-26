@@ -1,4 +1,14 @@
-# mkdirして作成したディレクトリにcdする
+function prompt-toggle() {
+    local -r file="$XDG_STATE_HOME/no_starship_prompt"
+    if [[ -e $file ]]; then
+        rm "$file"
+    else
+        mkdir -p "$XDG_STATE_HOME"
+        touch "$file"
+    fi
+    exec "$DOTS_ISHELL"
+}
+
 function mkcd() {
     command mkdir -p "$@" && for arg in "$@"; do
         [ -d "$arg" -a -x "$arg" ] && cd "$arg" && break 1
