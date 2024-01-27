@@ -31,7 +31,15 @@ zsh-defer -p source "$ZDOTDIR/rc/completion.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/functions.zsh"
 
 # zoxide
-type zoxide &>/dev/null && zsh-defer -p -c 'eval "$(zoxide init zsh --hook pwd)"'
+zsh-defer -p -c 'type zoxide &>/dev/null && eval "$(zoxide init zsh --hook pwd)"'
+
+# LS_COLORS setting by vivid
+zsh-defer -p -c '() {
+    if type vivid &>/dev/null; then
+        [[ $COLORTERM != truecolor ]] && local no_tc=1
+        export LS_COLORS=$(eval vivid ${no_tc+--color-mode 8-bit} generate dracula)
+    fi
+}'
 
 zsh-defer -p ensure_zcompiled "$ZDOTDIR/.zshrc"
 zsh-defer -p unset -f ensure_zcompiled source
