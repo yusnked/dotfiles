@@ -4,33 +4,42 @@ set -eu
 SCRIPT_NAME="${0##*/}"
 GITHUB_USERNAME='yusnked'
 DOTFILES_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/chezmoi"
-BSHELL_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/_b-shell"
 
 # Install chezmoi
-PATH="$HOME/.local/bin:$PATH"
-if ! type chezmoi &>/dev/null || ! [[ -d $DOTFILES_DIR ]]; then
-    sh -c "$(curl -fsLS get.chezmoi.io/lb)" -- init --apply "$GITHUB_USERNAME"
+CHEZMOI_BIN="$HOME/.local/bin/chezmoi"
+if [[ ! -e $CHEZMOI_BIN ]]; then
+    BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS chezmoi.io/getlb)"
+    sleep 1
+fi
 
-    echo "[$SCRIPT_NAME/INFO] Chezmoi is installed."
+if grep -q 'url = https://github.com/yusnked/dotfiles.git' "$DOTFILES_DIR/.git/config" 2>/dev/null; then
+    "$CHEZMOI_BIN" update
+    echo "[$SCRIPT_NAME/INFO] Run 'chezmoi update'."
 else
-    chezmoi update
+    "$CHEZMOI_BIN" init --apply "$GITHUB_USERNAME"
+    echo "[$SCRIPT_NAME/INFO] Chezmoi is installed."
 fi
 
 sleep 1
 
-# Install Nix
-cd "$DOTFILES_DIR"
-bash ./install_scripts/nix-install.sh
+# Install Nix by Determinate Nix Installer
+NIX_BIN='/nix/var/nix/profiles/default/bin/nix'
+if [[ ! -e $NIX_BIN ]]; then
+    export NIX_INSTALLER_DIAGNOSTIC_ENDPOINT=''
+    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix |
+        sh -s -- install --no-modify-profile --no-confirm
 
-echo "[$SCRIPT_NAME/INFO] Nix is installed."
+    echo "[$SCRIPT_NAME/INFO] Nix is installed."
+fi
 
 sleep 1
 
-# home-manager install
-source "$BSHELL_DIR/env.sh"
-nix run 'nixpkgs#home-manager' -- switch
+source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 
-echo "[$SCRIPT_NAME/INFO] home-manager is installed."
+# home-manager install
+"$NIX_BIN" run 'nixpkgs#home-manager' -- switch
+
+echo "[$SCRIPT_NAME/INFO] Run 'home-manager switch'."
 
 cat <<-EOF
 [$SCRIPT_NAME/INFO] dotfiles installation is complete!
