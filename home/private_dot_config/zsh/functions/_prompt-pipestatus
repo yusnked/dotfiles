@@ -1,17 +1,19 @@
 # パイプステータスを装飾してプロンプト用に表示する。129~159をシグナル名にする (zshシェル変数のsignalsを使用)
-typeset -ar +g exit_status=( ${pipestatus[*]} )
-local status_string
-local command_status
 
-# 色設定 color256コマンドを参照
+local status_array=( ${pipestatus[*]} )
+[[ $# > 0 ]] && status_array=( ${*[*]} )
+
 typeset -r +g turecolor='%F{070}'
 typeset -r +g falsecolor='%F{124}'
 typeset -r +g sigcolor='%F{136}'
 typeset -r +g normalcolor='%F{247}'
 
-for command_status in $exit_status[@]; do
-    case $command_status in
-        0) status_string+=" ${turecolor}${command_status}%f" ;;
+local status_string
+local status_code
+
+for status_code in ${status_array[*]}; do
+    case $status_code in
+        0) status_string+=" ${turecolor}${status_code}%f" ;;
         129) status_string+=" ${sigcolor}${signals[2]}%f" ;;
         130) status_string+=" ${sigcolor}${signals[3]}%f" ;;
         131) status_string+=" ${sigcolor}${signals[4]}%f" ;;
@@ -43,9 +45,8 @@ for command_status in $exit_status[@]; do
         157) status_string+=" ${sigcolor}${signals[30]}%f" ;;
         158) status_string+=" ${sigcolor}${signals[31]}%f" ;;
         159) status_string+=" ${sigcolor}${signals[32]}%f" ;;
-        *) status_string+=" ${falsecolor}${command_status}%f" ;;
+        *) status_string+=" ${falsecolor}${status_code}%f" ;;
     esac
 done
 
-typeset -g _prompt_pipestatus_var="${normalcolor}[%f${status_string[2,-1]}${normalcolor}]%f"
-
+_prompt_pipestatus_var="${normalcolor}[%f${status_string[2,-1]}${normalcolor}]%f"
