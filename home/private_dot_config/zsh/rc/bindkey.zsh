@@ -13,6 +13,8 @@
 
     # ^g keybindings
     bindkey -M $keymap -r '^g'
+    bindkey -M $keymap '^gg' complete-migemo
+    bindkey -M $keymap '^g^g' complete-migemo
     bindkey -M $keymap '^gh' run-help
     bindkey -M $keymap '^g^h' run-help
 
@@ -22,5 +24,4 @@
     done
     bind-widget $keymap '^h' backward-delete-char-or-expantion
     bind-widget $keymap '^?' backward-delete-char-or-expantion
-
 }

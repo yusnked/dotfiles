@@ -22,3 +22,6 @@ setopt list_packed
 autoload colors
 zstyle ':completion:*' list-colors ''
 
+# migemoでファイル補完
+autoload -Uz _complete-migemo
+zle -C complete-migemo menu-complete _complete-migemo
