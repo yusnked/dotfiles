@@ -9,6 +9,7 @@ local options = {
     automatically_reload_config = false,
     check_for_updates = false,
     detect_password_input = true,
+    disable_default_key_bindings = true,
     key_map_preference = 'Physical',
     macos_forward_to_ime_modifier_mask = 'SHIFT|CTRL',
     quick_select_patterns = quickSelectPatterns,
@@ -25,4 +26,3 @@ function module.apply_to_config(config)
 end
 
 return module
-
