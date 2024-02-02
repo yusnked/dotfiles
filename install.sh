@@ -3,7 +3,7 @@ set -eu
 
 SCRIPT_NAME="${0##*/}"
 GITHUB_USERNAME='yusnked'
-DOTFILES_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/chezmoi"
+DOTFILES_DIR="${XDG_DATA_HOME:=${HOME}/.local/share}/chezmoi"
 
 # Install chezmoi
 CHEZMOI_BIN="$HOME/.local/bin/chezmoi"
@@ -38,6 +38,15 @@ source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 
 # home-manager install
 "$NIX_BIN" run 'nixpkgs#home-manager' -- switch
+
+# Fonts symlink
+FONTS_DIR="$XDG_DATA_HOME/fonts"
+FONTS_SYMLINK="$FONTS_DIR/HomeManager"
+if [[ ! -L $FONTS_SYMLINK && $(uname -s) == Linux ]]; then
+    mkdir -p "$FONTS_DIR"
+    ln -s "$HOME/.nix-profile/share/fonts" "$FONTS_SYMLINK"
+    fc-cache -f
+fi
 
 echo "[$SCRIPT_NAME/INFO] Run 'home-manager switch'."
 
