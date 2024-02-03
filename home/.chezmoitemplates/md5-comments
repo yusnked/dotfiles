@@ -1,0 +1,10 @@
+{{ $md5 := "" -}}
+{{ if lookPath "md5sum" -}}
+{{   $md5 = "md5sum" -}}
+{{ else if lookPath "md5" -}}
+{{   $md5 = "md5" -}}
+{{ end -}}
+
+{{ if ne $md5 "" -}}
+{{   output "find" . "-type" "f" "-name" "*" "-exec" $md5 "{}" "+" | comment "# " -}}
+{{ end -}}

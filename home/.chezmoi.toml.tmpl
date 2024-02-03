@@ -1,20 +1,45 @@
-{{/* chezmoi golang templates reference */}}
-{{/* https://www.chezmoi.io/user-guide/templating/ */}}
-{{/* https://www.chezmoi.io/reference/templates/ */}}
+{{- /* chezmoi golang templates reference */ -}}
+{{- /* https://www.chezmoi.io/user-guide/templating/ */ -}}
+{{- /* https://www.chezmoi.io/reference/templates/ */ -}}
 
-{{/* Set nix system value */}}
-{{/* nix: https://github.com/NixOS/nixpkgs/blob/master/lib/systems/doubles.nix */}}
-{{/* chezmoi: https://pkg.go.dev/internal/goarch#GOARCH */}}
-{{- $nixSystem := "" }}
-{{- if eq .chezmoi.arch "arm64" }}
-{{-   $nixSystem = (printf "%s%s" "aarch64-" .chezmoi.os) }}
-{{- else if eq .chezmoi.arch "amd64" }}
-{{-   $nixSystem = (printf "%s%s" "x86_64-" .chezmoi.os) }}
-{{- else }}
-{{-   $nixSystem = "null" }}
-{{- end }}
+{{- /* XDG Base Directory */ -}}
+{{ $xdgCache := env "XDG_CACHE_HOME" -}}
+{{ if not $xdgCache -}}
+{{   $xdgCache = joinPath .chezmoi.homeDir ".cache" -}}
+{{ end -}}
+{{ $xdgConfig := env "XDG_CONFIG_HOME" -}}
+{{ if not $xdgConfig -}}
+{{   $xdgConfig = joinPath .chezmoi.homeDir ".config" -}}
+{{ end -}}
+{{ $xdgConfigSrc := output .chezmoi.executable "source-path" $xdgConfig | trim -}}
+{{ $xdgData := env "XDG_DATA_HOME" -}}
+{{ if not $xdgData -}}
+{{   $xdgData = joinPath .chezmoi.homeDir ".local/share" -}}
+{{ end -}}
+{{ $xdgState := env "XDG_STATE_HOME" -}}
+{{ if not $xdgState -}}
+{{   $xdgState = joinPath .chezmoi.homeDir ".local/state" -}}
+{{ end -}}
+
+{{- /* Nix */ -}}
+{{- /* nix:     https://github.com/NixOS/nixpkgs/blob/master/lib/systems/doubles.nix */ -}}
+{{- /* chezmoi: https://pkg.go.dev/internal/goarch#GOARCH */ -}}
+{{ $nixSystem := "" -}}
+{{ if eq .chezmoi.arch "arm64" -}}
+{{   $nixSystem = (print "aarch64-" .chezmoi.os) -}}
+{{ else if eq .chezmoi.arch "amd64" -}}
+{{   $nixSystem = (print "x86_64-" .chezmoi.os) -}}
+{{ end -}}
 
 [data]
-chezmoi.nixSystem = {{ $nixSystem | quote }}
-chezmoi.mypkgsDir = {{ joinPath .chezmoi.homeDir ".config/nix/mypkgs" | quote }}
-chezmoi.mypkgsPackagesSource = {{ joinPath .chezmoi.sourceDir "private_dot_config/nix/mypkgs/packages" | quote }}
+# Nix
+nix.system       = {{ $nixSystem | quote }}
+nix.mypkgsDir    = {{ joinPath $xdgConfig "nix/mypkgs" | quote }}
+nix.mypkgsDirSrc = {{ joinPath $xdgConfigSrc "nix/mypkgs" | quote }}
+
+# XDG Base Directory
+xdg.cache     = {{ $xdgCache | quote }}
+xdg.config    = {{ $xdgConfig | quote }}
+xdg.configSrc = {{ $xdgConfigSrc | quote }}
+xdg.data      = {{ $xdgData | quote }}
+xdg.state     = {{ $xdgState | quote }}

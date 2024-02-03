@@ -1,4 +1,4 @@
-# vim: ts=2
+# vim: et ts=2
 
 {
   description = "Home Manager configuration of {{ .chezmoi.username }}";
@@ -11,18 +11,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mypkgs = {
-      url = "{{ .chezmoi.mypkgsDir }}";
+      url = "{{ .nix.mypkgsDir }}";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs = { nixpkgs, home-manager, mypkgs, ... }:
     let
-      system = "{{ .chezmoi.nixSystem }}";
+      system = "{{ .nix.system }}";
       pkgs = import nixpkgs {
         overlays = [
           (final: prev: { __mypkgs = mypkgs.packages.${system}; })
-          {{ $overlaysDir := joinPath .chezmoi.sourceDir "private_dot_config/home-manager/overlays" -}}
+          {{ $overlaysDir := joinPath .xdg.configSrc "home-manager/overlays" -}}
           {{ if stat $overlaysDir -}}
           {{   $overlays := glob (joinPath $overlaysDir "[^.]*") | sortAlpha -}}
           {{   range $overlays -}}

@@ -1,6 +1,6 @@
-# vim: ts=2
+# vim: et ts=2
 
-{{ $packages := glob (joinPath .chezmoi.mypkgsPackagesSource "[^.]*") | sortAlpha -}}
+{{ $packages := glob (joinPath .nix.mypkgsDirSrc "packages/[^.]*") | sortAlpha -}}
 {{ $pattern := "^.*/(.+?)\\.nix$" -}}
 
 {

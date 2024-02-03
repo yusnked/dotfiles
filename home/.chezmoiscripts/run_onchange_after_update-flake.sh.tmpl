@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# {{ template "md5-comments" (joinPath .nix.mypkgsDir "packages") }}
+
+if type nix &>/dev/null; then
+    nix flake update --flake "{{ joinPath .xdg.config "home-manager" }}"
+fi
