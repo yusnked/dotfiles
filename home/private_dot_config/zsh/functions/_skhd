@@ -1,0 +1,11 @@
+#compdef skhd
+
+local args=(
+    '--install-service[Install skhd service]'
+    '--restart-service[Restart skhd service]'
+    '--start-service[Start skhd service]'
+    '--stop-service[Stop skhd service]'
+    '--uninstall-service[Uninstall skhd service]'
+)
+
+_values 'args' $args
