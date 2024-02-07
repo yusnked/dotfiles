@@ -1,3 +1,4 @@
+// This file is JSONC(JSON with comments)
 {
     "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
     "editor.detectIndentation": false,
@@ -12,21 +13,25 @@
     "editor.roundedSelection": false,
     "editor.tabSize": 4,
     "editor.tokenColorCustomizations": {
-        "comments": "#999",
+        "comments": "#999"
     },
     "editor.unicodeHighlight.includeComments": false,
     "explorer.compactFolders": false,
     "explorer.confirmDelete": false,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    },
+    "extensions.ignoreRecommendations": true,
     "files.autoGuessEncoding": true,
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "search.smartCase": true,
     "terminal.integrated.env.linux": {
-        "DOTS_TERMINAL": "vscode",
+        "DOTS_TERMINAL": "vscode"
     },
     "terminal.integrated.env.osx": {
-        "DOTS_TERMINAL": "vscode",
+        "DOTS_TERMINAL": "vscode"
     },
     "terminal.integrated.fontSize": 14,
     "workbench.colorTheme": "Default Dark+",
@@ -34,28 +39,18 @@
     "workbench.iconTheme": "material-icon-theme",
     "workbench.reduceMotion": "on",
     "workbench.tree.renderIndentGuides": "always",
-
     "[ruby]": {
-        "editor.tabSize": 2,
+        "editor.tabSize": 2
     },
     "[erb]": {
-        "editor.tabSize": 2,
+        "editor.tabSize": 2
     },
-
     "[nix]": {
-        "editor.tabSize": 2,
+        "editor.tabSize": 2
     },
-
     // Lua (Lua Language Server)
     "Lua.diagnostics.globals": [
         "mp", // mpv
         "vim" // neovim
-    ],
-
-    // VSCode Neovim
-    "vscode-neovim.neovimExecutablePaths.darwin": "{{ .chezmoi.homeDir }}/.nix-profile/bin/nvim",
-    "vscode-neovim.neovimInitVimPaths.darwin": "{{ .chezmoi.homeDir }}/.config/nvim/init.lua",
-    "extensions.experimental.affinity": {
-        "asvetliakov.vscode-neovim": 1
-    }
+    ]
 }
