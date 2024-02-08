@@ -4,6 +4,7 @@ set -eu
 SCRIPT_NAME="${0##*/}"
 GITHUB_USERNAME='yusnked'
 DOTFILES_DIR="${XDG_DATA_HOME:=${HOME}/.local/share}/chezmoi"
+BSHELL_ENV="${XDG_CONFIG_HOME:-${HOME}/.config}/_b-shell/env.sh"
 
 # Install chezmoi
 CHEZMOI_BIN="$HOME/.local/bin/chezmoi"
@@ -49,6 +50,9 @@ if [[ ! -L $FONTS_SYMLINK && $(uname -s) == Linux ]]; then
 fi
 
 echo "[$SCRIPT_NAME/INFO] Run 'home-manager switch'."
+
+source "$BSHELL_ENV"
+"$CHEZMOI_BIN" apply
 
 cat <<-EOF
 [$SCRIPT_NAME/INFO] dotfiles installation is complete!
