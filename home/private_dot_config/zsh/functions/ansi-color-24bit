@@ -1,0 +1,42 @@
+local -r COUNT=$((${1:-6} - 1))
+if ! ((COUNT >= 1)); then
+    echo 'Error: $1: The number of columns is an integer greater than or equal to 2' >&2
+    return 1
+fi
+
+local -r MAX=255
+local -r INTERVAL=$((MAX / COUNT))
+local red=0 green=0 blue=0
+while ((blue <= MAX)); do
+    [[ $blue == $((INTERVAL * COUNT)) ]] && blue=$MAX
+    green=0
+    while ((green <= MAX)); do
+        [[ $green == $((INTERVAL * COUNT)) ]] && green=$MAX
+        red=0
+        while ((red <= MAX)); do
+            if [[ $red == $((INTERVAL * COUNT)) ]]; then
+                red=$MAX
+                printf '\e[38;2;%d;%d;%dm #%02X%02X%02X\e[m\n' $red $green $blue $red $green $blue
+            else
+                printf '\e[38;2;%d;%d;%dm #%02X%02X%02X\e[m' $red $green $blue $red $green $blue
+            fi
+            red=$((red + INTERVAL))
+        done
+        green=$((green + INTERVAL))
+    done
+    blue=$((blue + INTERVAL))
+done
+
+cat <<EOS
+
+fg: \e[38;2;{r};{g};{b}m{text}\e[39m
+bg: \e[48;2;{r};{g};{b}m{text}\e[49m
+reset: \e[0m or \e[m
+ESC: \e, \033 or \x1b
+
+e.g.)
+EOS
+
+echo -e ' \\e[38;2;255;0;0mhello world!\\e[0m\n -> \e[38;2;255;0;0mhello world!\e[0m'
+echo -e ' \\e[48;2;0;153;153;38;2;255;0;0mhello\\e[49m world!\\e[0m\n -> \e[48;2;0;153;153;38;2;255;0;0mhello\e[49m world!\e[0m'
+echo -e '\nhttps://en.wikipedia.org/wiki/ANSI_escape_code#24-bit'
