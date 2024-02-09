@@ -4,7 +4,7 @@ source "$HOME/.config/_b-shell/env.sh"
 case "$-" in
 *i*)
     source "$XDG_CONFIG_HOME/_b-shell/env_interactive.sh"
-    source "$XDG_CONFIG_HOME/_b-shell/alias.sh"
+    source "$XDG_CONFIG_HOME/_b-shell/alias/commands-alias.sh"
     source "$XDG_CONFIG_HOME/_b-shell/functions.sh"
 
     HISTSIZE=10000

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eu
+
+{{ $aliasDir := joinPath .xdg.config "_b-shell/alias" -}}
+{{ $aliasDirSrc := joinPath .xdg.configSrc "_b-shell/alias" -}}
+{{ template "md5-comments" (joinPath $aliasDirSrc "commands") -}}
+
+readonly OUTPUT_FILE='{{ $aliasDir }}/commands-alias.sh'
+rm "$OUTPUT_FILE" 2>/dev/null || true
+
+{{ $commands := glob (joinPath $aliasDirSrc "commands/*.sh") | sortAlpha -}}
+{{ range $commands -}}
+{{   $command := . | replaceAllRegex "^.*/([0-9]+_)?(.+?)\\.sh$" "${2}" -}}
+file="if type {{ $command }} &>/dev/null; then
+$(cat {{ . }})
+fi
+"
+echo "$file" >> "$OUTPUT_FILE"
+{{ end -}}

@@ -1,0 +1,5 @@
+#compdef cdr
+
+local root_dir="$(git rev-parse --show-toplevel 2>/dev/null || echo "$HOME")"
+
+_files -/ -W "$root_dir"
