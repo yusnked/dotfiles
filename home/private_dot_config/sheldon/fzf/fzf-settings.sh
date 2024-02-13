@@ -5,7 +5,6 @@ export FZF_DEFAULT_OPTS='
     --cycle
     --exact
     --multi
-    --no-unicode
     --preview="\"$SHELDON_CONFIG_DIR/fzf/preview.sh\" {}"
     --preview-window="up,hidden,~3"
     --bind="ctrl-d:preview-half-page-down"
