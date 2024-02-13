@@ -1,0 +1,74 @@
+layouts:
+  - tall
+  - fullscreen
+  # - tall-right
+  - wide
+  - two-pane
+  # - middle-wide
+  # - 3column-left
+  # - 3column-right
+  # - 4column-left
+  # - 4column-right
+  # - column
+  # - row
+  # - floating
+  # - widescreen-tall
+  # - widescreen-tall-right
+  # - bsp
+
+mod1: [option]
+mod2: [option, shift]
+
+cycle-layout: { mod: mod2, key: n }
+cycle-layout-backward: { mod: mod2, key: p }
+
+select-fullscreen-layout: { mod: mod1, key: f }
+
+focus-cw: { mod: mod1, key: k }
+focus-ccw: { mod: mod1, key: j }
+focus-screen-cw: { mod: mod1, key: n }
+focus-screen-ccw: { mod: mod1, key: p }
+focus-main: { mod: mod1, key: m }
+
+shrink-main: { mod: mod1, key: h }
+expand-main: { mod: mod1, key: l }
+increase-main: { mod: mod1, key: ',' }
+decrease-main: { mod: mod1, key: '.' }
+
+swap-cw: { mod: mod2, key: k }
+swap-ccw: { mod: mod2, key: j }
+swap-screen-cw: { mod: mod2, key: l }
+swap-screen-ccw: { mod: mod2, key: h }
+swap-main: { mod: mod2, key: m }
+
+disable-padding-on-builtin-display: true
+window-margins: true
+smart-window-margins: false
+window-margin-size: 10
+
+mouse-swaps-windows: true
+mouse-resizes-windows: true
+
+window-resize-step: 5
+
+debug-layout-info: false
+
+# Disable
+select-tall-layout: { mod: '<NONE>', key: '<NONE>' }
+select-wide-layout: { mod: '<NONE>', key: '<NONE>' }
+select-column-layout: { mod: '<NONE>', key: '<NONE>' }
+throw-space-left: { mod: '<NONE>', key: '<NONE>' }
+throw-space-right: { mod: '<NONE>', key: '<NONE>' }
+display-current-layout: { mod: '<NONE>', key: '<NONE>' }
+
+float-small-windows: true
+floating-is-blacklist: true
+floating:
+  - 'com.apple.finder'
+  - 'com.apple.systempreferences'
+  - 'com.linguee.DeepLCopyTranslator'
+  - 'com.readdle.smartemail-Mac'
+  - 'com.runningwithcrayons.Alfred'
+  - id: 'com.parallels.desktop.console'
+    window-titles:
+      - 'コントロール センター'
