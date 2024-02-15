@@ -3,31 +3,15 @@ function zvm_config() {
     ZVM_LAZY_KEYBINDINGS=true
 }
 
-# 遅延キーバインドが有効になっている場合、normalとvisualモードにキーバインドしたい場合はこの関数内でbindする。
+# 遅延キーバインド有効時, normalとvisualモードへのbindはこの関数内でする.
 function zvm_after_lazy_keybindings() {
+    bindkey -M vicmd '^r' redo
+
     autoload -Uz bind-widget
     bind-widget vicmd 'q' push-line-or-edit-and-enter-insert-mode
 }
 
-# zsh-vi-modeがモード変更したときに実行される関数
-function zvm_after_select_vi_mode() {
-    #プロンプトに現在のコマンドモードを表示する用の変数
-    typeset -g mode_stat
-    case $ZVM_MODE in
-    $ZVM_MODE_NORMAL)
-        mode_stat='n'
-        ;;
-    $ZVM_MODE_INSERT)
-        mode_stat=' '
-        ;;
-    $ZVM_MODE_VISUAL)
-        mode_stat='v'
-        ;;
-    $ZVM_MODE_VISUAL_LINE)
-        mode_stat='V'
-        ;;
-    $ZVM_MODE_REPLACE)
-        mode_stat='r'
-        ;;
-    esac
-}
+# zsh-vi-modeがモード変更したときに実行される関数.
+# function zvm_after_select_vi_mode() {
+#
+# }
