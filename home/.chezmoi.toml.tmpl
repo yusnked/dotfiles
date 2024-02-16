@@ -38,8 +38,11 @@ nix.mypkgsDir    = {{ joinPath $xdgConfig "nix/mypkgs" | quote }}
 nix.mypkgsDirSrc = {{ joinPath $xdgConfigSrc "nix/mypkgs" | quote }}
 
 # XDG Base Directory
+{{ $trimHomeDir := print .chezmoi.homeDir "/" -}}
 xdg.cache     = {{ $xdgCache | quote }}
 xdg.config    = {{ $xdgConfig | quote }}
+xdg.configR   = {{ $xdgConfig | trimPrefix $trimHomeDir | quote }}
 xdg.configSrc = {{ $xdgConfigSrc | quote }}
 xdg.data      = {{ $xdgData | quote }}
+xdg.dataR     = {{ $xdgData | trimPrefix $trimHomeDir | quote }}
 xdg.state     = {{ $xdgState | quote }}
