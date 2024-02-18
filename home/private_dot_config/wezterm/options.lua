@@ -16,6 +16,7 @@ local options = {
     quote_dropped_files = 'Posix',
     scrollback_lines = 5000,
     send_composed_key_when_right_alt_is_pressed = false,
+    term = 'wezterm',
     treat_east_asian_ambiguous_width_as_wide = false,
 }
 

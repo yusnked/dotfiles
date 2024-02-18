@@ -1,4 +1,5 @@
 function zvm_config() {
+    [[ $TERM == wezterm ]] && ZVM_TERM='xterm-256color'
     ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
     ZVM_LAZY_KEYBINDINGS=true
 }
