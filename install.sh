@@ -54,8 +54,8 @@ echo "[$SCRIPT_NAME/INFO] Run 'home-manager switch'."
 source "$BSHELL_ENV"
 "$CHEZMOI_BIN" apply
 
-# Install tmux-256color
-bash "$DOTFILES_DIR/install_scripts/tmux-256color-install.sh"
+# Install terminfo
+bash "$DOTFILES_DIR/install_scripts/terminfo-install.sh"
 
 cat <<-EOF
 [$SCRIPT_NAME/INFO] dotfiles installation is complete!
