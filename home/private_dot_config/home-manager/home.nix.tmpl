@@ -1,14 +1,10 @@
-# vim: ts=2
+# vim: et ts=2
 
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
-  # Home Manager needs a bit of information about you and the
-  # paths it should manage.
-  home.username = "{{- .chezmoi.username -}}";
-  home.homeDirectory = "{{- .chezmoi.homeDir -}}";
-
-  # Packages that should be installed to the user profile.
+  home.username = "{{ .chezmoi.username }}";
+  home.homeDirectory = "{{ .chezmoi.homeDir }}";
   home.packages = with pkgs;
     [
       bashInteractive
@@ -16,6 +12,7 @@
       cacert
       cmigemo
       coreutils
+      curl
       diffutils
       eza
       fd
@@ -23,29 +20,35 @@
       fzf
       gawk
       gh
+      ghq
       git
       gnugrep
+      gnupg
       gnused
       gnutar
       groff
       gzip
       hexyl
       home-manager
+      imagemagick
       jq
       mmv-go
       neovim
       p7zip
+      pinentry
       ripgrep
       starship
       tmux
       vivid
       xdg-utils
+      yubikey-manager
       zoxide
     ] ++
 
     {{- if eq .chezmoi.os "linux" }}
     # Linux only
     [
+      ffmpeg-full
       mpv-unwrapped
       sheldon
       xsel
@@ -65,13 +68,5 @@
       yabai-zsh-completions
     ]);
 
-  # This value determines the Home Manager release that your
-  # configuration is compatible with. This helps avoid breakage
-  # when a new Home Manager release introduces backwards
-  # incompatible changes.
-  #
-  # You can update Home Manager without changing this value. See
-  # the Home Manager release notes for a list of state version
-  # changes in each release.
   home.stateVersion = "22.11";
 }
