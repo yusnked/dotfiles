@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -eu
+
+cache="{{ .xdg.cache }}"
+data="{{ .xdg.data }}"
+
+dirs=(
+    "$cache/zsh"
+    "$data/fzf"
+    "$data/zoxide"
+    "$data/zsh"
+)
+
+for dir in "${dirs[@]}"; do
+    mkdir -p "$dir"
+done
