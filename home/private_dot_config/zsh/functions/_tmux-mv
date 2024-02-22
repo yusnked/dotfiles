@@ -1,0 +1,7 @@
+#compdef tmux-mv
+
+args="$(tmux ls -f '#{==:#{session_attached},0}' -F '#S')"
+
+if [[ -n $args ]]; then
+    _values 'args' ${(f)args}
+fi
