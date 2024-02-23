@@ -9,10 +9,12 @@ case "$-" in
 
     HISTSIZE=10000
 
+    #Prompt
+    source "$XDG_CONFIG_HOME/_b-shell/prompt.sh"
     if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
         type starship &>/dev/null; then
         # Starship
-        source "$XDG_CONFIG_HOME/_b-shell/prompt.sh"
+        _configure_starship_once
     else
         PROMPT_DIRTRIM=3
         export PS1="\n\$(
@@ -29,5 +31,8 @@ case "$-" in
 
     # zoxide
     type zoxide &>/dev/null && eval "$(zoxide init bash --hook pwd)"
+
+    # Bash-Preexec
+    source "$XDG_DATA_HOME/repositories/bash-preexec/bash-preexec.sh"
     ;;
 esac

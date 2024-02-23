@@ -74,8 +74,8 @@ local options = {
 
     key_tables = {
         copy_mode = {
-            { key = 'j',          mods = 'CTRL',  action = act.CopyMode { MoveForwardZoneOfType = 'Input' } },
-            { key = 'k',          mods = 'CTRL',  action = act.CopyMode { MoveBackwardZoneOfType = 'Input' } },
+            { key = 'j',          mods = 'CTRL',  action = act.CopyMode { MoveForwardZoneOfType = 'Output' } },
+            { key = 'k',          mods = 'CTRL',  action = act.CopyMode { MoveBackwardZoneOfType = 'Output' } },
             -- The following are default key bindings
             { key = 'Tab',        mods = 'NONE',  action = act.CopyMode 'MoveForwardWord' },
             { key = 'Tab',        mods = 'SHIFT', action = act.CopyMode 'MoveBackwardWord' },

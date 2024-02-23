@@ -1,9 +1,10 @@
-autoload -Uz add-zsh-hook _prompt-osc133-precmd _prompt-osc133-preexec
+autoload -Uz add-zsh-hook
+source "$XDG_CONFIG_HOME/_b-shell/prompt.sh"
 
 if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
     type starship &>/dev/null; then
     # Starship
-    source "$XDG_CONFIG_HOME/_b-shell/prompt.sh"
+    _configure_starship_once
 
     autoload -Uz _prompt-pipestatus-starship
     add-zsh-hook precmd _prompt-pipestatus-starship
@@ -28,7 +29,3 @@ else
 fi
 
 RPROMPT='$_prompt_pipestatus_var'
-
-# OSC 133
-add-zsh-hook precmd _prompt-osc133-precmd
-add-zsh-hook preexec _prompt-osc133-preexec

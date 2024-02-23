@@ -1,4 +1,0 @@
-PS1="$_PROMPT_OSC133_SAVE_PS1"
-PS2="$_PROMPT_OSC133_SAVE_PS2"
-printf '\e]133;C;\a'
-_prompt_osc133_executing=1
