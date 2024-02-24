@@ -1,3 +1,6 @@
+# chezmoi:template:missing-key=invalid
+{{ if and (ne .xdg.configR nil) (ne .xdg.dataR nil) -}}
+
 ['{{ .xdg.configR }}/tmux/plugins/tpm']
     type = 'git-repo'
     url = 'https://github.com/tmux-plugins/tpm.git'
@@ -6,3 +9,5 @@
     type = 'git-repo'
     url = 'https://github.com/rcaloras/bash-preexec.git'
     refreshPeriod = '720h'
+
+{{ end -}}
