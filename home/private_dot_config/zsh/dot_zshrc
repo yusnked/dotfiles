@@ -7,6 +7,8 @@ fpath=(
     "$ZDOTDIR/functions"(N-/)
     "$NIX_DATA_DIR/zsh/site-functions"(N-/)
     '/nix/var/nix/profiles/default/share/zsh/site-functions'(N-/)
+    '/opt/homebrew/share/zsh/site-functions'(N-/)
+    '/usr/share/zsh/vendor-completions'(N-/)
     $fpath
 )
 
