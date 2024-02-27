@@ -2,7 +2,7 @@ if [[ $DOTS_OS == Darwin && -r /etc/zshrc ]]; then
     source '/etc/zshrc'
 fi
 
-typeset -xU fpath FPATH
+typeset -xU FPATH fpath
 fpath=(
     "$ZDOTDIR/functions"(N-/)
     "$NIX_DATA_DIR/zsh/site-functions"(N-/)

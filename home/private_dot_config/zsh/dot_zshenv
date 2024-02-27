@@ -16,7 +16,7 @@ function source {
     builtin source $1
 }
 
-typeset -xU path PATH
+typeset -xU PATH path
 
 export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 if [[ $DOTS_OS == Darwin ]]; then
