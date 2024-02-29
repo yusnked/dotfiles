@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
-source "${XDG_CONFIG_HOME:=$HOME/.config}/_b-shell/helpers.sh"
+if [[ -n $FLATPAK_SANDBOX_DIR ]]; then
+    XDG_CONFIG_HOME="$HOME/.config"
+else
+    XDG_CONFIG_HOME="${XDG_CONFIG_HOME:=$HOME/.config}"
+fi
+
+source "$XDG_CONFIG_HOME/_b-shell/helpers.sh"
 source "$XDG_CONFIG_HOME/_b-shell/paths.sh"
 
 shell_path="$(command -v zsh 2>/dev/null)"
