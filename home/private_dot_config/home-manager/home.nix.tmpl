@@ -32,6 +32,7 @@
       home-manager
       imagemagick
       jq
+      mise
       mmv-go
       neovim
       p7zip
@@ -45,7 +46,7 @@
       zoxide
     ] ++
 
-    {{- if eq .chezmoi.os "linux" }}
+    {{ if eq .chezmoi.os "linux" -}}
     # Linux only
     [
       ffmpeg-full
@@ -54,7 +55,7 @@
       xsel
       zsh
     ] ++
-    {{- end }}
+    {{ end -}}
 
     # Fonts
     [

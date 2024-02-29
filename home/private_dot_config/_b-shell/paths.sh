@@ -11,3 +11,6 @@ elif [[ $DOTS_OS == Linux ]]; then
 fi
 
 path-add "$HOME/.local/bin"
+
+# mise
+path-add "$XDG_DATA_HOME/mise/shims"

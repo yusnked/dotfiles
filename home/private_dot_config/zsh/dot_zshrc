@@ -43,6 +43,9 @@ zsh-defer -p -c '() {
     fi
 }'
 
+# mise
+zsh-defer -p -c 'type mise &>/dev/null && eval "$(mise activate zsh)"'
+
 zsh-defer -p ensure_zcompiled "$ZDOTDIR/.zshrc"
 zsh-defer -p unset -f ensure_zcompiled source
 

@@ -32,6 +32,9 @@ case "$-" in
     # zoxide
     type zoxide &>/dev/null && eval "$(zoxide init bash --hook pwd)"
 
+    # mise
+    type mise &>/dev/null && eval "$(mise activate bash)"
+
     # Bash-Preexec
     source "$XDG_DATA_HOME/repositories/bash-preexec/bash-preexec.sh"
     ;;
