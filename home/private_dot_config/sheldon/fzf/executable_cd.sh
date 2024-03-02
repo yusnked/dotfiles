@@ -1,20 +1,30 @@
 #!/usr/bin/env bash
 
-dir='.'
-if [[ -d $1 ]]; then
-    dir="$1"
+set -e
+
+target_path="${1?}"
+if [[ -d $target_path ]]; then
+    readonly target_dir="$target_path"
+elif [[ $target_path =~ / ]]; then
+    readonly target_dir="${target_path%/*}"
 else
-    replaced="${1%/*}"
-    if [[ $replaced != $1 ]]; then
-        dir="$replaced"
-    fi
+    readonly target_dir='.'
+fi
+
+readonly cd_cmd="builtin cd '$target_dir'"$'\n'
+
+if [[ $TERM_PROGRAM == tmux ]]; then
+    tmux send -lt "$TMUX_PANE" "$cd_cmd"
+    exit
 fi
 
 case $DOTS_TERMINAL in
 wezterm)
-    echo "cd \"$dir\"" | wezterm cli send-text --no-paste
+    wezterm cli send-text --no-paste "$cd_cmd"
     ;;
 *)
-    cd "$dir" && exec "$DOTS_ISHELL"
+    builtin cd "$target_dir"
+    echo $'\n'"cd in new shell. (SHLVL: $SHLVL)"
+    exec "${DOTS_ISHELL-$SHELL}"
     ;;
 esac
