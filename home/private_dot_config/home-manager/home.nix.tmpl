@@ -7,6 +7,7 @@
   home.homeDirectory = "{{ .chezmoi.homeDir }}";
   home.packages = with pkgs;
     [
+      _7zz
       bashInteractive
       bat
       cacert
@@ -35,7 +36,7 @@
       mise
       mmv-go
       neovim
-      p7zip
+      nkf
       pinentry
       ripgrep
       starship
