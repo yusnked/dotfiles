@@ -1,4 +1,5 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
+
 # install Nix (multi-user)
 # 公式インストールスクリプトを使ってマルチユーザーインストール
 
