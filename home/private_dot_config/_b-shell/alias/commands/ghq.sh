@@ -1,7 +1,17 @@
 function ghq-cd() {
-    builtin cd "$(ghq root)/$(ghq list | fzf)"
+    local repo="$(ghq list | fzf)"
+    if [[ -n $repo ]]; then
+        builtin cd "$(ghq root)/$repo"
+    else
+        return 1
+    fi
 }
 
 function ghq-home() {
-    open "https:/$(ghq list | fzf)"
+    local repo="$(ghq list | fzf)"
+    if [[ -n $repo ]]; then
+        xdg-open "https:/$repo" 2>/dev/null
+    else
+        return 1
+    fi
 }
