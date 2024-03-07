@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# !, (, ), -a and -o flags are not yet supported.
+
+set -e
+
+if [[ $# > 2 && $2 =~ ^(-(eq|ge|gt|le|lt|ne|ef|nt|ot)|=|!=)$ ]]; then
+    left="$1"
+    flag="$2"
+    shift 2
+
+    for right in "$@"; do
+        command test "$left" $flag "$right" || exit 1
+    done
+elif [[ $# > 1 && $1 =~ ^-[bcdefgGhkLnNOprsStuwxz]$ ]]; then
+    flag=$1
+    shift
+
+    for value in "$@"; do
+        command test $flag "$value" || exit 1
+    done
+else
+    for value in "$@"; do
+        command test -n "$value" || exit 1
+    done
+fi
+
+exit 0
