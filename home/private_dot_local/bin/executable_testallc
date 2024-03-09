@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 
 # !, (, ), -a and -o flags are not supported.
-# The STRING-only specification, which is the same as the -n flag, is also not supported.
 
 if [[ $# == 0 ]]; then
     cat <<END
-testall: Execute test(1) command on multiple arguments.
+testallc: Execute test(1) command on multiple arguments.
 
-    testall [--all(default)|--any] -[bcdefgGhkLNOprsSuwx] FILE1 FILE2 ...
-    testall [--all(default)|--any] -[nz]                  STR1 STR2 ...
-    testall [--all(default)|--any] -t                     FD1 FD2 ...
+    testallc [--all(default)|--any] STR1  [=|!=]               STR2 STR3 ...
+    testallc [--all(default)|--any] INT1  -[eq|ge|gt|le|lt|ne] INT2 INT3 ...
+    testallc [--all(default)|--any] FILE1 -[ef|nt|ot]          FILE2 FILE3 ...
 
 Attention: !, (, ), -a and -o flags are not supported.
 END
@@ -28,13 +27,14 @@ elif [[ $1 == --all ]]; then
     shift
 fi
 
-if [[ $# > 1 ]]; then
-    if [[ $1 =~ ^-[bcdefgGhkLnNOprsStuwxz]$ ]]; then
-        flag=$1
-        shift
+if [[ $# > 2 ]]; then
+    if [[ $2 =~ ^(-(eq|ge|gt|le|lt|ne|ef|nt|ot)|=|!=)$ ]]; then
+        left="$1"
+        flag="$2"
+        shift 2
 
-        for value in "$@"; do
-            command test $flag "$value"
+        for right in "$@"; do
+            command test "$left" $flag "$right"
             ret=$?
 
             if [[ (-z $any_mode && $ret == 1) || (-n $any_mode && $ret == 0) ]]; then
@@ -42,7 +42,7 @@ if [[ $# > 1 ]]; then
             fi
         done
     else
-        echo "testall: $1 flag is not supported." >&2
+        echo "testall: $2 flag is not supported." >&2
         exit 2
     fi
 else
