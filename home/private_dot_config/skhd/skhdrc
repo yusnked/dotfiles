@@ -1,0 +1,6 @@
+# https://github.com/koekeishiya/skhd/blob/master/examples/skhdrc
+
+alt - c : open -a 'Google Chrome'
+alt - d : open -a 'DeepL'
+alt - w : open -a 'WezTerm'
+alt - v : open -a 'Visual Studio Code'
