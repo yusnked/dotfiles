@@ -9,3 +9,6 @@ trim_trailing_whitespace = true
 
 [*.nix{,.tmpl}]
 indent_size = 2
+
+[home/private_dot_config/git/config]
+indent_style = tab
