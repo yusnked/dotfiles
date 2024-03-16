@@ -35,12 +35,19 @@
 	autocrlf  = false
 	safecrlf  = true
 	quotepath = false
+	pager     = delta
 [credential]
 	helper = store
+[diff]
+	colorMoved = default
 [init]
 	defaultBranch = main
+[interactive]
+	diffFilter = delta --color-only
 [log]
 	date = iso
+[merge]
+	conflictstyle = diff3
 [pull]
 	ff     = only
 	rebase = false
@@ -50,3 +57,9 @@
 	name       = yusnked
 	email      = yusnked@gmail.com
 	signingkey = 09200DF2AB9E02AC!
+[include]
+	path = themes.gitconfig
+[delta]
+	features     = calochortus-lyallii
+	navigate     = true
+	line-numbers = true
