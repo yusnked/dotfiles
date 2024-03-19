@@ -1,10 +1,10 @@
-# starship 併用 status codeが129以上か複数ある場合のみ表示.
+# shellcheck disable=SC2168
+local copied_pipestatus=("${pipestatus[@]}")
 
-local status_array=(${pipestatus[*]})
-
-if [[ ${#status_array[*]} > 1 || ${status_array[1]} > 128 ]]; then
+if [[ ${#copied_pipestatus[@]} -ge 2 ||
+    (${copied_pipestatus[1]} -ge 129 && ${copied_pipestatus[1]} -le 159) ]]; then
     autoload -Uz _prompt-pipestatus
-    _prompt-pipestatus $status_array
+    _prompt-pipestatus "${copied_pipestatus[@]}"
 else
     _prompt_pipestatus_var=''
 fi

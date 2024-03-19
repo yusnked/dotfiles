@@ -1,52 +1,29 @@
-# パイプステータスを装飾してプロンプト用に表示する。129~159をシグナル名にする (zshシェル変数のsignalsを使用)
+# shellcheck disable=SC2168
+local copied_pipestatus=("${pipestatus[@]}")
+[[ $# -gt 0 ]] && copied_pipestatus=("$@")
 
-local status_array=( ${pipestatus[*]} )
-[[ $# > 0 ]] && status_array=( ${*[*]} )
+local -rA BEGIN_COLOR=(
+    [success]='%F{070}'
+    [error]='%F{124}'
+    [signal]='%F{136}'
+    [default]='%F{247}'
+)
+local -r END_COLOR='%f'
 
-typeset -r +g turecolor='%F{070}'
-typeset -r +g falsecolor='%F{124}'
-typeset -r +g sigcolor='%F{136}'
-typeset -r +g normalcolor='%F{247}'
-
-local status_string
-local status_code
-
-for status_code in ${status_array[*]}; do
-    case $status_code in
-        0) status_string+=" ${turecolor}${status_code}%f" ;;
-        129) status_string+=" ${sigcolor}${signals[2]}%f" ;;
-        130) status_string+=" ${sigcolor}${signals[3]}%f" ;;
-        131) status_string+=" ${sigcolor}${signals[4]}%f" ;;
-        132) status_string+=" ${sigcolor}${signals[5]}%f" ;;
-        133) status_string+=" ${sigcolor}${signals[6]}%f" ;;
-        134) status_string+=" ${sigcolor}${signals[7]}%f" ;;
-        135) status_string+=" ${sigcolor}${signals[8]}%f" ;;
-        136) status_string+=" ${sigcolor}${signals[9]}%f" ;;
-        137) status_string+=" ${sigcolor}${signals[10]}%f" ;;
-        138) status_string+=" ${sigcolor}${signals[11]}%f" ;;
-        139) status_string+=" ${sigcolor}${signals[12]}%f" ;;
-        140) status_string+=" ${sigcolor}${signals[13]}%f" ;;
-        141) status_string+=" ${sigcolor}${signals[14]}%f" ;;
-        142) status_string+=" ${sigcolor}${signals[15]}%f" ;;
-        143) status_string+=" ${sigcolor}${signals[16]}%f" ;;
-        144) status_string+=" ${sigcolor}${signals[17]}%f" ;;
-        145) status_string+=" ${sigcolor}${signals[18]}%f" ;;
-        146) status_string+=" ${sigcolor}${signals[19]}%f" ;;
-        147) status_string+=" ${sigcolor}${signals[20]}%f" ;;
-        148) status_string+=" ${sigcolor}${signals[21]}%f" ;;
-        149) status_string+=" ${sigcolor}${signals[22]}%f" ;;
-        150) status_string+=" ${sigcolor}${signals[23]}%f" ;;
-        151) status_string+=" ${sigcolor}${signals[24]}%f" ;;
-        152) status_string+=" ${sigcolor}${signals[25]}%f" ;;
-        153) status_string+=" ${sigcolor}${signals[26]}%f" ;;
-        154) status_string+=" ${sigcolor}${signals[27]}%f" ;;
-        155) status_string+=" ${sigcolor}${signals[28]}%f" ;;
-        156) status_string+=" ${sigcolor}${signals[29]}%f" ;;
-        157) status_string+=" ${sigcolor}${signals[30]}%f" ;;
-        158) status_string+=" ${sigcolor}${signals[31]}%f" ;;
-        159) status_string+=" ${sigcolor}${signals[32]}%f" ;;
-        *) status_string+=" ${falsecolor}${status_code}%f" ;;
-    esac
+local -a status_codes
+local status_code state
+for status_code in "${copied_pipestatus[@]}"; do
+    if [[ $status_code -ge 129 && $status_code -le 159 ]]; then
+        # shellcheck disable=SC2154
+        status_codes+="${BEGIN_COLOR[signal]}${signals[$((status_code - 127))]}"
+    else
+        if [[ $status_code -eq 0 ]]; then
+            state=success
+        else
+            state=error
+        fi
+        status_codes+="${BEGIN_COLOR[$state]}$status_code"
+    fi
 done
 
-_prompt_pipestatus_var="${normalcolor}[%f${status_string[2,-1]}${normalcolor}]%f"
+_prompt_pipestatus_var="${BEGIN_COLOR[default]}[${status_codes[*]}${BEGIN_COLOR[default]}]${END_COLOR}"
