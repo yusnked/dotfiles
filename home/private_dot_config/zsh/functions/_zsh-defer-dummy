@@ -3,8 +3,9 @@ if [[ -z $__zshdefer_not_loaded ]]; then
     echo $'\e[33mWARNING\e[0m: zsh-defer is not loaded.' >&2
 fi
 
+# shellcheck disable=SC2168
 local pattern="^[+-][12dmshpra]+$"
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
     case $1 in
     [-+][12dmshpra]*)
         if [[ $1 =~ $pattern ]]; then
@@ -14,13 +15,12 @@ while [[ $# > 0 ]]; do
         fi
         ;;
     -t)
-        shift
-        shift
+        shift 2
         ;;
     -c)
         shift
-        eval "$@"
-        return
+        eval "$1"
+        shift
         ;;
     *)
         break
