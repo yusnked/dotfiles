@@ -2,7 +2,7 @@
 
 # !, (, ), -a and -o flags are not supported.
 
-if [[ $# == 0 ]]; then
+if [[ $# -eq 0 ]]; then
     cat <<END
 testallc: Execute test(1) command on multiple arguments.
 
@@ -27,18 +27,18 @@ elif [[ $1 == --all ]]; then
     shift
 fi
 
-if [[ $# > 2 ]]; then
+if [[ $# -gt 2 ]]; then
     if [[ $2 =~ ^(-(eq|ge|gt|le|lt|ne|ef|nt|ot)|=|!=)$ ]]; then
         left="$1"
         flag="$2"
         shift 2
 
         for right in "$@"; do
-            command test "$left" $flag "$right"
-            ret=$?
+            command test "$left" "$flag" "$right"
+            ret="$?"
 
-            if [[ (-z $any_mode && $ret == 1) || (-n $any_mode && $ret == 0) ]]; then
-                exit $quickly_exit_code
+            if [[ (-z $any_mode && $ret -eq 1) || (-n $any_mode && $ret -eq 0) ]]; then
+                exit "$quickly_exit_code"
             fi
         done
     else
@@ -50,4 +50,4 @@ else
     exit 3
 fi
 
-exit $complete_exit_code
+exit "$complete_exit_code"
