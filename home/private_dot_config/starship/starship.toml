@@ -1,21 +1,27 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+add_newline = false
 format = """
 [](fg:arrow1)\
-[$os( (\\[$shell\\])$username(@$hostname) )](bold fg:black bg:arrow1)\
+[$os( $username(@$hostname) )](bold fg:black bg:arrow1)\
 [](fg:arrow1 bg:arrow2)\
 [ $directory](bold fg:black bg:arrow2)\
 [](fg:arrow2 bg:arrow3)\
-[( $git_branch$git_commit$git_state$git_status)](bold fg:white bg:arrow3)\
-[](fg:arrow3 bg:arrow4)\
-[( $shlvl$status$sudo)](bold fg:white bg:arrow4)\
-[](fg:arrow4) \
+[ $shlvl$shell ](bold fg:black bg:arrow3)\
+[ ](fg:arrow3)\
+([](fg:git)\
+[ $git_branch$git_commit$git_state$git_status](bold fg:white bg:git)\
+[ ](fg:git))\
 $all
 """
-palette = 'cyberpunk'
+palette = 'default'
 
 [aws]
 symbol = ' '
+
+[cmd_duration]
+disabled = false
+format = "[ $duration]($style) "
 
 [directory]
 disabled = false
@@ -121,20 +127,21 @@ symbol = ' '
 [shell]
 disabled = false
 format = '$indicator'
-zsh_indicator = ''
+bash_indicator = '\$'
+zsh_indicator = '%'
 
 [shlvl]
 disabled = false
-format = "$symbol$shlvl "
+format = "$shlvl"
 symbol = " "
 
 [status]
-disabled = false
-format = "$symbol$status ($signal_name )"
+disabled = true
+format = "$symbol$status "
 symbol = "󱖫 "
 
 [sudo]
-disabled = false
+disabled = true
 format = "$symbol "
 symbol = "#"
 
@@ -157,15 +164,14 @@ format = "$output"
 shell = ['bash']
 when = ':'
 
-# https://www.color-hex.com/color-palette/14887
-[palettes.cyberpunk]
+[palettes.default]
 arrow1 = '#00ff9f'
 arrow2 = '#00b8ff'
-arrow3 = '#001eff'
-arrow4 = '#bd00ff'
+arrow3 = '#ffd700'
 black = '#090c0c'
 blue = '#001eff'
 cyan = '#00b8ff'
+git = '#e45a38'
 green = '#00ff9f'
 red = '#ff4040'
 white = '#ffffff'
