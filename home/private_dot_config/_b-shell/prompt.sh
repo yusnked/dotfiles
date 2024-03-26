@@ -29,6 +29,17 @@ function _configure_starship_once() {
     unset -f _configure_starship_once
 }
 
+# Make something like zsh's PROMPT_SP available in bash as well.
+# Note that the display may be corrupted if the terminal is not VT220 compatible.
+if [[ -n $BASH_VERSION ]]; then
+    function __prompt_output_newline() {
+        local POS
+        IFS='[;' read -r -s -d R -p $'\033[6n' -a POS
+        [[ ${POS[2]} -gt 1 ]] && printf '\033[1;7m%%\033[m\n'
+    }
+    precmd_functions+=(__prompt_output_newline)
+fi
+
 # OSC 133
 # https://gitlab.freedesktop.org/Per_Bothner/specifications/blob/master/proposals/semantic-prompts.md
 _prompt_osc133_executing=''
