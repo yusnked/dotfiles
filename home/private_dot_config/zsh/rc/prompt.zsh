@@ -5,20 +5,19 @@ if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
     # Starship
     _configure_starship_once
 else
-    # git
-    autoload -Uz vcs_info
-    zstyle ':vcs_info:git:*' check-for-changes true
-    zstyle ':vcs_info:git:*' stagedstr "%F{magenta}!"
-    zstyle ':vcs_info:git:*' unstagedstr "%F{yellow}+"
-    zstyle ':vcs_info:*' formats "%F{cyan}%c%u[%b]%f"
-    zstyle ':vcs_info:*' actionformats '[%b|%a]'
-    precmd() { vcs_info; }
+    # Something like bash's PROMPT_DIRTRIM.
+    __prompt_dirtrim() {
+        [[ $PWD == $__prompt_dirtrim_prevpwd ]] && return 0
+        local tilde len="${PROMPT_DIRTRIM:-3}"
+        tilde="$(print -P '%-1~')/"
+        _prompt_dirtrim_var="$(print -P "%($((len + 2))c|${tilde##/*/}.../|%($((len + 1))c|${tilde/\/*\//...\/}|))%$len~")"
+        __prompt_dirtrim_prevpwd="$PWD"
+    }
+    precmd_functions+=(__prompt_dirtrim)
 
-    autoload -Uz _prompt-truncated-path
-
-    PROMPT='
-%B%F{yello}%n@%m%f%b:$(_prompt-truncated-path 50 2 3) %F{cyan}$vcs_info_msg_0_%f
-%B%(?|%F{040}|%F{197})%#%f%b '
+    PROMPT_DIRTRIM=3
+    PROMPT='%B%F{yello}%n@%m%f%b:%F{green}${_prompt_dirtrim_var}%f
+%B%(?|%F{040}|%F{197})%(2L|%L|)%#%f%b '
 fi
 
 RPROMPT='$_prompt_pipestatus_var'
