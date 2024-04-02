@@ -2,8 +2,8 @@
 
 set -eu
 
-{{ $aliasDir := joinPath .xdg.config "_b-shell/alias" -}}
-{{ $aliasDirSrc := joinPath .xdg.configSrc "_b-shell/alias" -}}
+{{ $aliasDir := joinPath .xdg.config "_shells/alias" -}}
+{{ $aliasDirSrc := joinPath .xdg.configSrc "_shells/alias" -}}
 {{ template "md5-comments" (joinPath $aliasDirSrc "commands") -}}
 
 readonly OUTPUT_FILE='{{ $aliasDir }}/commands-alias.sh'

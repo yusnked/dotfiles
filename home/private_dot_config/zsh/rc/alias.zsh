@@ -1,4 +1,4 @@
-source "$XDG_CONFIG_HOME/_b-shell/alias/commands-alias.sh"
+source "$DOTS_SHELLS_DIR/alias/commands-alias.sh"
 
 alias alz='autoload -Uz'
 

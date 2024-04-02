@@ -1,9 +1,11 @@
 # cmigemo fd rgを使用したmigemoファイル名補完
 
-local -r migemo_dict="$NIX_DATA_DIR/migemo/utf-8/migemo-dict"
+# shellcheck disable=all
+
+local -r MIGEMO_DICT="$HOME/.nix-profile/share/migemo/utf-8/migemo-dict"
 
 local dir="${PREFIX%/*}"
-if [[ $dir == $PREFIX ]]; then
+if [[ $dir == "$PREFIX" ]]; then
     dir=
 else
     dir="$dir/"
@@ -11,13 +13,15 @@ fi
 
 # コマンドがcdの時だけ特別扱いでディレクトリのみ表示する
 [[ ${words[1]} == 'cd' ]] && local dir_only=1
-local file_list="$(fd ${dir_only+-td} -d1 '.*' ${(Q)dir})"
+local file_list
+file_list="$(fd ${dir_only:+-td} -d1 '.*' ${(Q)dir})"
 
 if [[ $DOTS_OS == Darwin ]]; then
-    file_list="$(echo $file_list | /usr/bin/iconv -f UTF-8-MAC -t UTF-8)"
+    file_list="$(printf '%s\n' "$file_list" | /usr/bin/iconv -f UTF-8-MAC -t UTF-8)"
 fi
 
-local match_files="$(echo $file_list | rg -i \^${dir}\.\*$(cmigemo -d "$migemo_dict" -w "${PREFIX##*/}")\.\*\$)"
+local match_files
+match_files="$(printf '%s\n' "$file_list" | rg -i "^${dir}.*$(cmigemo -d "$MIGEMO_DICT" -w "${PREFIX##*/}").*$")"
 
 if [ ${#match_files[*]} -ne 0 ]; then
     compadd -fW "${dir}" -P "${dir}" -S '' -U -- "${${(f)match_files}[@]/${(Q)dir}/}"

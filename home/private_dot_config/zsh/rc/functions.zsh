@@ -1,1 +1,1 @@
-source "$XDG_CONFIG_HOME/_b-shell/functions.sh"
+source "$DOTS_SHELLS_DIR/functions.sh"

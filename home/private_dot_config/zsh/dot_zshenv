@@ -1,3 +1,5 @@
+# shellcheck disable=all
+
 # zmodload zsh/zprof && zprof >/dev/null
 
 function ensure_zcompiled {
@@ -12,8 +14,8 @@ function ensure_zcompiled {
 }
 
 function source {
-    ensure_zcompiled $1
-    builtin source $1
+    ensure_zcompiled "$1"
+    builtin source "$1"
 }
 
 typeset -xU PATH path
@@ -22,10 +24,10 @@ export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 if [[ $DOTS_OS == Darwin ]]; then
     unsetopt GLOBAL_RCS
     if [[ -x /usr/libexec/path_helper ]]; then
-        eval $(/usr/libexec/path_helper -s)
+        eval "$(/usr/libexec/path_helper -s)"
     fi
 fi
 
-source "$HOME/.config/_b-shell/env.sh"
+source "${DOTS_SHELLS_DIR:-$HOME/.config/_shells}/env.sh"
 
-ensure_zcompiled $ZDOTDIR/.zshenv
+ensure_zcompiled "$ZDOTDIR/.zshenv"

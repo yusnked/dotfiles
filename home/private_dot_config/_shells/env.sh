@@ -3,7 +3,7 @@ export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-export NIX_DATA_DIR="$HOME/.nix-profile/share"
+export DOTS_SHELLS_DIR="$XDG_CONFIG_HOME/_shells"
 
 export EDITOR='nvim'
 export LANG='ja_JP.UTF-8'
@@ -21,5 +21,5 @@ if [[ -r "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
     source "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
 fi
 
-source "$XDG_CONFIG_HOME/_b-shell/helpers.sh"
-source "$XDG_CONFIG_HOME/_b-shell/paths.sh"
+source "$DOTS_SHELLS_DIR/helpers.sh"
+source "$DOTS_SHELLS_DIR/paths.sh"

@@ -1,3 +1,5 @@
+# shellcheck disable=all
+
 if [[ $DOTS_OS == Darwin && -r /etc/zshrc ]]; then
     source '/etc/zshrc'
 fi
@@ -5,14 +7,14 @@ fi
 typeset -xU FPATH fpath
 fpath=(
     "$ZDOTDIR/functions"(N-/)
-    "$NIX_DATA_DIR/zsh/site-functions"(N-/)
+    "$HOME/.nix-profile/share/zsh/site-functions"(N-/)
     '/nix/var/nix/profiles/default/share/zsh/site-functions'(N-/)
     '/opt/homebrew/share/zsh/site-functions'(N-/)
     '/usr/share/zsh/vendor-completions'(N-/)
     $fpath
 )
 
-source "$XDG_CONFIG_HOME/_b-shell/env_interactive.sh"
+source "$DOTS_SHELLS_DIR/env_interactive.sh"
 
 source "$ZDOTDIR/rc/directories.zsh"
 source "$ZDOTDIR/rc/options.zsh"
@@ -23,7 +25,7 @@ autoload -Uz _zsh-defer-dummy
 zsh-defer() { _zsh-defer-dummy "$@"; }
 
 # sheldon
-source "$XDG_CONFIG_HOME/_b-shell/plugins.sh"
+source "$DOTS_SHELLS_DIR/plugins.sh"
 
 # ===== Delayed loading from here down =====
 

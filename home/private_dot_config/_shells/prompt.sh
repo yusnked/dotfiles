@@ -1,4 +1,3 @@
-# shellcheck disable=SC1090
 function _configure_starship_once() {
     if [[ -n $ZSH_VERSION ]]; then
         local shell_type='zsh'

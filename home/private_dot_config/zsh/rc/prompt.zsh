@@ -1,4 +1,4 @@
-source "$XDG_CONFIG_HOME/_b-shell/prompt.sh"
+source "$DOTS_SHELLS_DIR/prompt.sh"
 
 if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
     type starship &>/dev/null; then

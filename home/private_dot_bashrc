@@ -1,19 +1,18 @@
-# shellcheck disable=SC1091
-source "$HOME/.config/_b-shell/env.sh"
+source "${DOTS_SHELLS_DIR:-$HOME/.config/_shells}/env.sh"
 
 # interactive only
 case "$-" in
 *i*)
     set -o pipefail
 
-    source "$XDG_CONFIG_HOME/_b-shell/env_interactive.sh"
-    source "$XDG_CONFIG_HOME/_b-shell/alias/commands-alias.sh"
-    source "$XDG_CONFIG_HOME/_b-shell/functions.sh"
+    source "$DOTS_SHELLS_DIR/env_interactive.sh"
+    source "$DOTS_SHELLS_DIR/alias/commands-alias.sh"
+    source "$DOTS_SHELLS_DIR/functions.sh"
 
     HISTSIZE=10000
 
     #Prompt
-    source "$XDG_CONFIG_HOME/_b-shell/prompt.sh"
+    source "$DOTS_SHELLS_DIR/prompt.sh"
     if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
         type starship &>/dev/null; then
         # Starship
@@ -25,7 +24,7 @@ case "$-" in
     fi
 
     # sheldon
-    source "$XDG_CONFIG_HOME/_b-shell/plugins.sh"
+    source "$DOTS_SHELLS_DIR/plugins.sh"
 
     # zoxide
     type zoxide &>/dev/null && eval "$(zoxide init bash --hook pwd)"
