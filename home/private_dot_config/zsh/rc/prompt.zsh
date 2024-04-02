@@ -16,8 +16,9 @@ else
     precmd_functions+=(__prompt_dirtrim)
 
     PROMPT_DIRTRIM=3
-    PROMPT='%B%F{yello}%n@%m%f%b:%F{green}${_prompt_dirtrim_var}%f
+    PROMPT='%B%F{yello}%n@%m%f%b:%F{green}${_prompt_dirtrim_var}%f <<git-prompt>>
 %B%(?|%F{040}|%F{197})%(2L|%L|)%#%f%b '
+    _configure_gitprompt_once
 fi
 
 RPROMPT='$_prompt_pipestatus_var'

@@ -10,6 +10,11 @@
     type = 'git-repo'
     url = 'https://github.com/tmux-plugins/tpm.git'
 
+['{{ .xdg.dataR }}/_shells/git-prompt.sh']
+    type = 'file'
+    url = 'https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh'
+    refreshPeriod = '720h'
+
 ['{{ .xdg.dataR }}/repositories/bash-preexec']
     type = 'git-repo'
     url = 'https://github.com/rcaloras/bash-preexec.git'

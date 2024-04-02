@@ -1,3 +1,31 @@
+# git-prompt: https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+# Execute this function after setting PS1.
+function _configure_gitprompt_once() {
+    local -r gitprompt_pattern='<<git-prompt>>'
+    if [[ $PS1 =~ $gitprompt_pattern ]]; then
+        # shellcheck disable=SC2317
+        function __git_ps1() { :; }
+        source "$XDG_DATA_HOME/_shells/git-prompt.sh"
+        # shellcheck disable=SC2034
+        {
+            GIT_PS1_SHOWDIRTYSTATE=1
+            GIT_PS1_SHOWUNTRACKEDFILES=1
+            GIT_PS1_SHOWCOLORHINTS=1
+            GIT_PS1_SHOWCONFLICTSTATE='yes'
+        }
+
+        eval "function __prompt_git() {
+            __git_ps1 \"${PS1%%<<git-prompt>>*}\" \"${PS1#*<<git-prompt>>}\" '[%s]'
+        }"
+        if [[ -n $ZSH_VERSION ]]; then
+            precmd_functions+=(__prompt_git)
+        elif [[ -n $BASH_VERSION ]]; then
+            PROMPT_COMMAND+='__prompt_git;'
+        fi
+    fi
+    unset -f _configure_gitprompt_once
+}
+
 function _configure_starship_once() {
     if [[ -n $ZSH_VERSION ]]; then
         local shell_type='zsh'

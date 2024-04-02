@@ -19,8 +19,9 @@ case "$-" in
         _configure_starship_once
     else
         PROMPT_DIRTRIM=3
-        PS1="\[\e[1;33m\]\u@\h\[\e[0m\]:\[\e[32m\]\w\[\e[0m\]
+        PS1="\[\e[1;33m\]\u@\h\[\e[0m\]:\[\e[32m\]\w\[\e[0m\] <<git-prompt>>
 \[\e[1;38;5;\$([[ \$? -eq 0 ]] && printf '40' || printf '197')m\]${SHLVL#"${SHLVL:$((SHLVL - 1))}"}\$\[\e[0m\] "
+        _configure_gitprompt_once
     fi
 
     # sheldon
