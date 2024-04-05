@@ -11,6 +11,7 @@
     "editor.renderControlCharacters": true,
     "editor.renderWhitespace": "all",
     "editor.roundedSelection": false,
+    "editor.rulers": [80],
     "editor.tabSize": 4,
     "editor.tokenColorCustomizations": {
         "comments": "#999"
@@ -36,21 +37,43 @@
     "terminal.integrated.fontSize": 14,
     "workbench.colorTheme": "Default Dark+",
     "workbench.editor.empty.hint": "hidden",
+
+    // Upper limit for displaying tabs.
+    "workbench.editor.limit.enabled": true,
+    "workbench.editor.limit.excludeDirty": true,
+    "workbench.editor.limit.perEditorGroup": false,
+    "workbench.editor.limit.value": 8,
+
     "workbench.iconTheme": "material-icon-theme",
     "workbench.reduceMotion": "on",
     "workbench.tree.renderIndentGuides": "always",
-    "[ruby]": {
-        "editor.tabSize": 2
+
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "[erb]": {
-        "editor.tabSize": 2
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "[nix]": {
-        "editor.tabSize": 2
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    // Lua (Lua Language Server)
-    "Lua.diagnostics.globals": [
-        "mp", // mpv
-        "vim" // neovim
-    ]
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[shellscript]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
+    },
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+
+    ///// Extensions /////
+    // Prettier
+    "prettier.singleQuote": true
 }
