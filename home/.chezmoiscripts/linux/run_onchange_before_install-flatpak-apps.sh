@@ -4,17 +4,30 @@ set -eu
 
 # sudo rm -r /var/lib/flatpak
 
-readonly flatpak_bin='/var/lib/flatpak/exports/bin'
-readonly target_bin="$HOME/.local/flatpak"
+# Install Apps
+function main() {
+    install org.cryptomator.Cryptomator -- --filesystem={/media,/mnt}
+    install org.videolan.VLC --symlink vlc
+    install org.wezfurlong.wezterm --symlink wezterm -- --filesystem=host
+
+    # Development
+    if [[ $(chezmoi execute-template '{{.packages.isDevelopment}}' 2>/dev/null) == true ]]; then
+        vscodium_posthook() {
+            local -r settings_host="$XDG_CONFIG_HOME/Code/User/settings.json"
+            local -r settings_flatpak="$HOME/.var/app/com.vscodium.codium/config/VSCodium/User/settings.json"
+            ln -sf "$settings_host" "$settings_flatpak"
+        }
+        install com.vscodium.codium --symlink code --posthook vscodium_posthook
+    fi
+}
 
 # --symlink {name}: Enable symlink
 # $1 : Application ID
 # $2~: flatpak override args (optional)
 # https://docs.flatpak.org/en/latest/flatpak-command-reference.html#flatpak-override
 function install() {
-    local args=()
-    local symlink_name=''
-    while [[ $# > 0 ]]; do
+    local symlink_name='' posthook='' args=()
+    while [[ $# -gt 0 ]]; do
         case $1 in
         --)
             shift
@@ -24,6 +37,10 @@ function install() {
             symlink_name="${2?}"
             shift 2
             ;;
+        --posthook)
+            posthook="${2?}"
+            shift 2
+            ;;
         *)
             args+=("$1")
             shift
@@ -31,7 +48,7 @@ function install() {
         esac
     done
     args+=("$@")
-    set "${args[@]}"
+    set -- "${args[@]}"
 
     # Set id
     local -r id_pattern='^[^ .]+\.[^ .]+\.[^ .]+$'
@@ -46,9 +63,11 @@ function install() {
     # Install apps
     if [[ ! -x $flatpak_bin/$id ]]; then
         flatpak install -y flathub "$id"
-        if [[ $# > 0 ]]; then
-            eval sudo flatpak override "$@" "$id"
+        if [[ $# -gt 0 ]]; then
+            sudo flatpak override "$@" "$id"
         fi
+        # Posthook
+        [[ -n $posthook ]] && $posthook
     fi
 
     # Create symlink
@@ -56,6 +75,9 @@ function install() {
         ln -s "$flatpak_bin/$id" "$target_bin/$symlink_name"
     fi
 }
+
+readonly flatpak_bin='/var/lib/flatpak/exports/bin'
+readonly target_bin="$HOME/.local/flatpak"
 
 echo 'Install Flatpak and Apps...'
 sudo -v
@@ -74,13 +96,9 @@ if ! type flatpak &>/dev/null; then
     install_flatpak_flag=1
 fi
 
-# Install Apps
 if [[ $install_flatpak_flag == 1 ]] || type flatpak &>/dev/null; then
     # Remove symlinks
     rm -r "$target_bin" 2>/dev/null || :
     mkdir -p "$target_bin"
-
-    install org.cryptomator.Cryptomator -- --filesystem={/media,/mnt}
-    install org.videolan.VLC --symlink vlc
-    install org.wezfurlong.wezterm --symlink wezterm -- --filesystem=host
+    main
 fi

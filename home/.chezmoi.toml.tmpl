@@ -37,6 +37,8 @@ nix.system       = {{ $nixSystem | quote }}
 nix.mypkgsDir    = {{ joinPath $xdgConfig "nix/mypkgs" | quote }}
 nix.mypkgsDirSrc = {{ joinPath $xdgConfigSrc "nix/mypkgs" | quote }}
 
+packages.isDevelopment = {{ promptBoolOnce . "packages.isDevelopment" "Install development tools" }}
+
 # XDG Base Directory
 {{ $trimHomeDir := print .chezmoi.homeDir "/" -}}
 xdg.cache     = {{ $xdgCache | quote }}

@@ -18,10 +18,15 @@ set -eufo pipefail
      "fuse-t"
      "google-chrome"
      "karabiner-elements"
-     "visual-studio-code"
      "vlc"
      "wezterm"
 -}}
+
+{{ if .packages.isDevelopment -}}
+{{   $casks = concat $casks (list
+       "visual-studio-code"
+) -}}
+{{ end -}}
 
 brew bundle --no-lock --file=/dev/stdin <<EOF
 {{ range ($brews | sortAlpha | uniq) -}}
