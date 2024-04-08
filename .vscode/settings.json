@@ -1,0 +1,7 @@
+{
+    // Lua (Lua Language Server)
+    "Lua.diagnostics.globals": [
+        "mp", // mpv
+        "vim" // neovim
+    ]
+}
