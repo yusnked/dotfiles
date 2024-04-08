@@ -11,6 +11,7 @@ return {
         build = function()
             require('nvim-treesitter.install').update({ with_sync = true })
         end,
+        conf = NOT_VSCODE,
         main = 'nvim-treesitter.configs',
         opts = {
             ensure_installed = 'all',

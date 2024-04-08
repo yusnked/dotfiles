@@ -13,12 +13,10 @@ keymap('n', 'gk', 'k')
 keymap('n', '<Esc><Esc>', ':<C-u>nohlsearch<CR>', { silent = true, desc = 'nohlsearch' })
 
 -- Visual mode
--- *で選択範囲で検索
--- keymap('v', '*', '"vy/\\V<C-r>=substitute(escape(@v,"\\/"),"\\n","\\\\n","g")<CR><CR>',
---     { silent = true, desc = '' })
+-- 右クリックメニューでの "E335: Menu not defined for Insert mode" を防止.
+keymap('v', '<RightMouse>', '<C-\\><C-g>gv<cmd>:popup! PopUp<CR>')
 
 -- Command line
 -- 履歴の<C-n><C-p>がnvim-cmpと競合する為
 keymap('c', '<C-j>', '<Down>')
 keymap('c', '<C-k>', '<Up>')
-
