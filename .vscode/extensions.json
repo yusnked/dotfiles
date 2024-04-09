@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "EditorConfig.EditorConfig",
+        "foxundermoon.shell-format",
+        "jnoortheen.nix-ide",
+        "sumneko.lua",
+        "tamasfe.even-better-toml",
+        "timonwong.shellcheck"
+    ]
+}
