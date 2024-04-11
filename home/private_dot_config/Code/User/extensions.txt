@@ -1,0 +1,11 @@
+EditorConfig.EditorConfig
+MS-CEINTL.vscode-language-pack-ja
+PKief.material-icon-theme
+asvetliakov.vscode-neovim
+brunnerh.insert-unicode
+esbenp.prettier-vscode
+formulahendry.auto-rename-tag
+foxundermoon.shell-format
+ms-vscode-remote.remote-containers
+tamasfe.even-better-toml
+timonwong.shellcheck
