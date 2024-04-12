@@ -5,7 +5,7 @@ function _configure_gitprompt_once() {
     if [[ $PS1 =~ $gitprompt_pattern ]]; then
         # shellcheck disable=SC2317
         function __git_ps1() { :; }
-        source "$XDG_DATA_HOME/_shells/git-prompt.sh"
+        source "$DOTS_DATA_HOME/_shells/git-prompt.sh"
         # shellcheck disable=SC2034
         {
             GIT_PS1_SHOWDIRTYSTATE=1
@@ -35,8 +35,8 @@ function _configure_starship_once() {
         return 1
     fi
 
-    export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
-    export STARSHIP_CACHE="$XDG_CACHE_HOME/starship"
+    export STARSHIP_CONFIG="$DOTS_CONFIG_HOME/starship/starship.toml"
+    export STARSHIP_CACHE="$DOTS_CACHE_HOME/starship"
 
     local cache_file="$STARSHIP_CACHE/${shell_type}-prompt.sh"
     if [[ ! $cache_file -nt $STARSHIP_CONFIG ]] || ! source "$cache_file" 2>/dev/null; then

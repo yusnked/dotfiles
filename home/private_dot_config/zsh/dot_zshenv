@@ -1,12 +1,20 @@
 # zmodload zsh/zprof && zprof >/dev/null
 
+# shellcheck disable=SC2218
+source "${DOTS_SHELLS_DIR:-${HOST_XDG_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/_shells}/env.sh"
+
+function source {
+    ensure_zcompiled "$1"
+    builtin source "$1"
+}
+
 function ensure_zcompiled {
     local compiled="$1.zwc"
     if [[ ! $1 -ot "$compiled" ]]; then
         local pattern patterns=(
-            "$XDG_CONFIG_HOME/"
-            "${XDG_DATA_HOME:-$HOME/.local/share}/sheldon/"
-            "${XDG_DATA_HOME:-$HOME/.local/share}/_shells/"
+            "$DOTS_CONFIG_HOME/"
+            "$DOTS_DATA_HOME/sheldon/"
+            "$DOTS_SHELLS_DIR/"
         )
         for pattern in "${patterns[@]}"; do
             if [[ $1 != "${1#"$pattern"}" ]]; then
@@ -17,14 +25,8 @@ function ensure_zcompiled {
     fi
 }
 
-function source {
-    ensure_zcompiled "$1"
-    builtin source "$1"
-}
-
 typeset -xU PATH path
 
-export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 if [[ $DOTS_OS == Darwin ]]; then
     unsetopt GLOBAL_RCS
     if [[ -x /usr/libexec/path_helper ]]; then
@@ -32,6 +34,9 @@ if [[ $DOTS_OS == Darwin ]]; then
     fi
 fi
 
-source "${DOTS_SHELLS_DIR:-$HOME/.config/_shells}/env.sh"
+source "$DOTS_SHELLS_DIR/helpers.sh"
+source "$DOTS_SHELLS_DIR/paths.sh"
 
+ZDOTDIR="$DOTS_CONFIG_HOME/zsh"
 ensure_zcompiled "$ZDOTDIR/.zshenv"
+ensure_zcompiled "$DOTS_SHELLS_DIR/env.sh"

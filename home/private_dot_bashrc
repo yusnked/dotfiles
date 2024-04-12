@@ -1,4 +1,6 @@
-source "${DOTS_SHELLS_DIR:-$HOME/.config/_shells}/env.sh"
+source "${DOTS_SHELLS_DIR:-${HOST_XDG_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/_shells}/env.sh"
+source "$DOTS_SHELLS_DIR/helpers.sh"
+source "$DOTS_SHELLS_DIR/paths.sh"
 
 # interactive only
 case "$-" in
@@ -13,7 +15,7 @@ case "$-" in
 
     #Prompt
     source "$DOTS_SHELLS_DIR/prompt.sh"
-    if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
+    if [[ $COLORTERM == truecolor && ! -e "$DOTS_STATE_HOME/no_starship_prompt" ]] &&
         type starship &>/dev/null; then
         # Starship
         _configure_starship_once
@@ -34,6 +36,6 @@ case "$-" in
     type mise &>/dev/null && eval "$(mise activate bash)"
 
     # Bash-Preexec
-    source "$XDG_DATA_HOME/repositories/bash-preexec/bash-preexec.sh"
+    source "$DOTS_DATA_HOME/repositories/bash-preexec/bash-preexec.sh"
     ;;
 esac

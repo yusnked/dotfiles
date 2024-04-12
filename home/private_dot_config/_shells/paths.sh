@@ -13,4 +13,4 @@ fi
 path-add "$HOME/.local/bin"
 
 # mise
-path-add "$XDG_DATA_HOME/mise/shims"
+path-add "$DOTS_DATA_HOME/mise/shims"

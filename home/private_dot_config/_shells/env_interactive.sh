@@ -1,6 +1,6 @@
 export RUNEWIDTH_EASTASIAN=0
 export GPG_TTY="$TTY"
-export _ZO_DATA_DIR="$XDG_DATA_HOME/zoxide"
+export _ZO_DATA_DIR="$DOTS_DATA_HOME/zoxide"
 
 if [[ -x /proc/$$/exe ]]; then
     DOTS_ISHELL="$(readlink /proc/$$/exe)"

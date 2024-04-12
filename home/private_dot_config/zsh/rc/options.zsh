@@ -42,7 +42,6 @@ cdpath=()
 # DIRSTACKSIZE: ディレクトリスタックの最大保持数。AUTO_PUSHDを使用する場合は設定した方が良い。
 DIRSTACKSIZE=20
 
-
 ##### Completion
 ### options
 # ALWAYS_LAST_PROMPT <D>: 補完候補を表示したとき新しいプロンプトを表示せずに元のプロンプトを使う。
@@ -107,7 +106,6 @@ setopt LIST_PACKED
 
 # REC_EXACT: 現在の単語に完全一致するものがある場合に、別の候補があっても確定する。
 #setopt REC_EXACT
-
 
 ##### Expansion and Globbing
 ### options
@@ -209,7 +207,6 @@ setopt RC_EXPAND_PARAM
 # WARN_NESTED_VAR: 囲んでいる関数スコープまたはグローバルからの既存のパラメーターが内スコープでさらに定義された場合警告メッセージを表示する。
 #setopt WARN_NESTED_VAR
 
-
 ##### History
 ### options
 # APPEND_HISTORY <D>: シェル終了時ヒストリファイルを上書きではなく追記する。複数シェル同時利用では必須。
@@ -285,14 +282,13 @@ setopt SHARE_HISTORY
 #histchars='!^#'
 
 # HISTFILE: 端末利用しているzshのヒストリの保存ファイル。デフォルトは~/.zsh_history
-HISTFILE="$XDG_DATA_HOME/zsh/.zsh_history"
+HISTFILE="$DOTS_DATA_HOME/zsh/.zsh_history"
 
 # HISTSIZE: シェルのメモリ内に記憶しておくヒストリの最大イベント数
 HISTSIZE=10000
 
 # SAVEHIST: ヒストリファイルに保存する最大数。HISTSIZEより大きい数は指定できない
 SAVEHIST=10000
-
 
 ##### Initialisation
 ### options
@@ -307,7 +303,6 @@ SAVEHIST=10000
 
 # RCS <D>: このオプションを切ると/etc/zshenv以外の設定ファイルが読み込まれなくなる。
 #unsetopt RCS
-
 
 ##### Input/Output
 ### options
@@ -380,7 +375,6 @@ setopt IGNORE_EOF
 # SUN_KEYBOARD_HACK: SUNキーボードでの頻出 typo ` をカバーする。(文末のバッククォートを奇数個の場合無視する)
 #setopt SUN_KEYBOARD_HACK
 
-
 ##### Job Control
 ### options
 # AUTO_CONTINUE: disown組み込みコマンドでジョブテーブルから削除された停止ジョブに自動的にCONTシグナルを送信する。
@@ -413,7 +407,6 @@ setopt LONG_LIST_JOBS
 # POSIX_JOBS <KS>: ジョブ制御がより POSIX 標準に準拠するようになる。詳しくは man zshoptions
 #setopt POSIX_JOBS
 
-
 ##### Prompting
 ### options
 # PROMPT_BANG <K>: !を次に保存されるヒストリ番号に置換する。!自体は!!で入力する。
@@ -433,7 +426,6 @@ setopt PROMPT_SUBST
 
 # TRANSIENT_RPROMPT: コマンド実行時に右プロンプトを消去する。コマンド入力操作画面を後からコピー&ペーストするときなどに有用。
 setopt TRANSIENT_RPROMPT
-
 
 ##### Scripts and Functions
 ### options
@@ -502,7 +494,6 @@ setopt PIPE_FAIL
 
 # XTRACE: コマンドラインがどのように展開され実行されたかを逐一表示する
 #setopt XTRACE
-
 
 ##### Shell Emulation
 ### options
@@ -578,7 +569,6 @@ setopt PIPE_FAIL
 # TRAPS_ASYNC: プログラムが終了するのを待たずにシグナルを処理しトラップをすぐに実行する。それ以外の場合、子プロセスが終了した後にトラップが実行される。
 #setopt TRAPS_ASYNC
 
-
 ##### Shell State
 ### options
 # INTERACTIVE: 対話型シェル。標準入力がTTYでコマンドが標準入力から読み取られる場合に初期化時に設定されます。zsh実行中は変更できない。
@@ -592,7 +582,6 @@ setopt PIPE_FAIL
 # SHIN_STDIN: コマンドを標準入力から読み込む場合に設定する。zshの実行中は変更できない。
 
 # SINGLE_COMMAND: シェルが標準入力から読み取っている場合単一のコマンドを実行してすぐにシェルを終了する。
-
 
 ##### Zle
 ### options
@@ -616,4 +605,3 @@ unsetopt BEEP
 
 # ZLE: ZLEを使用する。対話型シェルでデフォルトで設定される。
 #setopt ZLE
-

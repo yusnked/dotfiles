@@ -1,6 +1,6 @@
 # 補完機能を有効にする
 autoload -Uz compinit
-compinit -d "$XDG_CACHE_HOME/zsh/.zcompdump"
+compinit -d "$DOTS_CACHE_HOME/zsh/.zcompdump"
 
 # ^wで単語削除などをする際の単語の区切りを設定(word-charsで設定した以外の文字を全て単語の構成要素とみなす)
 autoload -Uz select-word-style

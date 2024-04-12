@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 
-if [[ -n $FLATPAK_SANDBOX_DIR ]]; then
-    XDG_CONFIG_HOME="$HOME/.config"
-else
-    XDG_CONFIG_HOME="${XDG_CONFIG_HOME:=$HOME/.config}"
-fi
+DOTS_SHELLS_DIR="${DOTS_SHELLS_DIR:-${HOST_XDG_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/_shells}"
 
-source "$XDG_CONFIG_HOME/_shells/helpers.sh"
-source "$XDG_CONFIG_HOME/_shells/paths.sh"
+source "$DOTS_SHELLS_DIR/helpers.sh"
+source "$DOTS_SHELLS_DIR/paths.sh"
 
 shell_path="$(command -v zsh 2>/dev/null)"
 if [[ -z $shell_path ]]; then

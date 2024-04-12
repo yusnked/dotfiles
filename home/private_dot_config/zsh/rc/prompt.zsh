@@ -1,6 +1,6 @@
 source "$DOTS_SHELLS_DIR/prompt.sh"
 
-if [[ $COLORTERM == truecolor && ! -e "$XDG_STATE_HOME/no_starship_prompt" ]] &&
+if [[ $COLORTERM == truecolor && ! -e "$DOTS_STATE_HOME/no_starship_prompt" ]] &&
     type starship &>/dev/null; then
     # Starship
     _configure_starship_once

@@ -8,9 +8,9 @@ if type sheldon &>/dev/null; then
             return 1
         fi
 
-        export SHELDON_CONFIG_DIR="$XDG_CONFIG_HOME/sheldon"
+        export SHELDON_CONFIG_DIR="$DOTS_CONFIG_HOME/sheldon"
         export SHELDON_CONFIG_FILE="$SHELDON_CONFIG_DIR/plugins.toml"
-        local cache_dir="$XDG_CACHE_HOME/sheldon"
+        local cache_dir="$DOTS_CACHE_HOME/sheldon"
         local cache_file="$cache_dir/${shell_type}-plugins.sh"
         if [[ ! -r $cache_file || $SHELDON_CONFIG_FILE -nt $cache_file ]]; then
             mkdir -p "$cache_dir"
