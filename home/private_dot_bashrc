@@ -26,8 +26,10 @@ case "$-" in
         _configure_gitprompt_once
     fi
 
-    # sheldon
     source "$DOTS_SHELLS_DIR/plugins.sh"
+
+    # fzf
+    type fzf &>/dev/null && eval "$(fzf --bash)"
 
     # zoxide
     type zoxide &>/dev/null && eval "$(zoxide init bash --hook pwd)"

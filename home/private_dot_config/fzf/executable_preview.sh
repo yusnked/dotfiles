@@ -6,8 +6,19 @@ target="${1%/}"
 
 [[ -e $target ]] || exit
 
-readonly bat_flags='--force-colorization --number'
-readonly eza_flags='-la --color=always --git --icons --no-permissions --octal-permissions --time-style=long-iso'
+readonly bat_flags=(
+    --force-colorization
+    --number
+)
+readonly eza_flags=(
+    -la
+    --color=always
+    --git
+    --icons
+    --no-permissions
+    --octal-permissions
+    --time-style=long-iso
+)
 readonly header_color='240'
 
 # Header line
@@ -17,11 +28,12 @@ header_line="${header_line:0:$FZF_PREVIEW_COLUMNS}"
 
 mime="$(file -b --mime "$target")"
 if [[ ${mime##*charset=} != binary ]]; then
-    readonly nkf="$(head -n 512 "$target" 2>/dev/null | nkf --guess)"
+    nkf="$(head -n 512 "$target" 2>/dev/null | nkf --guess)"
+    readonly nkf
 fi
 
 # Preview header
-echo $(
+echo "$(
     if [[ $target =~ / ]]; then
         cd_dir="${target%/*}"
         target_dir="${target##*/}"
@@ -30,8 +42,8 @@ echo $(
         target_dir="$target"
     fi
     cd "$cd_dir" 2>/dev/null
-    eza -d $eza_flags "$target_dir" 2>/dev/null
-)
+    eza -d "${eza_flags[@]}" "$target_dir" 2>/dev/null
+)"
 echo -e "\e[38;5;${header_color}m$mime${nkf:+ [nkf: $nkf]}\e[39m"
 echo -e "\e[38;5;${header_color}m$header_line\e[39m"
 
@@ -45,7 +57,7 @@ inode/x-empty\;*)
     echo "<EMPTY FILE>"
     ;;
 inode/directory\;*)
-    directories="$(eza $eza_flags "$target" | head -n 512)"
+    directories="$(eza "${eza_flags[@]}" "$target" | head -n 512)"
     if [[ -n $directories ]]; then
         echo "$directories"
     else
@@ -56,9 +68,9 @@ inode/directory\;*)
     hexyl --border none "$target" --length 16KiB
     ;;
 *charset=us-ascii | *charset=utf-8)
-    head -n 512 "$target" | bat $bat_flags
+    head -n 512 "$target" | bat "${bat_flags[@]}"
     ;;
 *)
-    head -n 512 "$target" | nkf | bat $bat_flags
+    head -n 512 "$target" | nkf | bat "${bat_flags[@]}"
     ;;
 esac

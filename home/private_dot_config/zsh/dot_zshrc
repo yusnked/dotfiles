@@ -24,10 +24,12 @@ source "$ZDOTDIR/rc/prompt.zsh"
 autoload -Uz _zsh-defer-dummy
 zsh-defer() { _zsh-defer-dummy "$@"; }
 
-# sheldon
 source "$DOTS_SHELLS_DIR/plugins.sh"
 
 # ===== Delayed loading from here down =====
+
+# fzf
+zsh-defer -p -c 'type fzf &>/dev/null && FZF_ALT_C_COMMAND= eval "$(fzf --zsh)"'
 
 zsh-defer -p source "$ZDOTDIR/rc/alias.zsh"
 zsh-defer -p source "$ZDOTDIR/rc/bindkey.zsh"

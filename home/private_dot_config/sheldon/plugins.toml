@@ -23,20 +23,6 @@ profiles = ['zsh']
 github = 'zsh-users/zsh-completions'
 apply = ['defer']
 
-[plugins.fzf-zsh]
-profiles = ['zsh']
-github = 'junegunn/fzf'
-use = ['*.zsh']
-apply = ['defer']
-hooks.pre = 'zsh-defer -p source "$SHELDON_CONFIG_DIR/fzf/fzf-settings.sh"'
-hooks.post = 'zsh-defer -p bindkey -M main -r "^[c"'
-
-[plugins.fzf-bash]
-profiles = ['bash']
-github = 'junegunn/fzf'
-use = ['*.bash']
-hooks.pre = 'source "$SHELDON_CONFIG_DIR/fzf/fzf-settings.sh"'
-
 [plugins.syntax-highlight]
 profiles = ['zsh']
 github = 'zsh-users/zsh-syntax-highlighting'
