@@ -29,6 +29,10 @@ NOT_VSCODE = vim.g.vscode ~= 1
 require('options')
 require('keymaps')
 
+if not NOT_VSCODE then
+    require('vscode')
+end
+
 -- lazy.nvim
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
