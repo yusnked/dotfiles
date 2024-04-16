@@ -42,9 +42,4 @@ return {
             -- }
         end,
     },
-    { -- Insert modeで行番号を絶対ナンバリングに切り替える
-        "sitiom/nvim-numbertoggle",
-        event = 'InsertEnter',
-        cond = NOT_VSCODE,
-    },
 }

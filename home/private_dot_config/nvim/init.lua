@@ -28,6 +28,7 @@ NOT_VSCODE = vim.g.vscode ~= 1
 
 require('options')
 require('keymaps')
+require('autocmd')
 
 if not NOT_VSCODE then
     require('vscode')
