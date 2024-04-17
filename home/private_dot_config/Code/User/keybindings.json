@@ -1,0 +1,23 @@
+[
+    {
+        "key": "cmd+d",
+        "command": "editor.action.addSelectionToNextFindMatch",
+        "when": "editorTextFocus && !neovim.init"
+    },
+    {
+        "key": "cmd+d",
+        "command": "vscode-neovim.send",
+        "when": "editorTextFocus && neovim.init && neovim.mode == normal",
+        "args": "<D-d>"
+    },
+    {
+        "key": "cmd+r",
+        "command": "workbench.action.openRecent"
+    },
+    {
+        "key": "ctrl+v",
+        "command": "insert-unicode.insertText",
+        "when": "editorTextFocus && neovim.init && neovim.mode == insert",
+        "args": "<control>"
+    }
+]
