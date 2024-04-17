@@ -18,7 +18,9 @@ autocmd({ 'BufLeave', 'FocusLost', 'InsertEnter', 'CmdlineEnter', 'WinLeave' }, 
     callback = function()
         if vim.o.number then
             vim.opt.relativenumber = false
-            vim.cmd.redraw()
+            if NOT_VSCODE then
+                vim.cmd.redraw()
+            end
         end
     end,
 })
