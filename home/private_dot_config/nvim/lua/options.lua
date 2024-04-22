@@ -1,44 +1,32 @@
-local options = {
-    encoding = 'utf-8',
-    fileencoding = 'utf-8',
-    fileencodings = 'ucs-bom,utf-8,iso-2022-jp,cp932,euc-jp,default,latin',
+local opt = vim.opt
 
-    title = false,
-    mouse = 'a',
-    -- 無名レジスタの代わりに+レジスタを使う。X-windowsの規定値 "autoselect,exclude:cons\llinux"の
-    -- excludeより右に要素を追加できないので先頭に追加する
-    -- clipboard = "unnamedplus" .. vim.o.clipboard,
+opt.encoding = 'utf-8'
+opt.fileencoding = 'utf-8'
+opt.fileencodings = 'ucs-bom,utf-8,iso-2022-jp,cp932,euc-jp,default,latin'
 
-    termguicolors = true,
+opt.title = false
+opt.mouse = 'a'
 
-    number = true,
-    relativenumber = true,
-    numberwidth = 4,
-    signcolumn = 'yes',
-    scrolloff = 3,
-    laststatus = 3, -- Global Status Line
+opt.termguicolors = true
 
-    ambiwidth = 'single',
+opt.number = true
+opt.relativenumber = true
+opt.numberwidth = 4
+opt.signcolumn = 'yes'
+opt.scrolloff = 3
+opt.laststatus = 3
 
-    expandtab = true,
-    tabstop = 4,
-    shiftwidth = 0,
-    softtabstop = -1,
+opt.list = true
+opt.listchars:append('eol:↴,space:⋅')
 
-    ignorecase = true,
-    smartcase = true,
-}
+opt.ambiwidth = 'single'
 
-local vsoptions = {
-    isprint = '1-255'
-}
+opt.expandtab = true
+opt.tabstop = 4
+opt.shiftwidth = 0
+opt.softtabstop = -1
 
-for k, v in pairs(options) do
-    vim.opt[k] = v
-end
+opt.ignorecase = true
+opt.smartcase = true
 
-if not NOT_VSCODE then
-    for k, v in pairs(vsoptions) do
-        vim.opt[k] = v
-    end
-end
+opt.shortmess:append('I')
