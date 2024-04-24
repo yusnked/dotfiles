@@ -1,0 +1,8 @@
+{
+    "diagnostics.globals": [
+        "mp" // mpv
+    ],
+    "runtime.pathStrict": true,
+    "runtime.path": ["?.lua", "?/init.lua"],
+    "workspace.library": ["$HOME/.nix-profile/share/nvim/runtime"]
+}

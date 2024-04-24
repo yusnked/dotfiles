@@ -7,6 +7,13 @@ indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+[*.lua]
+# LuaLS
+align_array_table = false
+align_continuous_assign_statement = false
+align_continuous_rect_table_field = false
+quote_style = single
+
 [*.nix{,.tmpl}]
 indent_size = 2
 
