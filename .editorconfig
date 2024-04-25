@@ -12,7 +12,9 @@ trim_trailing_whitespace = true
 align_array_table = false
 align_continuous_assign_statement = false
 align_continuous_rect_table_field = false
+call_arg_parentheses = remove_table_only
 quote_style = single
+trailing_table_separator = smart
 
 [*.nix{,.tmpl}]
 indent_size = 2
