@@ -15,6 +15,7 @@ opt.numberwidth = 4
 opt.signcolumn = 'yes'
 opt.scrolloff = 3
 opt.laststatus = 3
+opt.shortmess:append('I')
 
 opt.list = true
 opt.listchars:append('eol:↴,space:⋅')
@@ -29,4 +30,5 @@ opt.softtabstop = -1
 opt.ignorecase = true
 opt.smartcase = true
 
-opt.shortmess:append('I')
+opt.grepprg = 'rg -S.g"!.git/**" --vimgrep $* >/dev/null'
+opt.grepformat = '%f:%l:%c:%m'
