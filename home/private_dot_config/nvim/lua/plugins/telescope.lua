@@ -1,28 +1,28 @@
 return {
     {
         'nvim-telescope/telescope.nvim',
-        version = false,
+        version = '*',
         dependencies = {
             'nvim-lua/plenary.nvim',
             'nvim-tree/nvim-web-devicons',
             'nvim-telescope/telescope-fzf-native.nvim',
         },
+        keys = { '<Leader>f', '<Leader>p', '<Leader>*', { '<C-t>', mode = 'c' } },
         cmd = 'Telescope',
         cond = NOT_VSCODE,
         config = function()
             local telescope = require('telescope')
             local actions = require('telescope.actions')
             local fb_actions = telescope.extensions.file_browser.actions
+            local native_fzf_sorter = telescope.extensions.fzf.native_fzf_sorter
             telescope.setup {
                 defaults = {
                     mappings = {
                         i = {
                             ['<C-j>'] = actions.move_selection_next,
                             ['<C-k>'] = actions.move_selection_previous,
-                            ['<C-;>'] = 'which_key',
                         },
                         n = {
-                            [';'] = 'which_key',
                             ['<C-c>'] = {
                                 actions.close,
                                 type = 'action',
@@ -61,6 +61,7 @@ return {
                     },
                 },
                 extensions = {
+                    fzf = { fuzzy = false },
                     file_browser = {
                         hijack_netrw = false, -- Because it is already set up.
                         initial_mode = 'normal',
@@ -81,6 +82,7 @@ return {
                         },
                     },
                     frecency = {
+                        sorter = native_fzf_sorter(),
                         db_safe_mode = false,
                         show_scores = true,
                         show_unindexed = false,
@@ -109,7 +111,7 @@ return {
             keymap('n', '<Leader>ff', builtin.live_grep, { desc = 'Telescope live_grep' })
             keymap('n', '<Leader>fgb', builtin.git_branches, { desc = 'Telescope git_branches' })
             keymap('n', '<Leader>fgc', builtin.git_bcommits, { desc = 'Telescope git_bcommits' })
-            keymap('x', '<Leader>fg', builtin.git_bcommits_range, { desc = 'Telescope git_bcommits_range' })
+            -- keymap('x', '<Leader>fg', builtin.git_bcommits_range, { desc = 'Telescope git_bcommits_range' })
             keymap('n', '<Leader>fgC', builtin.git_commits, { desc = 'Telescope git_commits' })
             keymap('n', '<Leader>fgq', builtin.git_stash, { desc = 'Telescope git_stash' })
             keymap('n', '<Leader>fgs', builtin.git_status, { desc = 'Telescope git_status' })
