@@ -11,16 +11,23 @@ M.execute_cmd = function(cmd)
     return result
 end
 
-M.flatten = function(tbl, result)
-    result = result or {}
-    for _, v in ipairs(tbl) do
-        if type(v) == "table" then
-            M.flatten(v, result)
-        else
-            table.insert(result, v)
+M.exec_autocmds_filetype = function(opts)
+    if vim.bo.filetype ~= '' then
+        vim.schedule(function()
+            vim.api.nvim_exec_autocmds({ 'FileType' }, opts)
+        end)
+    end
+end
+
+M.exec_autocmds_by_group_pattern = function(group_pattern, event, opts)
+    opts = opts or {}
+    for _, autocmd in ipairs(vim.api.nvim_get_autocmds { event = event }) do
+        local matched_group = autocmd.group_name:match(group_pattern)
+        if matched_group then
+            opts.group = matched_group
+            vim.api.nvim_exec_autocmds(event, opts)
         end
     end
-    return result
 end
 
 M.get_listed_buffers = function()
@@ -32,25 +39,6 @@ M.get_listed_buffers = function()
     end
 
     return buffers
-end
-
-M.get_mode_name = function()
-    local mode = vim.fn.mode():match('^.')
-    local mode_name = 'normal'
-    if mode == 'n' then
-        mode_name = 'normal'
-    elseif mode == 'i' then
-        mode_name = 'insert'
-    elseif mode == 'v' or mode == 'V' or mode == '\19' or mode == '\22' or mode == 's' or mode == 'S' then
-        mode_name = 'visual'
-    elseif mode == 'c' then
-        mode_name = 'command'
-    elseif mode == 't' then
-        mode_name = 'terminal'
-    elseif mode == 'r' or mode == 'R' then
-        mode_name = 'replace'
-    end
-    return mode_name
 end
 
 M.get_shell_path = function(fallback_shell)
