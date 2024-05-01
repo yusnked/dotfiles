@@ -2,25 +2,66 @@ return {
     {
         'nvim-treesitter/nvim-treesitter',
         version = '*',
-        dependencies = {
-            'nvim-treesitter/nvim-treesitter-textobjects',
-            'JoosepAlviste/nvim-ts-context-commentstring',
-            { 'https://gitlab.com/HiPhish/rainbow-delimiters.nvim', version = '*', cond = NOT_VSCODE }
-        },
-        -- event = 'FileType',
+        event = 'VeryLazy',
         build = function()
-            require('nvim-treesitter.install').update({ with_sync = true })
+            require('nvim-treesitter.install').update { with_sync = true }
         end,
-        conf = NOT_VSCODE,
         main = 'nvim-treesitter.configs',
         opts = {
-            ensure_installed = 'all',
+            ensure_installed = {
+                'awk',
+                'bash',
+                'c',
+                -- 'comment', -- SLOW
+                'cpp',
+                'css',
+                'csv',
+                'diff',
+                'dockerfile',
+                'embedded_template',
+                'git_config',
+                'git_rebase',
+                'gitattributes',
+                'gitcommit',
+                'gitignore',
+                'go',
+                'gpg',
+                'html',
+                'http',
+                'ini',
+                'javascript',
+                'jq',
+                'json',
+                'json5',
+                'jsonc',
+                'lua',
+                'make',
+                'markdown',
+                'markdown_inline',
+                'nix',
+                'passwd',
+                'python',
+                'regex',
+                'ruby',
+                'rust',
+                'scss',
+                'sql',
+                'styled',
+                'terraform',
+                'toml',
+                'tsv',
+                'typescript',
+                'vim',
+                'vimdoc',
+                'xml',
+                'yaml',
+            },
             sync_install = false,
             auto_install = false,
+
             highlight = {
-                enable = true,
-                -- 指定したサイズ以上のファイルのハイライトを無効
-                disable = function(lang, buf)
+                enable = NOT_VSCODE,
+                disable = function(_, buf)
                     local max_filesize = 100 * 1024 -- 100 KB
                     local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
                     if ok and stats and stats.size > max_filesize then
@@ -29,63 +70,107 @@ return {
                 end,
                 additional_vim_regex_highlighting = false,
             },
-            -- treesitterを用いた=でのインデント整形を有効にする
-            indent = { enable = true },
 
-            --[[ incremental_selection = {
-                enable = true,
-                keymaps = {
-                    init_selection = 'grn', -- set to `false` to disable one of the mappings
-                    node_incremental = "grn",
-                    scope_incremental = "grc",
-                    node_decremental = "grm",
-                },
-            }, ]]
+            indent = { enable = NOT_VSCODE },
 
             textobjects = {
                 select = {
                     enable = true,
-                    lookahead = true, -- Automatically jump forward to textobj, similar to targets.vim
+                    lookahead = true,
                     keymaps = {
-                        -- You can use the capture groups defined in textobjects.scm
-                        ['af'] = '@function.outer',
-                        ['if'] = '@function.inner',
-                        ['ac'] = '@class.outer',
-                        ['ic'] = '@class.inner',
                         ['aa'] = '@parameter.outer',
                         ['ia'] = '@parameter.inner',
+                        ['ac'] = '@class.outer',
+                        ['ic'] = '@class.inner',
+                        ['af'] = '@function.outer',
+                        ['if'] = '@function.inner',
                         ['in'] = '@number.inner',
-                        ['agc'] = '@comment.outer',
-                        ['igc'] = '@comment.inner',
-                        ['agr'] = '@return.outer',
-                        ['igr'] = '@return.inner',
-                        ['a<C-b>'] = '@block.outer',
-                        ['i<C-b>'] = '@block.inner',
+                        ['agb'] = '@block.outer',
+                        ['igb'] = '@block.inner',
                     },
                 },
-                -- move = {
-                --     enable = true,
-                --     set_jumps = true, -- whether to set jumps in the jumplist
-                --     goto_next_start = {
-                --         [']m'] = '@function.outer',
-                --         [']c'] = '@codechunk.inner',
-                --         [']]'] = '@class.outer',
-                --     },
-                --     goto_next_end = {
-                --         [']M'] = '@function.outer',
-                --         [']['] = '@class.outer',
-                --     },
-                --     goto_previous_start = {
-                --         ['[m'] = '@function.outer',
-                --         ['[c'] = '@codechunk.inner',
-                --         -- ['[['] = '@class.outer',
-                --     },
-                --     goto_previous_end = {
-                --         ['[M'] = '@function.outer',
-                --         ['[]'] = '@class.outer',
-                --     },
-                -- },
+                move = {
+                    enable = true,
+                    set_jumps = true,
+                    goto_next_start = {
+                        [']m'] = '@function.outer',
+                    },
+                    goto_next_end = {
+                        [']M'] = '@function.outer',
+                    },
+                    goto_previous_start = {
+                        ['[m'] = '@function.outer',
+                    },
+                    goto_previous_end = {
+                        ['[M'] = '@function.outer',
+                    },
+                },
             },
-        }
+        },
+    },
+    {
+        'nvim-treesitter/nvim-treesitter-textobjects',
+        -- Wait for this to be fixed: https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/513
+        commit = '73e44f43c70289c70195b5e7bc6a077ceffddda4',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        event = 'VeryLazy',
+        config = function()
+            if vim.bo.filetype ~= '' then
+                vim.schedule(function()
+                    require('helpers').exec_autocmds_by_group_pattern('^NvimTreesitter-.+$', { 'FileType' })
+                end)
+            end
+        end,
+    },
+    {
+        'nvim-treesitter/nvim-treesitter-context',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        event = 'VeryLazy',
+        cond = NOT_VSCODE,
+        opts = {},
+    },
+    {
+        'JoosepAlviste/nvim-ts-context-commentstring',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        config = function()
+            vim.g.skip_ts_context_commentstring_module = true
+            require('ts_context_commentstring').setup { enable_autocmd = false }
+        end,
+    },
+    {
+        'HiPhish/rainbow-delimiters.nvim',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        cond = NOT_VSCODE,
+        config = function()
+            vim.g.rainbow_delimiters = {
+                highlight = {
+                    'RainbowRed',
+                    'RainbowYellow',
+                    'RainbowBlue',
+                    'RainbowOrange',
+                    'RainbowGreen',
+                    'RainbowViolet',
+                    'RainbowCyan',
+                },
+            }
+        end,
+    },
+    {
+        'windwp/nvim-ts-autotag',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        event = 'VeryLazy',
+        cond = NOT_VSCODE,
+        config = function()
+            require('nvim-ts-autotag').setup {
+                filetypes = { 'html', 'javascriptreact', 'typescriptreact', 'xml' },
+            }
+            require('helpers').exec_autocmds_filetype { group = 'nvim_ts_xmltag' }
+        end,
+    },
+    {
+        'Wansmer/treesj',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' },
+        keys = { { 'J', function() require('treesj').toggle() end, { desc = 'TSJToggle' } } },
+        opts = { use_default_keymaps = false },
     },
 }
