@@ -11,6 +11,27 @@ keymap('n', 'k', 'gk')
 keymap('n', 'gj', 'j')
 keymap('n', 'gk', 'k')
 keymap({ 'n', 'x' }, 'gJ', ':JoinSpaceLess<CR>', { silent = true })
+keymap('n', 'gf', function()
+    local cfile = vim.fn.expand('<cfile>')
+    if cfile:match('^https?://') then
+        cfile, _ = cfile:gsub('^https?://', 'https://')
+        vim.fn.system { 'xdg-open', cfile }
+    else
+        local head = vim.fn.expand('%:h')
+        if head == '' then
+            cfile = vim.fn.expand('<cfile>:p')
+        else
+            cfile = head .. '/' .. cfile
+        end
+        if vim.fn.system { 'file', '--mime', cfile }:match('charset=binary') then
+            vim.fn.system { 'xdg-open', cfile }
+        else
+            vim.cmd('normal! gF')
+        end
+    end
+end)
+keymap('x', 'gf', 'gF')
+keymap({ 'n', 'x' }, 'gF', 'gf')
 
 -- Prevent error "E335: Menu not defined for Insert mode".
 keymap('v', '<RightMouse>', '<C-\\><C-g>gv<cmd>:popup! PopUp<CR>')
