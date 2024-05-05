@@ -2,7 +2,7 @@ return {
     {
         'nvim-treesitter/nvim-treesitter',
         version = '*',
-        event = 'VeryLazy',
+        event = NOT_VSCODE and { 'VeryLazy' } or { 'FileType' },
         build = function()
             require('nvim-treesitter.install').update { with_sync = true }
         end,
@@ -70,9 +70,7 @@ return {
                 end,
                 additional_vim_regex_highlighting = false,
             },
-
             indent = { enable = NOT_VSCODE },
-
             textobjects = {
                 select = {
                     enable = true,
@@ -106,6 +104,7 @@ return {
                     },
                 },
             },
+            matchup = { enable = true },
         },
     },
     {
@@ -113,19 +112,19 @@ return {
         -- Wait for this to be fixed: https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/513
         commit = '73e44f43c70289c70195b5e7bc6a077ceffddda4',
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
-        event = 'VeryLazy',
+        event = NOT_VSCODE and { 'VeryLazy' } or { 'FileType' },
         config = function()
-            if vim.bo.filetype ~= '' then
-                vim.schedule(function()
-                    require('helpers').exec_autocmds_by_group_pattern('^NvimTreesitter-.+$', { 'FileType' })
-                end)
+            if NOT_VSCODE and vim.bo.filetype ~= '' then
+                vim.defer_fn(function()
+                    vim.cmd.edit()
+                end, 200)
             end
         end,
     },
     {
         'nvim-treesitter/nvim-treesitter-context',
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
-        event = 'VeryLazy',
+        event = { 'VeryLazy' },
         cond = NOT_VSCODE,
         opts = {},
     },
@@ -158,14 +157,9 @@ return {
     {
         'windwp/nvim-ts-autotag',
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
-        event = 'VeryLazy',
+        event = { 'VeryLazy' },
         cond = NOT_VSCODE,
-        config = function()
-            require('nvim-ts-autotag').setup {
-                filetypes = { 'html', 'javascriptreact', 'typescriptreact', 'xml' },
-            }
-            require('helpers').exec_autocmds_filetype { group = 'nvim_ts_xmltag' }
-        end,
+        opts = { filetypes = { 'html', 'javascriptreact', 'typescriptreact', 'xml' } },
     },
     {
         'Wansmer/treesj',
