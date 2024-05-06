@@ -82,7 +82,6 @@ return {
                         ['ic'] = '@class.inner',
                         ['af'] = '@function.outer',
                         ['if'] = '@function.inner',
-                        ['in'] = '@number.inner',
                         ['agb'] = '@block.outer',
                         ['igb'] = '@block.inner',
                     },

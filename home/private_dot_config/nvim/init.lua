@@ -34,7 +34,7 @@ require('lazy').setup('plugins', {
                 'gzip',
                 'health',
                 'man',
-                -- 'matchit',
+                'matchit',
                 'matchparen',
                 'netrwPlugin',
                 -- 'nvim',
