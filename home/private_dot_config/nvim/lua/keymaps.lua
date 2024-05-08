@@ -38,6 +38,10 @@ keymap('v', '<RightMouse>', '<C-\\><C-g>gv<cmd>:popup! PopUp<CR>')
 
 keymap('c', '<C-b>', '<Left>')
 keymap('c', '<C-f>', '<Right>')
+keymap('c', '<C-n>', '<Down>')
+keymap('c', '<C-p>', '<Up>')
+keymap('c', '<Down>', '<C-n>')
+keymap('c', '<Up>', '<C-p>')
 
 -- User command
 create_command('JoinSpaceLess', function(arg)
