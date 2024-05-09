@@ -57,4 +57,35 @@ M.p = function(arg)
     vim.print(vim.inspect(arg))
 end
 
+local set_operatorfunc = function(fn)
+    _G.Operatorfunc = fn
+    vim.opt.operatorfunc = 'v:lua.Operatorfunc'
+end
+M.set_keymap = function(mode, lhs, rhs, opts)
+    opts = opts or {}
+    local dotrepeat = not not opts.dotrepeat
+    opts.dotrepeat = nil
+    local operatorfunc = not not opts.operatorfunc
+    opts.operatorfunc = nil
+    if type(rhs) == 'function' then
+        if dotrepeat then
+            local wrapper = function()
+                set_operatorfunc(rhs)
+                vim.cmd('normal! ' .. vim.v.count .. 'g@l')
+            end
+            vim.keymap.set(mode, lhs, wrapper, opts)
+            return
+        elseif operatorfunc then
+            local wrapper = function()
+                set_operatorfunc(rhs)
+                return 'g@'
+            end
+            opts.expr = true
+            vim.keymap.set(mode, lhs, wrapper, opts)
+            return
+        end
+    end
+    vim.keymap.set(mode, lhs, rhs, opts)
+end
+
 return M
