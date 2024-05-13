@@ -15,6 +15,17 @@ return {
                 specs = {
                     carbonfox = { git = { changed = '#0081c0' } },
                 },
+                groups = {
+                    all = {
+                        RainbowDelimiterBlue = { fg = 'palette.blue.base' },
+                        RainbowDelimiterCyan = { fg = 'palette.yellow.base' },
+                        RainbowDelimiterGreen = { fg = 'palette.green.base' },
+                        RainbowDelimiterOrange = { fg = 'palette.orange.base' },
+                        RainbowDelimiterRed = { fg = 'palette.red.base' },
+                        RainbowDelimiterViolet = { fg = 'palette.magenta.base' },
+                        RainbowDelimiterYellow = { fg = 'palette.yellow.base' },
+                    },
+                },
             }
             vim.cmd.colorscheme('carbonfox')
         end,
