@@ -14,7 +14,9 @@ opt.relativenumber = true
 opt.numberwidth = 4
 opt.signcolumn = 'yes'
 opt.scrolloff = 3
-opt.laststatus = 3
+opt.laststatus = 2
+opt.tabline = '%!""'
+opt.showtabline = 2
 opt.shortmess:append('I')
 
 opt.list = true
@@ -32,3 +34,14 @@ opt.smartcase = true
 
 opt.grepprg = 'rg -S.g"!.git/**" --vimgrep $* >/dev/null'
 opt.grepformat = '%f:%l:%c:%m'
+
+opt.timeout = true
+opt.timeoutlen = 500
+
+opt.updatetime = 200
+vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+    callback = function()
+        vim.opt.updatetime = 4000
+    end,
+    once = true,
+})
