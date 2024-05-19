@@ -182,8 +182,6 @@ return {
             textobjs.setup {}
 
             local keymap = vim.keymap.set
-            keymap('o', 'gc', textobjs.multiCommentedLines,
-                { desc = 'Consecutive, fully commented lines' })
             keymap({ 'o', 'x' }, 'iS', function() textobjs.subword('inner') end,
                 { desc = 'inner subword' })
             keymap({ 'o', 'x' }, 'aS', function() textobjs.subword('outer') end,
@@ -196,6 +194,13 @@ return {
     },
     {
         'kana/vim-niceblock',
-        keys = { { 'I', mode = { 'v' } }, { 'gI', mode = { 'v' } }, { 'A', mode = { 'v' } } },
+        keys = { { 'I', mode = { 'x' } }, { 'gI', mode = { 'x' } }, { 'A', mode = { 'x' } } },
+    },
+    {
+        'mattn/emmet-vim',
+        keys = { { '<C-y>', mode = 'i', desc = 'Emmet' } },
+        init = function()
+            vim.g.user_emmet_mode = 'i'
+        end,
     },
 }
