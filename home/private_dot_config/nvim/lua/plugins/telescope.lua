@@ -13,7 +13,6 @@ return {
         config = function()
             local telescope = require('telescope')
             local actions = require('telescope.actions')
-            local fb_actions = telescope.extensions.file_browser.actions
             local native_fzf_sorter = telescope.extensions.fzf.native_fzf_sorter
             telescope.setup {
                 defaults = {
@@ -62,43 +61,10 @@ return {
                 },
                 extensions = {
                     fzf = { fuzzy = false },
-                    file_browser = {
-                        hijack_netrw = false, -- Because it is already set up.
-                        initial_mode = 'normal',
-                        mappings = {
-                            n = {
-                                ['h'] = fb_actions.goto_parent_dir,
-                                ['l'] = actions.select_default,
-                                ['.'] = fb_actions.toggle_hidden,
-                                ['<leader>e'] = {
-                                    actions.close,
-                                    type = 'action',
-                                    opts = { nowait = true, silent = true },
-                                },
-                            },
-                            i = {
-                                ['<C-.>'] = fb_actions.toggle_hidden,
-                            },
-                        },
-                    },
-                    frecency = {
-                        sorter = native_fzf_sorter(),
-                        db_safe_mode = false,
-                        show_scores = true,
-                        show_unindexed = false,
-                        ignore_patterns = {
-                            '*.git/*',
-                            '*/tmp/*',
-                            '*/node_modules/*',
-                            'term://*',
-                        },
-                    },
                 },
             }
 
             telescope.load_extension('fzf')
-            telescope.load_extension('file_browser')
-
             telescope.load_extension('notify')
 
             local keymap = vim.keymap.set
@@ -134,69 +100,6 @@ return {
     {
         'nvim-telescope/telescope-fzf-native.nvim',
         build = 'make',
-    },
-    {
-        'nvim-telescope/telescope-file-browser.nvim',
-        keys = {
-            { '<Leader>e', function()
-                require('telescope').extensions.file_browser.file_browser()
-            end, { desc = 'Telescope file_browser' } },
-        },
-        cond = NOT_VSCODE,
-        init = function()
-            -- Execute hijack_netrw functions directly here.
-            -- https://github.com/nvim-telescope/telescope-file-browser.nvim/blob/master/lua/telescope/_extensions/file_browser/config.lua
-            local netrw_bufname
-            vim.api.nvim_create_autocmd('BufEnter', {
-                group = vim.api.nvim_create_augroup('telescope-file-browser.nvim', {}),
-                pattern = '*',
-                callback = function()
-                    vim.schedule(function()
-                        local bufname = vim.api.nvim_buf_get_name(0)
-                        if vim.fn.isdirectory(bufname) == 0 then
-                            _, netrw_bufname = pcall(vim.fn.expand, '#:p:h')
-                            return
-                        end
-                        if netrw_bufname == bufname then
-                            netrw_bufname = nil
-                            return
-                        else
-                            netrw_bufname = bufname
-                        end
-                        vim.api.nvim_buf_set_option(0, 'bufhidden', 'wipe')
-                        require('telescope').extensions.file_browser.file_browser { cwd = bufname }
-
-                        vim.defer_fn(function()
-                            if vim.bo[0].filetype ~= 'TelescopePrompt' then
-                                for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-                                    if vim.bo[bufnr].filetype == 'TelescopePrompt' then
-                                        vim.cmd.buffer(bufnr)
-                                        break
-                                    end
-                                end
-                            end
-                        end, 100)
-                    end)
-                end,
-                desc = 'telescope-file-browser.nvim replacement for netrw',
-            })
-        end,
-    },
-    {
-        'nvim-telescope/telescope-frecency.nvim',
-        event = { 'BufLeave', 'ExitPre' },
-        keys = {
-            { '<Leader>fr', function()
-                require('telescope').extensions.frecency.frecency()
-            end, { desc = 'Telescope frecency' } },
-        },
-        cond = NOT_VSCODE,
-        config = function()
-            require('telescope').load_extension('frecency')
-            vim.api.nvim_exec_autocmds({ 'BufWinEnter', 'BufWritePost' }, {
-                group = 'TelescopeFrecency',
-            })
-        end,
     },
     {
         'nvim-telescope/telescope-project.nvim',
