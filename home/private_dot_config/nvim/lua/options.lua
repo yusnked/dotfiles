@@ -35,9 +35,6 @@ opt.smartcase = true
 opt.grepprg = 'rg -S.g"!.git/**" --vimgrep $* >/dev/null'
 opt.grepformat = '%f:%l:%c:%m'
 
-opt.timeout = true
-opt.timeoutlen = 500
-
 opt.updatetime = 200
 vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
     callback = function()

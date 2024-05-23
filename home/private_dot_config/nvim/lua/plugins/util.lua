@@ -25,4 +25,14 @@ return {
             vim.notify = require('notify')
         end,
     },
+    {
+        'folke/which-key.nvim',
+        event = 'VeryLazy',
+        cond = NOT_VSCODE,
+        opts = {},
+        init = function()
+            vim.opt.timeout = true
+            vim.opt.timeoutlen = 500
+        end,
+    },
 }
