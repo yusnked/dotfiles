@@ -74,15 +74,15 @@ return {
             multiline = false,
         },
     },
-    {
-        'andymass/vim-matchup',
-        version = '*',
-        event = { 'CursorHold', 'CursorHoldI' },
-        config = function()
-            if not NOT_VSCODE then
-                vim.g.matchup_matchparen_enabled = 0
-            end
-            vim.api.nvim_exec_autocmds({ 'FileType' }, { group = 'matchup_filetype' })
-        end,
-    },
+    -- {
+    --     'andymass/vim-matchup',
+    --     version = '*',
+    --     event = { 'CursorHold', 'CursorHoldI' },
+    --     config = function()
+    --         if not NOT_VSCODE then
+    --             vim.g.matchup_matchparen_enabled = 0
+    --         end
+    --         vim.api.nvim_exec_autocmds({ 'FileType' }, { group = 'matchup_filetype' })
+    --     end,
+    -- },
 }

@@ -22,9 +22,9 @@ end
 M.exec_autocmds_by_group_pattern = function(group_pattern, event, opts)
     opts = opts or {}
     for _, autocmd in ipairs(vim.api.nvim_get_autocmds { event = event }) do
-        local matched_group = autocmd.group_name:match(group_pattern)
-        if matched_group then
-            opts.group = matched_group
+        local group_name = autocmd.group_name
+        if group_name:match(group_pattern) then
+            opts.group = group_name
             vim.api.nvim_exec_autocmds(event, opts)
         end
     end

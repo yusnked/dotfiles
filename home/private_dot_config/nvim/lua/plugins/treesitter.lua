@@ -110,14 +110,12 @@ return {
                         },
                     },
                 },
-                matchup = { enable = true },
+                -- matchup = { enable = true },
             }
         end,
     },
     {
         'nvim-treesitter/nvim-treesitter-textobjects',
-        -- Wait for this to be fixed: https://github.com/nvim-treesitter/nvim-treesitter-textobjects/issues/513
-        commit = '73e44f43c70289c70195b5e7bc6a077ceffddda4',
         dependencies = { 'nvim-treesitter/nvim-treesitter' },
         event = { 'VeryLazy' },
     },
