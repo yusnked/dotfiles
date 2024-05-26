@@ -1,5 +1,31 @@
 local M = {}
 
+M.abbrev_path = function(path, effort_width)
+    effort_width = effort_width or 0
+    if type(effort_width) ~= 'number' then
+        error('Type error: the second argument must be of type number.')
+        return
+    end
+    if path == '/' then
+        return '/'
+    end
+    path, _ = path:gsub(os.getenv('HOME'), '~')
+
+    local strwidth = vim.fn.strwidth
+    local substitute = vim.fn.substitute
+    local width = strwidth(path)
+    local prev_path = path
+    while width > effort_width do
+        path = substitute(path, [[\v/([^.]|\..)[^/]+/]], '/\\1/', '')
+        if path == prev_path then
+            break
+        end
+        width = strwidth(path)
+        prev_path = path
+    end
+    return path
+end
+
 M.execute_cmd = function(cmd)
     local handle = io.popen(cmd)
     local result = ''
@@ -23,7 +49,7 @@ M.exec_autocmds_by_group_pattern = function(group_pattern, event, opts)
     opts = opts or {}
     for _, autocmd in ipairs(vim.api.nvim_get_autocmds { event = event }) do
         local group_name = autocmd.group_name
-        if group_name:match(group_pattern) then
+        if group_name and string.match(group_name, group_pattern) then
             opts.group = group_name
             vim.api.nvim_exec_autocmds(event, opts)
         end

@@ -2,22 +2,24 @@ return {
     {
         'lukas-reineke/indent-blankline.nvim',
         dependencies = { 'HiPhish/rainbow-delimiters.nvim' },
-        event = { 'VeryLazy' },
+        event = { 'CursorHold', 'CursorHoldI' },
         cond = NOT_VSCODE,
         config = function()
-            local highlight = vim.g.rainbow_delimiters.highlight
-            local hooks = require('ibl.hooks')
-            hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
-                vim.api.nvim_set_hl(0, highlight[1], { fg = '#E06C75' })
-                vim.api.nvim_set_hl(0, highlight[2], { fg = '#E5C07B' })
-                vim.api.nvim_set_hl(0, highlight[3], { fg = '#61AFEF' })
-                vim.api.nvim_set_hl(0, highlight[4], { fg = '#D19A66' })
-                vim.api.nvim_set_hl(0, highlight[5], { fg = '#98C379' })
-                vim.api.nvim_set_hl(0, highlight[6], { fg = '#C678DD' })
-                vim.api.nvim_set_hl(0, highlight[7], { fg = '#56B6C2' })
-            end)
+            require('ibl').setup {
+                scope = {
+                    highlight = {
+                        'RainbowDelimiterRed',
+                        'RainbowDelimiterYellow',
+                        'RainbowDelimiterBlue',
+                        'RainbowDelimiterOrange',
+                        'RainbowDelimiterGreen',
+                        'RainbowDelimiterViolet',
+                        'RainbowDelimiterCyan',
+                    },
+                },
+            }
 
-            require('ibl').setup { scope = { highlight = highlight } }
+            local hooks = require('ibl.hooks')
             hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
 
             require('helpers').exec_autocmds_filetype { group = 'TSRainbowDelimits' }
@@ -54,71 +56,111 @@ return {
         },
     },
     {
+        'karb94/neoscroll.nvim',
+        keys = { '<C-u>', '<C-d>', '<C-b>', '<C-f>', 'zt', 'zz', 'zb' },
+        cond = NOT_VSCODE,
+        config = function(plugin)
+            require('neoscroll').setup {
+                mappings = plugin.keys,
+            }
+            require('neoscroll.config').set_mappings {
+                ['<C-u>'] = { 'scroll', { '-vim.wo.scroll', 'true', '125' } },
+                ['<C-d>'] = { 'scroll', { 'vim.wo.scroll', 'true', '125' } },
+                ['<C-b>'] = { 'scroll', { '-vim.api.nvim_win_get_height(0)', 'true', '250' } },
+                ['<C-f>'] = { 'scroll', { 'vim.api.nvim_win_get_height(0)', 'true', '250' } },
+                ['zt'] = { 'zt', { '125' } },
+                ['zz'] = { 'zz', { '125' } },
+                ['zb'] = { 'zb', { '125' } },
+            }
+        end,
+    },
+    {
         'RRethy/vim-illuminate',
         event = { 'VeryLazy' },
         cond = NOT_VSCODE,
+        config = function()
+            local illuminate = require('illuminate')
+            illuminate.configure {
+                delay = 200,
+                filetypes_denylist = {
+                    'NvimTree',
+                    'fugitive',
+                    'lazy',
+                },
+            }
+            -- Disable highlighting in visual mode.
+            local group = vim.api.nvim_create_augroup('illuminate-invisible-visual', {})
+            vim.api.nvim_create_autocmd({ 'ModeChanged' }, {
+                group = group,
+                pattern = '[vV\x16]*:*',
+                callback = illuminate.visible_buf,
+            })
+            vim.api.nvim_create_autocmd({ 'ModeChanged' }, {
+                group = group,
+                pattern = '*:[vV\x16]*',
+                callback = illuminate.invisible_buf,
+            })
+        end,
     },
     {
         'brenoprata10/nvim-highlight-colors',
-        event = { 'FileType' },
+        event = { 'CursorHold', 'CursorHoldI' },
         cond = NOT_VSCODE,
         opts = {},
     },
     {
-        'kevinhwang91/nvim-bqf',
-        ft = 'qf',
-        cond = NOT_VSCODE,
-    },
-    {
         'lewis6991/gitsigns.nvim',
-        dependencies = { 'petertriho/nvim-scrollbar' },
-        event = { 'VeryLazy' },
+        event = { 'CursorHold', 'CursorHoldI' },
         cond = NOT_VSCODE,
-        config = function()
-            local gitsigns = require('gitsigns')
-            gitsigns.setup {
-                attach_to_untracked = true,
-                on_attach = function(bufnr)
-                    local keymap = function(mode, l, r, opts)
-                        opts = opts or {}
-                        opts.buffer = bufnr
-                        vim.keymap.set(mode, l, r, opts)
+        opts = {
+            attach_to_untracked = true,
+            on_attach = function(bufnr)
+                local gitsigns = require('gitsigns')
+                local keymap = function(mode, l, r, opts)
+                    opts = opts or {}
+                    opts.buffer = bufnr
+                    vim.keymap.set(mode, l, r, opts)
+                end
+
+                keymap('n', ']c', function()
+                    if vim.wo.diff then
+                        vim.cmd.normal { ']c', bang = true }
+                    else
+                        gitsigns.nav_hunk('next')
                     end
+                end, { desc = 'Next git change' })
+                keymap('n', '[c', function()
+                    if vim.wo.diff then
+                        vim.cmd.normal { '[c', bang = true }
+                    else
+                        gitsigns.nav_hunk('prev')
+                    end
+                end, { desc = 'Previous git change' })
 
-                    keymap('n', ']c', function()
-                        if vim.wo.diff then
-                            vim.cmd.normal { ']c', bang = true }
-                        else
-                            gitsigns.nav_hunk('next')
-                        end
-                    end)
-                    keymap('n', '[c', function()
-                        if vim.wo.diff then
-                            vim.cmd.normal { '[c', bang = true }
-                        else
-                            gitsigns.nav_hunk('prev')
-                        end
-                    end)
+                keymap('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'Stage hunk' })
+                keymap('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'Reset hunk' })
+                keymap('v', '<leader>hs', function()
+                    gitsigns.stage_hunk { vim.fn.line('.'), vim.fn.line('v') }
+                end, { desc = 'Stage hunk' })
+                keymap('v', '<leader>hr', function()
+                    gitsigns.reset_hunk { vim.fn.line('.'), vim.fn.line('v') }
+                end, { desc = 'Reset hunk' })
+                keymap('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'Stage buffer' })
+                keymap('n', '<leader>hu', gitsigns.undo_stage_hunk, { desc = 'Undo stage hunk' })
+                keymap('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'Reset buffer' })
+                keymap('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'Preview hunk' })
+                keymap('n', '<leader>hb', function()
+                    gitsigns.blame_line { full = true }
+                end, { desc = 'Show git blame for cursor line' })
+                keymap('n', '<leader>hd', gitsigns.diffthis, { desc = 'Diff against the index' })
+                keymap('n', '<leader>hD', function()
+                    gitsigns.diffthis('~1')
+                end, { desc = 'Diff against the last commit' })
+                keymap('n', '<leader>ht', gitsigns.toggle_deleted, { desc = 'Toggle display of deleted' })
 
-                    keymap('n', '<leader>hs', gitsigns.stage_hunk)
-                    keymap('n', '<leader>hr', gitsigns.reset_hunk)
-                    keymap('v', '<leader>hs', function() gitsigns.stage_hunk { vim.fn.line('.'), vim.fn.line('v') } end)
-                    keymap('v', '<leader>hr', function() gitsigns.reset_hunk { vim.fn.line('.'), vim.fn.line('v') } end)
-                    keymap('n', '<leader>hs', gitsigns.stage_buffer)
-                    keymap('n', '<leader>hu', gitsigns.undo_stage_hunk)
-                    keymap('n', '<leader>hr', gitsigns.reset_buffer)
-                    keymap('n', '<leader>hp', gitsigns.preview_hunk)
-                    keymap('n', '<leader>hb', function() gitsigns.blame_line { full = true } end)
-                    keymap('n', '<leader>hd', gitsigns.diffthis)
-                    keymap('n', '<leader>hd', function() gitsigns.diffthis('~') end)
-                    keymap('n', '<leader>htd', gitsigns.toggle_deleted)
-
-                    keymap({ 'o', 'x' }, 'ih', ':<c-u>gitsigns select_hunk<cr>')
-                end,
-            }
-
-            require('scrollbar.handlers.gitsigns').setup()
-        end,
+                keymap({ 'o', 'x' }, 'ih', gitsigns.select_hunk, { desc = 'inner hunk' })
+            end,
+        },
     },
     {
         'jghauser/mkdir.nvim',
