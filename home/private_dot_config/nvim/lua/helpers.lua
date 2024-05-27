@@ -114,4 +114,26 @@ M.set_keymap = function(mode, lhs, rhs, opts)
     vim.keymap.set(mode, lhs, rhs, opts)
 end
 
+M.split_keys = function(keys)
+    local ret = {}
+    local bracketed_key = ''
+    local is_inside_bracket = false
+    for key in keys:gmatch('.') do
+        if key == '<' then
+            is_inside_bracket = true
+        elseif key == '>' then
+            is_inside_bracket = false
+            table.insert(ret, '<' .. bracketed_key .. '>')
+            bracketed_key = ''
+        else
+            if is_inside_bracket then
+                bracketed_key = bracketed_key .. key
+            else
+                table.insert(ret, key)
+            end
+        end
+    end
+    return ret
+end
+
 return M

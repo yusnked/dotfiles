@@ -1,3 +1,5 @@
+local desc = require('desc')
+
 return {
     {
         'nvim-telescope/telescope.nvim',
@@ -7,53 +9,12 @@ return {
             'nvim-tree/nvim-web-devicons',
             'nvim-telescope/telescope-fzf-native.nvim',
         },
-        keys = {
-            '<Leader>f',
-            '<Leader>p',
-            '<Leader>*',
-            { '<C-t>', mode = 'c', desc = 'Telescope command_history' },
+        keys = desc.lazy_keys {
+            '<Leader>f', '<Leader>p', '<Leader>*',
+            { '<C-t>', mode = 'c' },
         },
         cmd = 'Telescope',
         cond = NOT_VSCODE,
-        init = function()
-            vim.api.nvim_create_autocmd({ 'User' }, {
-                pattern = 'VeryLazy',
-                once = true,
-                callback = function()
-                    local wk = require('which-key')
-                    wk.register {
-                        ['<Leader>f'] = {
-                            name = '+telescope',
-                            R = 'Telescope registers',
-                            a = 'Telescope all pickers',
-                            b = 'Telescope buffers',
-                            c = 'Telescope commands',
-                            f = 'Telescope live_grep',
-                            j = 'Telescope jumplist',
-                            l = 'Telescope loclist',
-                            m = 'Telescope marks',
-                            n = 'Telescope notify',
-                            o = 'Telescope vim_options',
-                            p = 'Telescope project',
-                            q = 'Telescope quickfixhistory',
-                            t = 'Telescope treesitter',
-                        },
-                        ['<Leader>fg'] = {
-                            name = '+telescope-git',
-                            C = 'Telescope git_commits',
-                            b = 'Telescope git_branches',
-                            c = 'Telescope git_bcommits',
-                            f = 'Telescope git_file',
-                            g = 'Telescope ghq',
-                            q = 'Telescope git_stash',
-                            s = 'Telescope git_status',
-                        },
-                        ['<Leader>p'] = 'Telescope fd',
-                        ['<Leader>*'] = 'Telescope grep_string',
-                    }
-                end,
-            })
-        end,
         config = function()
             local telescope = require('telescope')
             local actions = require('telescope.actions')
@@ -112,8 +73,8 @@ return {
             telescope.load_extension('ghq')
             telescope.load_extension('notify')
 
-            local keymap = vim.keymap.set
             local builtin = require('telescope.builtin')
+            local keymap = desc.set_keymap
             keymap('n', '<Leader>fa', function() builtin.builtin { include_extensions = true } end)
             keymap('n', '<Leader>fb', builtin.buffers)
             keymap('n', '<Leader>fc', builtin.commands)

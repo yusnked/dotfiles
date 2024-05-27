@@ -28,15 +28,12 @@ return {
         config = function()
             local wk = require('which-key')
             wk.setup {}
-            wk.register {
-                -- neoscroll.nvim
-                ['<C-u>'] = 'Scroll upwards half a screen',
-                ['<C-d>'] = 'Scroll downwords half a screen',
-                ['<C-b>'] = 'Scroll upwards a screen',
-                ['<C-f>'] = 'Scroll downwords a screen',
-                -- oil.nvim
-                ['-'] = 'Open parent dir by oil.nvim',
-            }
+
+            local desc = require('desc')
+            wk.register(desc.n)
+            wk.register(desc.x, { mode = 'x' })
+            wk.register(desc.i, { mode = 'i' })
+            wk.register(desc.c, { mode = 'c' })
         end,
     },
 }

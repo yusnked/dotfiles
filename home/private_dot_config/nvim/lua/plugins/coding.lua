@@ -1,15 +1,13 @@
+local desc = require('desc')
+
 return {
     {
         'numToStr/Comment.nvim',
         dependencies = { 'JoosepAlviste/nvim-ts-context-commentstring' },
-        keys = {
-            { 'gc', mode = { 'n', 'x' }, desc = 'Comment toggle linewise' },
-            { 'gb', mode = { 'n', 'x' }, desc = 'Comment toggle blockwise' },
-            { 'gcc', desc = 'Comment toggle current line' },
-            { 'gbb', desc = 'Comment toggle current block' },
-            { 'gcO', desc = 'Comment insert below' },
-            { 'gco', desc = 'Comment insert above' },
-            { 'gcA', desc = 'Comment insert end of line' },
+        -- Desc is set by this plug-in.
+        keys = desc.lazy_keys {
+            { 'gc', mode = { 'n', 'x' } },
+            { 'gb', mode = { 'n', 'x' } },
         },
         config = function()
             require('Comment').setup {
@@ -25,31 +23,21 @@ return {
     },
     {
         'kylechui/nvim-surround',
-        keys = {
-            { 'ys', desc = 'Add a surrounding pair around a motion' },
-            { 'yss', desc = 'Add a surrounding pair around the current line' },
-            { 'yS', desc = 'Add a surrounding pair around a motion, on new lines' },
-            { 'ySS', desc = 'Add a surrounding pair around the current line, on new lines' },
-            { 'ds', desc = 'Delete a surrounding pair' },
-            { 'cs', desc = 'Change a surrounding pair' },
-            { 'cS', desc = 'Change a surrounding pair, putting replacements on new lines' },
-            { 'S', mode = 'x', desc = 'Add a surrounding pair around a visual selection' },
-            { 'gS', mode = 'x', desc = 'Add a surrounding pair around a visual selection, on new lines' },
-            { '<C-g>s', mode = 'i', desc = 'Add a surrounding pair around the cursor' },
-            { '<C-g>S', mode = 'i', desc = 'Add a surrounding pair around the cursor, on new lines' },
+        keys = desc.lazy_keys {
+            'ys', 'yss', 'yS', 'ySS', 'ds', 'cs', 'cS',
+            { 'S', mode = 'x' },
+            { 'gS', mode = 'x' },
+            { '<C-g>s', mode = 'i' },
+            { '<C-g>S', mode = 'i' },
         },
         opts = {},
     },
     {
         'gbprod/substitute.nvim',
-        keys = {
-            { '<Leader>s', desc = 'Substitute operator' },
-            { '<Leader>ss', desc = 'Substitute line' },
-            { '<Leader>S', desc = 'Substitute eol' },
-            { '<Leader>s', mode = 'x', desc = 'Substitute visual' },
-            { '<Leader>sx', desc = 'Substitute exchange-operator' },
-            { '<Leader>sxx', desc = 'Substitute exchange-line' },
-            { '<Leader>S', mode = 'x', desc = 'Substitute exchange-visual' },
+        keys = desc.lazy_keys {
+            '<Leader>s', '<Leader>ss', '<Leader>S', '<Leader>sx', '<Leader>sxx',
+            { '<Leader>s', mode = 'x' },
+            { '<Leader>S', mode = 'x' },
         },
         config = function()
             local sub = require('substitute')
