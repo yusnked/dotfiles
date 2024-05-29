@@ -1,6 +1,5 @@
 local M = {}
-
-local normal_mode = {
+M.normal_mode = {
     c = {
         s = 'Change Surround',
         S = 'Change Surround, New-line',
@@ -9,7 +8,6 @@ local normal_mode = {
         s = 'Delete a surrounding pair',
     },
     g = {
-        a = 'hello',
         b = {
             desc = 'Comment Block',
             name = 'Comment toggle blockwise',
@@ -23,7 +21,16 @@ local normal_mode = {
             o = 'Comment insert above',
             A = 'Comment insert end of line',
         },
+        f = 'Go to file (line can be specified)',
+        j = 'Down (logical)',
+        k = 'Up (logical)',
+        F = 'Go to file',
+        J = 'Join lines without leading whitespace',
+        ['<C-a>'] = 'Increment N to number continuously',
+        ['<C-x>'] = 'Decrement N from number continuously',
     },
+    j = 'Down',
+    k = 'Up',
     y = {
         s = {
             desc = 'Surround Add',
@@ -37,10 +44,28 @@ local normal_mode = {
         },
     },
     ['-'] = 'Open parent dir by oil.nvim',
+    ['['] = {
+        b = 'Previous buffer',
+        l = 'Previous location list',
+        q = 'Previous quickfix list',
+        B = 'First buffer',
+        L = 'First location list',
+        Q = 'First quickfix list',
+    },
+    [']'] = {
+        b = 'Next buffer',
+        l = 'Next location list',
+        q = 'Next quickfix list',
+        B = 'Last buffer',
+        L = 'Last location list',
+        Q = 'Last quickfix list',
+    },
+    ['<C-a>'] = 'Increment N to number',
     ['<C-b>'] = 'Scroll upwards a screen',
     ['<C-d>'] = 'Scroll downwords half a screen',
     ['<C-f>'] = 'Scroll downwords a screen',
     ['<C-u>'] = 'Scroll upwards half a screen',
+    ['<C-x>'] = 'Decrement N from number',
     ['<Leader>'] = {
         f = {
             name = 'Telescope',
@@ -81,109 +106,53 @@ local normal_mode = {
         },
         S = 'Substitute EOL',
         ['*'] = 'Telescope grep_string',
+        ['<C-a>'] = 'Convert case next',
+        ['<C-x>'] = 'Convert case previous',
     },
 }
 
-local visual_mode = {
+M.visual_mode = {
     g = {
-        a = 'world',
         b = 'Comment toggle blockwise',
         c = 'Comment toggle linewise',
+        f = 'Go to file (line can be specified)',
+        j = 'Down (logical)',
+        k = 'Up (logical)',
+        o = 'Sort the selection in ascending order',
+        F = 'Go to file',
+        J = 'Join lines without leading whitespace',
+        O = 'Sort the selection in descending order',
         S = 'Add Surround, New-line',
+        ['<C-a>'] = 'Increment N to number continuously',
+        ['<C-o>'] = 'Sort the selection by specifying arguments',
+        ['<C-x>'] = 'Decrement N from number continuously',
     },
+    j = 'Down',
+    k = 'Up',
     S = 'Add Surround',
     ['<Leader>'] = {
         s = 'Substitute Visual',
         S = 'Substitute Exchange Visual',
+        ['<C-a>'] = 'Convert case next',
+        ['<C-x>'] = 'Convert case previous',
     },
+    ['<C-a>'] = 'Increment N to number',
+    ['<C-x>'] = 'Decrement N from number',
+    ['<RightMouse>'] = 'which_key_ignore',
 }
 
-local insert_mode = {
+M.insert_mode = {
     ['<C-g>'] = {
         s = 'Add Surround around Cursor',
         S = 'Add Surround around Cursor, New-line',
     },
+    ['<C-y>'] = {
+        name = 'Emmet',
+    },
 }
 
-local command_mode = {
+M.command_mode = {
     ['<C-t>'] = 'Telescope command_history',
 }
-
-M.n = normal_mode
-M.v = visual_mode
-M.x = visual_mode
-M.i = insert_mode
-M.c = command_mode
-
-M.get = function(mode, lhs, enable_wrap)
-    local desc = M[mode]
-    if desc == nil then
-        return nil
-    end
-    local keys = require('helpers').split_keys(lhs)
-    for _, key in ipairs(keys) do
-        desc = desc[key]
-        if desc == nil then
-            return nil
-        end
-    end
-    if desc.name then
-        desc = desc.name
-    end
-    if enable_wrap then
-        return { desc = desc }
-    else
-        return desc
-    end
-end
-
-M.set_keymap = function(mode, lhs, rhs, opts)
-    opts = opts or {}
-    if type(mode) == 'table' then
-        for _, v in ipairs(mode) do
-            if opts.desc == nil then
-                local desc = M.get(v, lhs)
-                if desc then
-                    local copied_opts = vim.deepcopy(opts)
-                    copied_opts.desc = desc
-                    vim.keymap.set(v, lhs, rhs, copied_opts)
-                    goto continue
-                end
-            end
-            vim.keymap.set(v, lhs, rhs, opts)
-            ::continue::
-        end
-    else
-        if opts.desc == nil then
-            opts.desc = M.get(mode, lhs)
-        end
-        vim.keymap.set(mode, lhs, rhs, opts)
-    end
-end
-
-M.lazy_key = function(table)
-    local lhs = table[1]
-    local mode = table.mode
-    if mode == nil then
-        mode = 'n'
-    elseif type(mode) == 'table' then
-        mode = table.mode[1]
-    end
-    if table.desc == nil then
-        table.desc = M.get(mode, lhs)
-    end
-    return table
-end
-
-M.lazy_keys = function(key_table)
-    local ret = {}
-    for _, key in ipairs(key_table) do
-        if type(key) == 'string' then
-            key = { key }
-        end
-        table.insert(ret, M.lazy_key(key))
-    end
-    return ret
-end
 
 return M
