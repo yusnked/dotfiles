@@ -198,4 +198,14 @@ return {
         ft = 'qf',
         cond = NOT_VSCODE,
     },
+    {
+        'famiu/bufdelete.nvim',
+        cmd = { 'Bdelete', 'Bwipeout' },
+        cond = NOT_VSCODE,
+        init = function()
+            local abbrev = require('abbrev.cmd-auto-expand').create
+            abbrev('bd', 'Bdelete')
+            abbrev('bw', 'Bwipeout')
+        end,
+    },
 }

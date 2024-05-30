@@ -4,6 +4,7 @@ NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
 require('options')
 require('keymap')
 require('commands')
+require('abbrev')
 require('autocmd')
 
 if vim.g.vscode == 1 then

@@ -40,8 +40,3 @@ keymap('c', '<C-n>', '<Down>')
 keymap('c', '<C-p>', '<Up>')
 keymap('c', '<Down>', '<C-n>')
 keymap('c', '<Up>', '<C-p>')
-
--- Abbreviation:
-vim.cmd([[
-    cnoreabbrev <expr> s getcmdtype() .. getcmdline() ==# ':s' ? [getchar(), ''][1] .. "%s///g<Left><Left>" : 's'
-]])
