@@ -2,7 +2,7 @@ DISABLE_ALL_PLUGINS = false
 NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
 
 require('options')
-require('keymaps')
+require('keymap')
 require('commands')
 require('autocmd')
 

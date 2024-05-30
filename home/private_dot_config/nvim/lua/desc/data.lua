@@ -119,6 +119,7 @@ M.visual_mode = {
         j = 'Down (logical)',
         k = 'Up (logical)',
         o = 'Sort the selection in ascending order',
+        C = 'Comment out and copy',
         F = 'Go to file',
         J = 'Join lines without leading whitespace',
         O = 'Sort the selection in descending order',

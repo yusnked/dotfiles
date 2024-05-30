@@ -56,6 +56,14 @@ M.exec_autocmds_by_group_pattern = function(group_pattern, event, opts)
     end
 end
 
+local escaped_keys = {}
+M.get_escaped_key = function(key)
+    if escaped_keys[key] == nil then
+        escaped_keys[key] = vim.api.nvim_replace_termcodes(key, true, false, true)
+    end
+    return escaped_keys[key]
+end
+
 M.get_listed_buffers = function()
     local buffers = {}
     for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
@@ -83,35 +91,24 @@ M.p = function(arg)
     vim.print(vim.inspect(arg))
 end
 
-local set_operatorfunc = function(fn)
-    _G.Operatorfunc = fn
-    vim.opt.operatorfunc = 'v:lua.Operatorfunc'
-end
-M.set_keymap = function(mode, lhs, rhs, opts)
-    opts = opts or {}
-    local dotrepeat = not not opts.dotrepeat
-    opts.dotrepeat = nil
-    local operatorfunc = not not opts.operatorfunc
-    opts.operatorfunc = nil
-    if type(rhs) == 'function' then
-        if dotrepeat then
-            local wrapper = function()
-                set_operatorfunc(rhs)
-                vim.cmd('normal! ' .. vim.v.count .. 'g@l')
-            end
-            vim.keymap.set(mode, lhs, wrapper, opts)
-            return
-        elseif operatorfunc then
-            local wrapper = function()
-                set_operatorfunc(rhs)
-                return 'g@'
-            end
-            opts.expr = true
-            vim.keymap.set(mode, lhs, wrapper, opts)
-            return
+M.repeatable = function(rhs)
+    local type = type(rhs)
+    local fn
+    if type == 'function' then
+        fn = rhs
+    elseif type == 'string' then
+        fn = function()
+            local replaced, _ = rhs:gsub('<[Cc][Oo][Uu][Nn][Tt]>', vim.v.count)
+            vim.api.nvim_input(replaced)
         end
+    else
+        return rhs
     end
-    vim.keymap.set(mode, lhs, rhs, opts)
+    return function()
+        _G.Operatorfunc = fn
+        vim.opt.operatorfunc = 'v:lua.Operatorfunc'
+        vim.cmd.normal { vim.v.count .. 'g@l', bang = true }
+    end
 end
 
 M.split_keys = function(keys)
