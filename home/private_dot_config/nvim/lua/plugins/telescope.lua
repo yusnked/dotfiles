@@ -22,10 +22,14 @@ return {
                 defaults = {
                     mappings = {
                         i = {
+                            -- ['<C-b>'] = actions.preview_scrolling_left,
+                            -- ['<C-f>'] = actions.preview_scrolling_right,
                             ['<C-j>'] = actions.move_selection_next,
                             ['<C-k>'] = actions.move_selection_previous,
                         },
                         n = {
+                            -- ['<C-b>'] = actions.preview_scrolling_left,
+                            -- ['<C-f>'] = actions.preview_scrolling_right,
                             ['<C-c>'] = {
                                 actions.close,
                                 type = 'action',
@@ -43,12 +47,16 @@ return {
                         '--trim',
                         '--vimgrep',
                     },
+                    layout_strategy = 'vertical',
+                    preview = {
+                        filesize_limit = 0.1, -- MB
+                    },
                 },
                 pickers = {
                     buffers = {
                         mappings = {
                             i = {
-                                ['<c-d>'] = actions.delete_buffer + actions.move_to_top,
+                                ['<C-d>'] = actions.delete_buffer + actions.move_to_top,
                             },
                             n = {
                                 ['d'] = actions.delete_buffer + actions.move_to_top,
@@ -58,7 +66,7 @@ return {
                     command_history = {
                         mappings = {
                             i = {
-                                ['<c-t>'] = actions.edit_command_line,
+                                ['<C-t>'] = actions.edit_command_line,
                             },
                         },
                     },
@@ -69,7 +77,7 @@ return {
             }
 
             telescope.load_extension('fzf')
-            telescope.load_extension('project')
+            telescope.load_extension('projects')
             telescope.load_extension('ghq')
             telescope.load_extension('notify')
 
@@ -99,7 +107,7 @@ return {
 
             local ext = telescope.extensions
             keymap('n', '<Leader>fn', ext.notify.notify)
-            keymap('n', '<Leader>fp', ext.project.project)
+            keymap('n', '<Leader>fp', ext.projects.projects)
             keymap('n', '<Leader>fgh', ext.ghq.list)
         end,
     },
@@ -108,9 +116,14 @@ return {
         build = 'make',
     },
     {
-        'nvim-telescope/telescope-project.nvim',
+        'nvim-telescope/telescope-ghq.nvim',
     },
     {
-        'nvim-telescope/telescope-ghq.nvim',
+        'ahmedkhalf/project.nvim',
+        event = { 'VeryLazy' },
+        main = 'project_nvim',
+        opts = {
+            patterns = { '.git', '.vscode', 'Makefile', 'package.json' },
+        },
     },
 }
