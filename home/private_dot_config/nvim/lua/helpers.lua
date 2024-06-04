@@ -91,23 +91,40 @@ M.p = function(arg)
     vim.print(vim.inspect(arg))
 end
 
-M.repeatable = function(rhs)
+M.repeatable = function(rhs, set_ga)
     local type = type(rhs)
     local fn
     if type == 'function' then
         fn = rhs
     elseif type == 'string' then
-        fn = function()
-            local replaced, _ = rhs:gsub('<[Cc][Oo][Uu][Nn][Tt]>', vim.v.count)
+        fn = function(count, _)
+            local replaced, _ = rhs:gsub('<[Cc][Oo][Uu][Nn][Tt]>', count)
             vim.api.nvim_input(replaced)
         end
     else
         return rhs
     end
+    local set_ga_flag = false
     return function()
-        _G.Operatorfunc = fn
+        local count = vim.v.count
+        if count < 1 then
+            count = 1
+        end
+        local reg = vim.v.register
+        local normal_ga = { ('"%s%dg@l'):format(reg, count), bang = true }
+        _G.Operatorfunc = function()
+            if set_ga and set_ga_flag then
+                set_ga_flag = false
+                return
+            end
+            fn(count, reg)
+            if set_ga and not set_ga_flag then
+                set_ga_flag = true
+                vim.cmd.normal(normal_ga)
+            end
+        end
         vim.opt.operatorfunc = 'v:lua.Operatorfunc'
-        vim.cmd.normal { vim.v.count .. 'g@l', bang = true }
+        vim.cmd.normal(normal_ga)
     end
 end
 

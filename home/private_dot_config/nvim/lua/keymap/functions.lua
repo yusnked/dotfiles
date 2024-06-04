@@ -1,3 +1,4 @@
+local repeatable = require('helpers').repeatable
 local M = {}
 
 M.copy_and_comment_out = function()
@@ -17,6 +18,21 @@ M.copy_and_comment_out = function()
             end, 50)
         end)
     end
+end
+
+M.reindent_put = function(type)
+    return repeatable(function(count, reg)
+        local pos = vim.api.nvim_win_get_cursor(0)
+        if type:match('p$') then
+            pos[1] = pos[1] + 1
+        end
+        vim.cmd.normal { ('"%s%d%s'):format(reg, count, type), bang = true }
+        if vim.fn.getregtype(reg) == 'V' then
+            vim.cmd.normal { "'[V']=", bang = true }
+            vim.api.nvim_win_set_cursor(0, pos)
+            vim.cmd.normal { '^', bang = true }
+        end
+    end, true)
 end
 
 return M
