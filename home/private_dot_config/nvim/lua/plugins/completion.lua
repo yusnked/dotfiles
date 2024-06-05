@@ -7,9 +7,10 @@ return {
             'hrsh7th/cmp-cmdline',
             'hrsh7th/cmp-path',
             'octaltree/cmp-look',
+            'onsails/lspkind.nvim',
+            'hrsh7th/cmp-nvim-lsp-signature-help',
             'L3MON4D3/LuaSnip',
             'saadparwaiz1/cmp_luasnip',
-            'onsails/lspkind.nvim',
         },
         event = { 'InsertEnter', 'CmdlineEnter' },
         cond = NOT_VSCODE,
@@ -93,6 +94,7 @@ return {
                     end, { 'i' }),
                 },
                 sources = cmp.config.sources({
+                    { name = 'nvim_lsp_signature_help' },
                     { name = 'nvim_lsp' },
                     { name = 'luasnip' },
                     { name = 'calc' },
@@ -157,12 +159,16 @@ return {
         'onsails/lspkind.nvim',
     },
     {
+        'hrsh7th/cmp-nvim-lsp-signature-help',
+    },
+    {
         'saadparwaiz1/cmp_luasnip',
     },
     {
         'L3MON4D3/LuaSnip',
         version = '*',
         dependencies = { 'rafamadriz/friendly-snippets' },
+        build = 'make install_jsregexp',
         config = function()
             require('luasnip').setup {}
             require('luasnip.loaders.from_vscode').lazy_load()
@@ -170,5 +176,24 @@ return {
     },
     {
         'rafamadriz/friendly-snippets',
+    },
+    {
+        'petertriho/cmp-git',
+        ft = 'gitcommit',
+        config = function()
+            local cmp = require('cmp')
+            cmp.setup.filetype('gitcommit', {
+                sources = cmp.config.sources({
+                    { name = 'git' },
+                }, {
+                    { name = 'buffer' },
+                    { name = 'path' },
+                    { name = 'calc' },
+                }, {
+                    { name = 'look', keyword_length = 3 },
+                }),
+            })
+            require('cmp_git').setup {}
+        end,
     },
 }
