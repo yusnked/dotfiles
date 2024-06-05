@@ -144,6 +144,7 @@ M.visual_mode = {
 
 M.insert_mode = {
     ['<C-g>'] = {
+        c = 'Add Block-comment around Cursor',
         s = 'Add Surround around Cursor',
         S = 'Add Surround around Cursor, New-line',
     },

@@ -8,17 +8,20 @@ return {
         keys = desc.lazy_keys {
             { 'gc', mode = { 'n', 'x' } },
             { 'gb', mode = { 'n', 'x' } },
+            { '<C-g>c', mode = 'i' },
         },
+        init = function()
+            vim.keymap.del('n', 'gcc')
+        end,
         config = function()
             require('Comment').setup {
                 pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
             }
-            vim.keymap.set('x', 'gC', function()
-                if require('Comment.ft').get(vim.bo.filetype) or vim.bo.commentstring ~= '' then
-                    return ':<C-u>normal gvyPgvgc`[<CR>'
-                end
-                return ''
-            end, { expr = true, silent = true, desc = 'Comment out and copy' })
+            local insert_block_comment = function()
+                local esc = require('helpers').get_escaped_key('<Esc>')
+                vim.api.nvim_feedkeys(('|%sgblf|cl'):format(esc), 'm', false)
+            end
+            vim.keymap.set('i', '<C-g>c', insert_block_comment)
         end,
     },
     {
@@ -72,13 +75,13 @@ return {
     },
     {
         'monaqa/dial.nvim',
-        keys = {
-            { '<C-a>', mode = { 'n', 'v' }, desc = 'Increment N to number' },
-            { '<C-x>', mode = { 'n', 'v' }, desc = 'Decrement N from number' },
-            { 'g<C-a>', mode = { 'n', 'v' }, desc = 'Increment N to number continuously' },
-            { 'g<C-x>', mode = { 'n', 'v' }, desc = 'Decrement N from number continuously' },
-            { '<Leader><C-a>', mode = { 'n', 'v' }, desc = 'Convert case next' },
-            { '<Leader><C-x>', mode = { 'n', 'v' }, desc = 'Convert case previous' },
+        keys = desc.lazy_keys {
+            { '<C-a>', mode = { 'n', 'v' } },
+            { '<C-x>', mode = { 'n', 'v' } },
+            { 'g<C-a>', mode = { 'n', 'v' } },
+            { 'g<C-x>', mode = { 'n', 'v' } },
+            { '<Leader><C-a>', mode = { 'n', 'v' } },
+            { '<Leader><C-x>', mode = { 'n', 'v' } },
         },
         config = function()
             local augend = require('dial.augend')
@@ -147,20 +150,13 @@ return {
     },
     {
         'sQVe/sort.nvim',
-        keys = {
-            { 'go', mode = { 'x' }, desc = 'Sort the selection in ascending order' },
-            { 'gO', mode = { 'x' }, desc = 'Sort the selection in descending order' },
-            { 'g<C-o>', mode = { 'x' }, desc = 'Sort the selection by specifying arguments' },
+        keys = desc.lazy_keys {
+            { 'go', ':Sort<CR>', mode = 'x', silent = true },
+            { 'gO', ':Sort!<CR>', mode = 'x', silent = true },
+            { 'g<C-o>', ':Sort ', mode = 'x' },
         },
         cmd = 'Sort',
-        config = function()
-            -- List of delimiters, in descending order of priority, to automatically sort on.
-            require('sort').setup { delimiters = { ',', '|', ';', ':', 's', 't' } }
-            local keymap = vim.keymap.set
-            keymap('x', 'go', ':Sort<CR>', { silent = true })
-            keymap('x', 'gO', ':Sort!<CR>', { silent = true })
-            keymap('x', 'g<C-o>', ':Sort ')
-        end,
+        opts = { delimiters = { ',', '|', ';', ':', 's', 't' } },
     },
     {
         'chrisgrieser/nvim-various-textobjs',
@@ -186,7 +182,7 @@ return {
     },
     {
         'mattn/emmet-vim',
-        keys = { { '<C-y>', mode = 'i', desc = 'Emmet' } },
+        keys = { desc.lazy_key { '<C-y>', mode = 'i' } },
         init = function()
             vim.g.user_emmet_mode = 'i'
         end,
