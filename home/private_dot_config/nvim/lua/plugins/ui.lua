@@ -58,7 +58,7 @@ return {
                     scope_label = ' [T]'
                 end
                 local width = math.max(vim.o.columns * 0.4, 32)
-                local abbrev_path = require('helpers').abbrev_path
+                local abbrev_path = require('self.helpers').abbrev_path
                 vim.w.abbrev_cwd = abbrev_path(vim.fn.getcwd(), width - #scope_label) .. scope_label
             end
             vim.api.nvim_create_autocmd({ 'WinEnter', 'DirChanged', 'VimResized' }, {

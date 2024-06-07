@@ -3,8 +3,8 @@ vim.cmd([[
 ]])
 
 vim.api.nvim_create_user_command('AbbrevCmdAutoExpandOn', function()
-    require('abbrev.cmd-auto-expand').set_enabled(true)
+    require('self.abbrev.cmd-auto-expand').set_enabled(true)
 end, { desc = 'Enable AutoExpandAbbrevCmd' })
 vim.api.nvim_create_user_command('AbbrevCmdAutoExpandOff', function()
-    require('abbrev.cmd-auto-expand').set_enabled(false)
+    require('self.abbrev.cmd-auto-expand').set_enabled(false)
 end, { desc = 'Disable AutoExpandAbbrevCmd' })

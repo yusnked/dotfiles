@@ -153,7 +153,7 @@ return {
         config = function()
             local term = require('toggleterm')
             term.setup {
-                shell = require('helpers').get_shell_path(),
+                shell = require('self.helpers').get_shell_path(),
                 on_open = function(t)
                     if t.__state.mode == 'n' then
                         vim.api.nvim_input('i')
@@ -203,7 +203,7 @@ return {
         cmd = { 'Bdelete', 'Bwipeout' },
         cond = NOT_VSCODE,
         init = function()
-            local abbrev = require('abbrev.cmd-auto-expand').create
+            local abbrev = require('self.abbrev.cmd-auto-expand').create
             abbrev('bd', 'Bdelete')
             abbrev('bw', 'Bwipeout')
         end,

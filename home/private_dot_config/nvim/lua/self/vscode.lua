@@ -1,4 +1,4 @@
-local vscode = require('vscode-neovim')
+local vscode = require('vscode')
 local keymap = vim.keymap.set
 local nvim_input = vim.api.nvim_input
 

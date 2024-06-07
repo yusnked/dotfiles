@@ -8,7 +8,7 @@ return {
         init = function()
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
                 callback = function()
-                    require('helpers').exec_autocmds_by_group_pattern('^NvimTreesitter', { 'FileType' })
+                    require('self.helpers').exec_autocmds_by_group_pattern('^NvimTreesitter', { 'FileType' })
                 end,
                 once = true,
             })
@@ -142,7 +142,7 @@ return {
             require('nvim-ts-autotag').setup {
                 filetypes = { 'html', 'javascriptreact', 'typescriptreact', 'xml' },
             }
-            require('helpers').exec_autocmds_filetype { group = 'nvim_ts_xmltag' }
+            require('self.helpers').exec_autocmds_filetype { group = 'nvim_ts_xmltag' }
         end,
     },
     {

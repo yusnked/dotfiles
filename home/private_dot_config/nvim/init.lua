@@ -1,16 +1,16 @@
 DISABLE_ALL_PLUGINS = false
 NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
 
-require('options')
-require('keymap')
-require('commands')
-require('abbrev')
-require('autocmd')
+require('self.options')
+require('self.keymap')
+require('self.commands')
+require('self.abbrev')
+require('self.autocmd')
 
 if vim.g.vscode == 1 then
-    require('vscode')
+    require('self.vscode')
 else
-    Helper = require('helpers')
+    Helper = require('self.helpers')
 end
 
 -- lazy.nvim

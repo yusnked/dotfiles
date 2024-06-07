@@ -1,6 +1,6 @@
-local func = require('keymap.functions')
-local keymap = require('desc').set_keymap
-local repeatable = require('helpers').repeatable
+local func = require('self.keymap.functions')
+local keymap = require('self.desc').set_keymap
+local repeatable = require('self.helpers').repeatable
 
 -- leader key
 keymap('', '<Space>', '')

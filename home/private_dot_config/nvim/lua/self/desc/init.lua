@@ -1,5 +1,5 @@
 local M = {}
-local data = require('desc.data')
+local data = require('self.desc.data')
 M.n = data.normal_mode
 M.v = data.visual_mode
 M.x = data.visual_mode
@@ -11,7 +11,7 @@ M.get = function(mode, lhs, enable_wrap)
     if desc == nil then
         return nil
     end
-    local keys = require('helpers').split_keys(lhs)
+    local keys = require('self.helpers').split_keys(lhs)
     for _, key in ipairs(keys) do
         desc = desc[key]
         if desc == nil then

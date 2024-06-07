@@ -1,8 +1,8 @@
-local repeatable = require('helpers').repeatable
+local repeatable = require('self.helpers').repeatable
 local M = {}
 
 M.copy_and_comment_out = function()
-    local esc = require('helpers').get_escaped_key('<Esc>')
+    local esc = require('self.helpers').get_escaped_key('<Esc>')
     vim.api.nvim_feedkeys(esc, 'n', false)
     if vim.filetype.get_option(vim.bo.filetype, 'commentstring') ~= '' then
         vim.schedule(function()

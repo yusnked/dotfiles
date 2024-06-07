@@ -1,4 +1,4 @@
-local desc = require('desc')
+local desc = require('self.desc')
 
 return {
     {

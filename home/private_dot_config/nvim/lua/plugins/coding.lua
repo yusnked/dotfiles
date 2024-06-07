@@ -1,4 +1,4 @@
-local desc = require('desc')
+local desc = require('self.desc')
 
 return {
     {
@@ -18,7 +18,7 @@ return {
                 pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
             }
             local insert_block_comment = function()
-                local esc = require('helpers').get_escaped_key('<Esc>')
+                local esc = require('self.helpers').get_escaped_key('<Esc>')
                 vim.api.nvim_feedkeys(('|%sgblf|cl'):format(esc), 'm', false)
             end
             vim.keymap.set('i', '<C-g>c', insert_block_comment)

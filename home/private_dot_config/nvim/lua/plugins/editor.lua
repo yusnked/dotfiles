@@ -22,7 +22,7 @@ return {
             local hooks = require('ibl.hooks')
             hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
 
-            require('helpers').exec_autocmds_filetype { group = 'TSRainbowDelimits' }
+            require('self.helpers').exec_autocmds_filetype { group = 'TSRainbowDelimits' }
         end,
     },
     {

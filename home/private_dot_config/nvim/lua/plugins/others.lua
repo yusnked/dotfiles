@@ -29,7 +29,7 @@ return {
             local wk = require('which-key')
             wk.setup {}
 
-            local desc = require('desc')
+            local desc = require('self.desc')
             wk.register(desc.n)
             wk.register(desc.x, { mode = 'x' })
             wk.register(desc.i, { mode = 'i' })
