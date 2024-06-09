@@ -11,6 +11,12 @@
         "args": "<D-d>"
     },
     {
+        "key": "cmd+d",
+        "command": "vscode-neovim.send",
+        "when": "editorTextFocus && neovim.init && neovim.mode == visual",
+        "args": "<D-d>"
+    },
+    {
         "key": "cmd+r",
         "command": "workbench.action.openRecent"
     },
