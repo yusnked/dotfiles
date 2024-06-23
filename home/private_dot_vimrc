@@ -1,0 +1,115 @@
+set encoding=utf-8
+set fileencoding=utf-8
+set fileencodings=ucs-bom,utf-8,iso-2022-jp,cp932,euc-jp,default,latin
+
+set mouse=a
+set belloff=all
+set shortmess+=I
+
+set number
+set numberwidth=4
+set relativenumber
+set cursorline
+set cursorlineopt=number
+
+set list
+set listchars+=trail:-,eol:↴,space:⋅
+set scrolloff=3
+set ambiwidth=single
+
+set expandtab
+set tabstop=4
+set shiftwidth=0
+set softtabstop=-1
+
+set splitbelow
+set splitright
+
+set ignorecase
+set smartcase
+if executable('rg')
+    set grepprg=rg\ -S.g'!.git/**'\ --vimgrep\ $*\ >/dev/null
+    set grepformat=%f:%l:%c:%m
+endif
+
+set ttimeoutlen=50
+
+nnoremap j gj
+nnoremap k gk
+nnoremap gj j
+nnoremap gk k
+vnoremap j gj
+vnoremap k gk
+vnoremap gj j
+vnoremap gk k
+
+nnoremap gf gF
+nnoremap gF gf
+xnoremap gf gF
+xnoremap gF gf
+
+cnoremap <C-b> <Left>
+cnoremap <C-f> <Right>
+cnoremap <C-q> <C-f>
+
+cnoremap <C-n> <Down>
+cnoremap <C-p> <Up>
+cnoremap <Down> <C-n>
+cnoremap <Up> <C-p>
+
+nnoremap <silent> [b :bprevious<CR>
+nnoremap <silent> ]b :bnext<CR>
+nnoremap <silent> [B :bfirst<CR>
+nnoremap <silent> ]B :blast<CR>
+nnoremap <silent> [l :lprevious<CR>
+nnoremap <silent> ]l :lnext<CR>
+nnoremap <silent> [L :lfirst<CR>
+nnoremap <silent> ]L :llast<CR>
+nnoremap <silent> [q :cprevious<CR>
+nnoremap <silent> ]q :cnext<CR>
+nnoremap <silent> [Q :cfirst<CR>
+nnoremap <silent> ]Q :clast<CR>
+
+" Toggle relativenumber
+augroup ToggleRelativenumber
+    autocmd!
+    autocmd BufEnter,FocusGained,InsertLeave,CmdlineLeave,WinEnter
+    \   * if &number && mode() != 'i' | set relativenumber | endif
+    autocmd BufLeave,FocusLost,InsertEnter,CmdlineEnter,WinLeave
+    \   * if &number | set norelativenumber | if !exists('g:vscode') |
+    \   redraw | endif | endif
+augroup END
+
+if !has('nvim')
+    " Cursor
+    if has('vim_starting')
+        let &t_SI .= "\e[6 q" " Insert
+        let &t_EI .= "\e[2 q" " Normal
+        let &t_SR .= "\e[4 q" " Replace
+    endif
+
+    syntax enable
+
+    highlight CursorLineNR cterm=none ctermfg=green
+    augroup SetCursorLineNR
+        autocmd!
+        autocmd ColorScheme default
+        \   highlight CursorLineNR cterm=none ctermfg=green
+    augroup END
+
+    if &t_Co > 255
+        function! s:Set8bitColorHighlights()
+            highlight LineNr ctermfg=242
+            highlight NonText ctermfg=237
+            highlight SpecialKey ctermfg=237
+        endfunction
+
+        call s:Set8bitColorHighlights()
+        augroup SetListcharsColor
+            autocmd!
+            autocmd ColorScheme default call s:Set8bitColorHighlights()
+        augroup END
+    else
+        set nolist
+    endif
+endif
