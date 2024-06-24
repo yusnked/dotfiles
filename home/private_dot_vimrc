@@ -34,6 +34,9 @@ endif
 
 set ttimeoutlen=50
 
+let mapleader = "\<Space>"
+nnoremap <Space> <Nop>
+
 nnoremap j gj
 nnoremap k gk
 nnoremap gj j
