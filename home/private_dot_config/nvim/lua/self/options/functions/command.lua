@@ -1,6 +1,6 @@
-local create_command = vim.api.nvim_create_user_command
+local M = {}
 
-create_command('JoinSpaceLess', function(tbl)
+M.join_spaceless = function(tbl)
     local line_start, line_end
     local join_count = tonumber(tbl.args:match('^%d+'))
     if type(join_count) == 'number' and join_count > 1 then
@@ -28,4 +28,6 @@ create_command('JoinSpaceLess', function(tbl)
         joined_line = joined_line .. trimmed_line
     end
     vim.api.nvim_buf_set_lines(0, line_start, line_end, false, { joined_line })
-end, { range = true, nargs = '?', desc = 'Join lines without spaces' })
+end
+
+return M

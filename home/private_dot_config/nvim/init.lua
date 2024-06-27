@@ -2,10 +2,12 @@ DISABLE_ALL_PLUGINS = false
 NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
 
 require('self.options')
-require('self.keymap')
-require('self.commands')
 require('self.abbrev')
-require('self.autocmd')
+
+local vimrc = vim.fn.expand('~/.vimrc')
+if vim.fn.filereadable(vimrc) == 1 then
+    vim.cmd.source(vimrc)
+end
 
 if vim.g.vscode == 1 then
     require('self.vscode')
