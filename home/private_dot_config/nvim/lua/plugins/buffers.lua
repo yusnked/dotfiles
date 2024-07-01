@@ -203,7 +203,7 @@ return {
         cmd = { 'Bdelete', 'Bwipeout' },
         cond = NOT_VSCODE,
         init = function()
-            local abbrev = require('self.abbrev.cmd-auto-expand').create
+            local abbrev = require('self.utils.cmd-auto-expand').create
             abbrev('bd', 'Bdelete')
             abbrev('bw', 'Bwipeout')
         end,

@@ -35,3 +35,16 @@ local cmd_func = require('self.options.functions.command')
 
 create_command('JoinSpaceless', cmd_func.join_spaceless,
     { range = true, nargs = '?', desc = 'Join lines without spaces' })
+
+create_command('CmdAutoExpandOn', function()
+    require('self.utils.cmd-auto-expand').set_enabled(true)
+end, { desc = 'Enable AutoExpandAbbrevCmd' })
+create_command('CmdAutoExpandOff', function()
+    require('self.utils.cmd-auto-expand').set_enabled(false)
+end, { desc = 'Disable AutoExpandAbbrevCmd' })
+
+-- Abbrevs
+vim.cmd([[
+    cnoreabbrev <expr> s getcmdtype() .. getcmdline() ==# ':s' ?
+    \   [getchar(), ''][1] .. "%s///g<Left><Left>" : 's'
+]])

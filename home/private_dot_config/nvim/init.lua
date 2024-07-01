@@ -2,7 +2,6 @@ DISABLE_ALL_PLUGINS = false
 NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
 
 require('self.options')
-require('self.abbrev')
 
 local vimrc = vim.fn.expand('~/.vimrc')
 if vim.fn.filereadable(vimrc) == 1 then
