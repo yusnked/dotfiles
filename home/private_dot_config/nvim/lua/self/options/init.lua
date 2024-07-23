@@ -1,9 +1,8 @@
+-- Options
 vim.opt.signcolumn = 'yes'
 vim.opt.laststatus = 2
 vim.opt.tabline = '%!""'
 vim.opt.showtabline = 2
-
-vim.opt.inccommand = 'split'
 
 vim.opt.updatetime = 200
 vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
@@ -12,6 +11,9 @@ vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
     end,
     once = true,
 })
+
+-- Options (neovim only)
+vim.opt.inccommand = 'split'
 
 -- Maps
 local rhs = require('self.options.functions.map-rhs')
