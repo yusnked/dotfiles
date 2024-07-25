@@ -106,7 +106,21 @@ return {
         'brenoprata10/nvim-highlight-colors',
         event = { 'CursorHold', 'CursorHoldI' },
         cond = NOT_VSCODE,
-        opts = {},
+        keys = {
+            {
+                '<Leader>tc',
+                function() require('nvim-highlight-colors').toggle() end,
+                desc = 'Toggle highlight colors'
+            },
+        },
+        opts = {
+            render = 'virtual',
+            virtual_symbol = '',
+            virtual_symbol_position = 'eow',
+            virtual_symbol_prefix = '',
+            virtual_symbol_suffix = '',
+            exclude_filetypes = { 'lazy' },
+        },
     },
     {
         'lewis6991/gitsigns.nvim',
