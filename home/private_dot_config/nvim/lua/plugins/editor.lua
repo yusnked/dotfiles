@@ -110,10 +110,11 @@ return {
             {
                 '<Leader>tc',
                 function() require('nvim-highlight-colors').toggle() end,
-                desc = 'Toggle highlight colors'
+                desc = 'Toggle highlight colors',
             },
         },
         opts = {
+            enable_tailwind = true,
             render = 'virtual',
             virtual_symbol = '',
             virtual_symbol_position = 'eow',

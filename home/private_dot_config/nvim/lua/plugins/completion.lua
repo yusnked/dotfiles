@@ -32,7 +32,15 @@ return {
                     },
                 },
                 formatting = {
-                    format = require('lspkind').cmp_format(),
+                    format = function(entry, item)
+                        local color_item = require('nvim-highlight-colors').format(entry, { kind = item.kind })
+                        item = require('lspkind').cmp_format {} (entry, item)
+                        if color_item.abbr_hl_group then
+                            item.kind_hl_group = color_item.abbr_hl_group
+                            item.kind = color_item.abbr
+                        end
+                        return item
+                    end,
                 },
                 mapping = {
                     ['<Tab>'] = cmp.mapping(function(fallback)
