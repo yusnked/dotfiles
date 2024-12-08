@@ -30,4 +30,23 @@ M.join_spaceless = function(tbl)
     vim.api.nvim_buf_set_lines(0, line_start, line_end, false, { joined_line })
 end
 
+M.unicode_normalize = function(form)
+    return function(tbl)
+        local line_start, line_end
+        if tbl.count ~= -1 then
+            line_start = tbl.line1 - 1
+            line_end = tbl.line2
+        else
+            line_start = 0
+            line_end = vim.fn.line('$')
+        end
+
+        local lines = vim.api.nvim_buf_get_lines(0, line_start, line_end, false)
+        lines = vim.fn.py3eval('__import__("unicodedata").normalize("' ..
+        form .. '", "' .. table.concat(lines, '\\n') .. '").split("\\n")')
+
+        vim.api.nvim_buf_set_lines(0, line_start, line_end, false, lines)
+    end
+end
+
 return M

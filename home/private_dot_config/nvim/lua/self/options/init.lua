@@ -38,6 +38,11 @@ local cmd_func = require('self.options.functions.command')
 create_command('JoinSpaceless', cmd_func.join_spaceless,
     { range = true, nargs = '?', desc = 'Join lines without spaces' })
 
+for _, form in ipairs { 'NFC', 'NFD', 'NFKC', 'NFKD' } do
+    create_command(form, cmd_func.unicode_normalize(form),
+        { range = true, desc = 'Normalize ' .. form })
+end
+
 create_command('CmdAutoExpandOn', function()
     require('self.utils.cmd-auto-expand').set_enabled(true)
 end, { desc = 'Enable AutoExpandAbbrevCmd' })
