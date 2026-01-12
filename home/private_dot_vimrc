@@ -1,80 +1,203 @@
+" ====================================================================
+" Single-file vimrc (Vim 8.0+ and Neovim latest stable)
+" ====================================================================
+scriptencoding utf-8
+
+if v:version < 800
+    echohl WarningMsg
+    echomsg 'WARNING: This vimrc targets Vim 8.0+ (and Neovim).' .
+                \ ' Some settings may be ignored or may error.'
+    echohl None
+endif
+
+if has('win32') || has('win64')
+    let s:is_root = 0
+elseif has('nvim')
+    let s:is_root = !!luaeval('vim.uv.getuid() == 0')
+elseif executable('id')
+    let s:is_root = trim(system('id -u')) ==# '0'
+else
+    let s:is_root = exists('$USER') && $USER ==# 'root'
+endif
+
+if s:is_root
+    set nomodeline
+    set secure
+endif
+set noexrc
+
+let s:is_vim = !has('nvim')
+let s:is_nvim = has('nvim')
+let s:is_ext_nvim = get(g:, 'is_extended_nvim', 0)
+
+" ====================================================================
+" Options
+" ====================================================================
 set encoding=utf-8
 set fileencoding=utf-8
-set fileencodings=ucs-bom,utf-8,iso-2022-jp,cp932,euc-jp,default,latin
+set fileencodings=ucs-bom,utf-8,cp932,default,latin1
 
 set mouse=a
 set belloff=all
-set shortmess+=I
+set shortmess=aoOtTCFI
 
 set number
 set numberwidth=4
 set relativenumber
 set cursorline
-set cursorlineopt=number
+if exists('+cursorlineopt')
+    set cursorlineopt=number
+endif
+set signcolumn=yes
 
-set list
-set listchars+=trail:-,eol:↴,space:⋅
-set scrolloff=3
+set list " 不可視文字を表示.
+set listchars=eol:↴,extends:…,nbsp:+,precedes:…,space:⋅,tab:>\ ,trail:-
 set ambiwidth=single
+set scrolloff=3
+set sidescrolloff=3
 
 set expandtab
-set tabstop=4
-set shiftwidth=0
-set softtabstop=-1
+set tabstop=8 " Tab文字の表示幅. 互換性の為8固定推奨(らしい)
+set shiftwidth=4
+set softtabstop=-1 " 負の数指定でshiftwidthの値を使用.
+
+set hidden " バッファの切替で未保存で止められない.
+set virtualedit=block " Visual blockで仮想空白を許可.
+set nowrap
+set formatoptions-=ro  " コメント継続を禁止. r:挿入モード o:o/Oコマンド.
 
 set splitbelow
 set splitright
 
 set ignorecase
 set smartcase
+set hlsearch
+set incsearch
+if s:is_nvim
+    set inccommand=split
+endif
 if executable('rg')
-    set grepprg=rg\ -S.g'!.git/**'\ --vimgrep\ $*\ >/dev/null
+    set grepprg=rg\ --vimgrep\ --smart-case\ --hidden\ --no-messages
+                \\ --glob\ '!.git/*'
     set grepformat=%f:%l:%c:%m
 endif
 
-set ttimeoutlen=50
+set wildmenu
+set wildmode=longest:full,full
+set wildignorecase
+set wildignore+=*/.git/*,*/node_modules/*,*/__pycache__/*
+set wildignore+=*.swp,*.swo,*.tmp,*.bak,*.orig
+if s:is_nvim || has('patch-8.2.4463') " Vim: since 2022-02-24.
+    set wildoptions=pum,tagfile,fuzzy
+endif
 
-let mapleader = "\<Space>"
-nnoremap <Space> <Nop>
+set complete=.,w,b,u,t,i
+set completeopt=menuone,noselect
+" popup自体は8.1.1880 関連オプションのcompletepopupが導入されたのがこのパッチ.
+if s:is_nvim || has('patch-8.1.1882') " Vim: since 2019-08-18.
+    set completeopt+=popup
+else
+    set completeopt+=preview
+endif
+if s:is_nvim || has('patch-9.1.0463') " Vim: since 2024-06-03.
+    set completeopt+=fuzzy
+endif
 
-nnoremap j gj
-nnoremap k gk
-nnoremap gj j
-nnoremap gk k
-vnoremap j gj
-vnoremap k gk
-vnoremap gj j
-vnoremap gk k
+set pumheight=15
+if exists('&pumwidth') | set pumwidth=20 | endif " Vim 8.0.1491+
+if exists('&pummaxwidth') | set pummaxwidth=60 | endif " Vim 9.1.1250+
+if exists('&pumblend') | set pumblend=10 | endif " Neovim only.
 
-nnoremap gf gF
-nnoremap gF gf
-xnoremap gf gF
-xnoremap gF gf
+set timeoutlen=500 " マッピングの待ち時間.
+set ttimeoutlen=50 " 端末から来るキーコードの待ち時間.
+set updatetime=1000
 
-cnoremap <C-b> <Left>
-cnoremap <C-f> <Right>
-cnoremap <C-q> <C-f>
+" ====================================================================
+" Features
+" ====================================================================
+" --- XDG paths ------------------------------------------------------
+if !s:is_root
+    let s:cache_home = empty($XDG_CACHE_HOME) ?
+                \ expand('~/.cache') : $XDG_CACHE_HOME
+    let s:state_home = empty($XDG_STATE_HOME) ?
+                \ expand('~/.local/state') : $XDG_STATE_HOME
+else
+    let s:root_home = expand('~root')
+    if empty(s:root_home) || !isdirectory(s:root_home)
+        let s:root_home = (has('mac') ? '/private/var/root' : '/root')
+    endif
+    let s:cache_home = s:root_home . '/.cache'
+    let s:state_home = s:root_home . '/.local/state'
+endif
+let s:cache_path = s:cache_home . '/' . (s:is_nvim ? 'nvim' : 'vim')
+let s:state_path = s:state_home . '/' . (s:is_nvim ? 'nvim' : 'vim')
 
-cnoremap <C-n> <Down>
-cnoremap <C-p> <Up>
-cnoremap <Down> <C-n>
-cnoremap <Up> <C-p>
+function! s:EnsureDir(dir) abort
+    if empty(a:dir) | return 0 | endif
+    let ok = isdirectory(a:dir)
+    if !ok
+        silent! call mkdir(a:dir, 'p', 0700)
+        let ok = isdirectory(a:dir)
+    endif
+    return ok
+endfunction
+" ディレクトリのパーミッションを可能なら0700に設定. 戻り値はEnsureDirと同じ.
+function! s:EnsureDirSecure(dir) abort
+    let ok = s:EnsureDir(a:dir)
+    if ok && !s:is_root
+        let perm = getfperm(a:dir)
+        if !empty(perm) && perm !=# 'rwx------'
+            silent! call setfperm(a:dir, 'rwx------')
+        endif
+    endif
+    return ok
+endfunction
 
-nnoremap <silent> [b :bprevious<CR>
-nnoremap <silent> ]b :bnext<CR>
-nnoremap <silent> [B :bfirst<CR>
-nnoremap <silent> ]B :blast<CR>
-nnoremap <silent> [l :lprevious<CR>
-nnoremap <silent> ]l :lnext<CR>
-nnoremap <silent> [L :lfirst<CR>
-nnoremap <silent> ]L :llast<CR>
-nnoremap <silent> [q :cprevious<CR>
-nnoremap <silent> ]q :cnext<CR>
-nnoremap <silent> [Q :cfirst<CR>
-nnoremap <silent> ]Q :clast<CR>
+" --- Swap -----------------------------------------------------------
+let s:swap_dir = s:state_path . '/swap'
+if s:EnsureDirSecure(s:swap_dir)
+    let s:swap_dir_escape = escape(s:swap_dir, ',\\')
+    let &directory = s:swap_dir_escape . '//,' . s:swap_dir_escape . ',.'
+endif
 
-" Toggle relativenumber
-augroup ToggleRelativenumber
+" --- Backup ---------------------------------------------------------
+set nobackup
+set writebackup
+let s:backup_dir = s:state_path . '/backup'
+if s:EnsureDirSecure(s:backup_dir)
+    let s:backup_dir_cache = escape(s:backup_dir, ',\\')
+    let &backupdir = s:backup_dir_cache . '//,' . s:backup_dir_cache . ',.'
+endif
+
+" --- Persistent undo ------------------------------------------------
+if has('persistent_undo') && !s:is_root
+    let s:undo_dir = s:state_path . '/undo'
+    if s:EnsureDirSecure(s:undo_dir)
+        set undofile
+        " undodirは末尾に//がなくてもユニーク名になる.
+        let &undodir = s:undo_dir
+    endif
+endif
+
+" --- Viminfo / ShaDa ------------------------------------------------
+if has('shada')
+    let s:shada_dir = s:state_path . '/shada'
+    if s:EnsureDirSecure(s:shada_dir)
+        set history=10000
+        let &shadafile = s:shada_dir . '/main.shada'
+        let &shada = "!,'1000,<500,:5000,/500,@100,s50,h"
+    endif
+elseif has('viminfo')
+    let s:viminfo_dir = s:state_path . '/viminfo'
+    if s:EnsureDirSecure(s:viminfo_dir)
+        set history=500
+        let &viminfofile = s:viminfo_dir . '/main.viminfo'
+        let &viminfo = "'100,<100,:500,/200,@100,s20,h"
+    endif
+endif
+
+" --- Smart relativenumber -------------------------------------------
+augroup vimrc_smart_relativenumber
     autocmd!
     autocmd BufEnter,FocusGained,InsertLeave,CmdlineLeave,WinEnter
     \   * if &number && mode() != 'i' | set relativenumber | endif
@@ -83,36 +206,474 @@ augroup ToggleRelativenumber
     \   redraw | endif | endif
 augroup END
 
-if !has('nvim')
-    " Cursor
-    if has('vim_starting')
-        let &t_SI .= "\e[6 q" " Insert
-        let &t_EI .= "\e[2 q" " Normal
-        let &t_SR .= "\e[4 q" " Replace
+" スクロール中だけ絶対行にする.
+if exists('##WinScrolled') && has('timers')
+    augroup vimrc_smart_relativenumber_scroll
+        autocmd!
+        autocmd WinScrolled * call s:RelNumOnScroll()
+    augroup END
+endif
+
+" --- Stop E173 ------------------------------------------------------
+" 起動時にarglistを現在のバッファだけにする.
+augroup vimrc_arglist_keep_first
+    autocmd!
+    autocmd VimEnter * if argc() > 1 | silent! args % | endif
+augroup END
+
+" --- Remove ro from formatoptions -----------------------------------
+" コメント継続を切る. FileTypeイベント発生の500ms後にroを除いたfoをセット.
+if has('timers')
+    augroup vimrc_remove_ro_from_formatoptions
+        autocmd!
+        autocmd FileType * if empty(&buftype) |
+                    \ call s:DeferLatest(
+                    \   's:RemoveROFromFO_' . expand('<abuf>'), 500,
+                    \   function('s:RemoveROFromFO', [expand('<abuf>')])
+                    \ ) |
+                    \ endif
+    augroup END
+endif
+
+" --- Statusline -----------------------------------------------------
+if !s:is_ext_nvim
+    set laststatus=2 " 常にステータスライン表示.
+    let g:vimrc_active_winid = win_getid()
+    let g:vimrc_stl_buf_total = ':1'
+
+    augroup vimrc_statusline
+        autocmd!
+        autocmd WinEnter,TabEnter
+                    \ * let g:vimrc_active_winid = win_getid() | redrawstatus
+        autocmd VimEnter,BufAdd,BufDelete,BufWipeout,BufHidden,BufUnload
+                    \ * call s:StlBufCount()
+        autocmd OptionSet buflisted call s:StlBufCount()
+        autocmd BufEnter,BufWritePost * call s:StlFileSize('%:p')
+    augroup END
+
+    set statusline=[%n%{win_getid()==get(g:,'vimrc_active_winid',-1)?
+                \g:vimrc_stl_buf_total:''}]
+    set statusline+=\ %{get(w:,'vimrc_stl_file_size','')}%<%F%m
+    set statusline+=\ %{%win_getid()==get(g:,'vimrc_active_winid',-1)?'%y':''%}
+    set statusline+=%=
+    set statusline+=%{(&fenc==#'utf-8'?'':'['.&fenc.']').(&bomb?'[BOM]':'')}
+    set statusline+=%{(&ff==#'unix'?'':'['.&ff.']')}
+    set statusline+=\ %-6.(%l:%v%)\ %-4.P
+endif
+
+" ====================================================================
+" Maps
+" ====================================================================
+let g:mapleader = "\<Space>"
+nnoremap <Space> <Nop>
+
+nnoremap gf gF
+nnoremap gF gf
+xnoremap gf gF
+xnoremap gF gf
+
+cnoremap <C-b> <Left>
+cnoremap <C-f> <Right>
+cnoremap <C-a> <Home>
+
+cnoremap <C-o> <C-f>
+cnoremap <C-q> <C-a>
+
+cnoremap <C-n>  <Down>
+cnoremap <C-p>  <Up>
+cnoremap <Down> <C-n>
+cnoremap <Up>   <C-p>
+
+nnoremap <silent> <Esc><Esc> :nohlsearch<CR>
+
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<CR>"
+inoremap <expr> <ESC>   pumvisible() ? "\<C-e>" : "\<ESC>"
+
+" <C-x><C-f>ファイル補完時に/で更にファイル補完.
+if exists('*complete_info') " *complete_info: 8.1.1068+
+    inoremap <expr> / complete_info(['mode']).mode == 'files'
+                \ && complete_info(['selected']).selected >= 0
+                \ ? '<c-x><c-f>'
+                \ : '/'
+endif
+
+" +は<CR>と同機能なので+レジスタ用にする.
+nnoremap + "+
+xnoremap + "+
+nnoremap <silent> ++ :<C-u>let @+=@"<Bar>echo 'Copied @" to clipboard.'<CR>
+nnoremap <silent> +% :<C-u>call <SID>YankBufnameOrFullPath()<CR>
+
+nnoremap g= '[=']
+nnoremap <silent> =p :<C-u>call <SID>ReIndentPut('p', v:register, v:count1)<CR>
+nnoremap <silent> =P :<C-u>call <SID>ReIndentPut('P', v:register, v:count1)<CR>
+nnoremap <silent> =gp :<C-u>call
+            \ <SID>ReIndentPut('gp', v:register, v:count1)<CR>
+nnoremap <silent> =gP :<C-u>call
+            \ <SID>ReIndentPut('gP', v:register, v:count1)<CR>
+
+" マッチ箇所を画面中央にしてfoldがあれば開く.
+nnoremap <silent> n nzzzv
+nnoremap <silent> N Nzzzv
+
+" *と#が次のマッチに移動しないようにする. (妥協)
+nnoremap <silent> * :<C-u>keepjumps silent! normal! *N<CR>
+nnoremap <silent> # :<C-u>keepjumps silent! normal! #N<CR>
+
+xnoremap * :<C-u>call <SID>VisualSetSearch()<Bar>let v:hlsearch=1
+            \ <Bar>let v:searchforward=1<CR>
+xnoremap # :<C-u>call <SID>VisualSetSearch()<Bar>let v:hlsearch=1
+            \ <Bar>let v:searchforward=0<CR>
+
+nnoremap <silent> g* :<C-u>call <SID>CWORDSetSearch()<Bar>let v:hlsearch=1
+            \ <Bar>let v:searchforward=1<CR>
+nnoremap <silent> g# :<C-u>call <SID>CWORDSetSearch()<Bar>let v:hlsearch=1
+            \ <Bar>let v:searchforward=0<CR>
+
+xnoremap <expr> A  call(function('<SID>NeoVisualLine'), ['A'])
+xnoremap <expr> I  call(function('<SID>NeoVisualLine'), ['I'])
+xnoremap <expr> gI call(function('<SID>NeoVisualLine'), ['gI'])
+
+" Subwordテキストオブジェクト.
+if !s:is_ext_nvim
+    xnoremap <silent> iS :<C-u>call <SID>SelectSubword(v:false)<CR>
+    onoremap <silent> iS :<C-u>call <SID>SelectSubword(v:false)<CR>
+    xnoremap <silent> aS :<C-u>call <SID>SelectSubword(v:true)<CR>
+    onoremap <silent> aS :<C-u>call <SID>SelectSubword(v:true)<CR>
+endif
+
+" ====================================================================
+" Vim only
+" ====================================================================
+if s:is_vim
+    " vim-unimpaired-like mappings
+    nnoremap <silent> [a :previous<CR>
+    nnoremap <silent> ]a :next<CR>
+    nnoremap <silent> [A :rewind<CR>
+    nnoremap <silent> ]A :last<CR>
+    nnoremap <silent> [b :bprevious<CR>
+    nnoremap <silent> ]b :bnext<CR>
+    nnoremap <silent> [B :brewind<CR>
+    nnoremap <silent> ]B :blast<CR>
+    nnoremap <silent> [l :lprevious<CR>
+    nnoremap <silent> ]l :lnext<CR>
+    nnoremap <silent> [L :lrewind<CR>
+    nnoremap <silent> ]L :llast<CR>
+    nnoremap <silent> [<C-l> :lpfile<CR>
+    nnoremap <silent> ]<C-l> :lnfile<CR>
+    nnoremap <silent> [q :cprevious<CR>
+    nnoremap <silent> ]q :cnext<CR>
+    nnoremap <silent> [Q :crewind<CR>
+    nnoremap <silent> ]Q :clast<CR>
+    nnoremap <silent> [<C-q> :cpfile<CR>
+    nnoremap <silent> ]<C-q> :cnfile<CR>
+    nnoremap <silent> [<Space> :<C-u>call <SID>PutBlankLines(0, v:count1)<CR>
+    nnoremap <silent> ]<Space> :<C-u>call <SID>PutBlankLines(1, v:count1)<CR>
+
+    set autoread
+    function! s:AutoReadChecktime() abort
+        " cmdline-windowでchecktimeすると事故ることがあるので回避.
+        if !empty(getcmdwintype()) | return | endif
+
+        if mode() ==# 'c' | return | endif
+        if !empty(&buftype) || &modified | return | endif
+
+        let fname = expand('%:p')
+        if empty(fname) | return | endif
+        silent! execute 'checktime ' . fnameescape(fname)
+    endfunction
+    augroup vimrc_autoread_checktime
+        autocmd!
+        autocmd FocusGained,BufEnter,WinEnter * call s:AutoReadChecktime()
+        if exists('##TermLeave')
+            autocmd TermLeave * call s:AutoReadChecktime()
+        endif
+    augroup END
+
+    " TerminalウィンドウでNormalに戻ると表示されるじゃまなオプションをOFF.
+    if exists('##TerminalOpen')
+        augroup vimrc_terminal_set_localopts
+        autocmd!
+        autocmd TerminalOpen * setlocal nonumber norelativenumber signcolumn=no
+        \ | setlocal fillchars+=eob:\  foldcolumn=0 nolist
+        augroup END
     endif
 
-    syntax enable
+    if has('vim_starting') && &term !=# 'dumb'
+        " DECSET1004対応端末でフォーカス通知をONにする.
+        let &t_fe = "\<Esc>[?1004h"
+        let &t_fd = "\<Esc>[?1004l"
 
-    highlight CursorLineNR cterm=none ctermfg=green
-    augroup SetCursorLineNR
+        " DECSCUSR対応端末でカーソル形状を切り替える.
+        let &t_SI .= "\<Esc>[6 q" " Insert
+        let &t_EI .= "\<Esc>[2 q" " Normal
+        let &t_SR .= "\<Esc>[4 q" " Replace
+    endif
+
+    highlight CursorLineNr cterm=none ctermfg=green
+    augroup vimrc_set_cursor_line_nr
         autocmd!
         autocmd ColorScheme default
-        \   highlight CursorLineNR cterm=none ctermfg=green
+        \   highlight CursorLineNr cterm=none ctermfg=green
     augroup END
 
     if &t_Co > 255
-        function! s:Set8bitColorHighlights()
+        function! s:Set8bitColorHighlights() abort
             highlight LineNr ctermfg=242
             highlight NonText ctermfg=237
             highlight SpecialKey ctermfg=237
         endfunction
 
         call s:Set8bitColorHighlights()
-        augroup SetListcharsColor
+        augroup vimrc_set_listchars_color
             autocmd!
             autocmd ColorScheme default call s:Set8bitColorHighlights()
         augroup END
     else
         set nolist
     endif
+
+    " SignColumnの背景色が目に悪いのでLineNrと同じにする.
+    highlight! link SignColumn LineNr
+endif
+
+" ====================================================================
+" Vim only: Distributed runtime plugins
+" ====================================================================
+if s:is_vim
+    function! s:PackAdd(name, ...) abort
+        if a:0 >= 1 && type(a:1) == v:t_string && a:1 =~# '^patch-' && !has(a:1)
+            return
+        endif
+        execute 'silent! packadd! ' . a:name
+    endfunction
+
+    if exists(':packadd')
+        call s:PackAdd('comment', 'patch-9.1.0375') " 2024-04-26 ~
+        call s:PackAdd('editorconfig', 'patch-9.0.1799') " 2023-08-29 ~
+        call s:PackAdd('hlyank', 'patch-9.1.1228') " 2025-03-22 ~
+        call s:PackAdd('matchit')
+    else
+        runtime! macros/matchit.vim
+    endif
+endif
+
+" ====================================================================
+" Functions
+" ====================================================================
+" --- Utilities ------------------------------------------------------
+function! s:GetVisualText() abort
+    let v = getreg('z') | let t = getregtype('z')
+    try
+        silent! normal! gv"zy
+        return getreg('z')
+    finally
+        call setreg('z', v, t)
+    endtry
+endfunction
+
+" 同IDはデバウンスし、最後のタイマーだけ実行する.
+let s:defer_latest_tbl = {}
+function! s:DeferLatest__Fire(id, _timer) abort
+    if !has_key(s:defer_latest_tbl, a:id) | return | endif
+    let entry = remove(s:defer_latest_tbl, a:id) " [timer, cb, args]
+    call call(entry[1], entry[2])
+endfunction
+function! s:DeferLatest(id, ms, cb, ...) abort
+    if has_key(s:defer_latest_tbl, a:id)
+        call timer_stop(s:defer_latest_tbl[a:id][0])
+    endif
+    let timer = timer_start(a:ms, function('s:DeferLatest__Fire', [a:id]))
+    if timer != -1
+        let s:defer_latest_tbl[a:id] = [timer, a:cb, a:000]
+    endif
+    return timer
+endfunction
+
+function! s:FmtBytes(bytes) abort
+    if a:bytes <= 0 | return '' | endif
+    let u = ['B','K','M','G','T','P','E']
+    let i = 0 | let v = str2float(a:bytes)
+    while v >= 1024.0 | let v /= 1024.0 | let i += 1 | endwhile
+    return i ? printf('%.1f%s', v, u[i]) : printf('%d%s', a:bytes, u[0])
+endfunction
+
+" ====================================================================
+" Functions: Map
+" ====================================================================
+" Visual選択を検索レジスタ(@/)へセット(search_cmd: '/' or '?')
+function! s:VisualSetSearch() abort
+    let pat = escape(s:GetVisualText(), '\\/')
+    if empty(pat) | return | endif
+    let @/ = '\V' . substitute(pat, "\n", '\\n', 'g')
+    if histget('search', -1) !=# @/ | call histadd('search', @/) | endif
+    keepjumps normal! `<
+endfunction
+
+" <cWORD>を@/にセットして最初の位置にカーソル移動. (*の<cWORD>版)
+function! s:CWORDSetSearch() abort
+    let pat = escape(expand('<cWORD>'), '\\/')
+    if empty(pat) | return | endif
+    let @/ = '\V' . pat
+    if histget('search', -1) !=# @/ | call histadd('search', @/) | endif
+    let line = getline('.') | let i = col('.') - 1
+    if line[i] =~# '\s'
+        let motion = 'W'
+    elseif i == 0 || line[i-1] =~# '\s'
+        return
+    else
+        let motion = 'B'
+    endif
+    execute 'keepjumps normal! ' . motion
+endfunction
+
+" <C-v>での一括挿入をVの行モードにも追加.
+let s:neo_visual_line_tbl =
+            \ {'A': "\<C-v>0o$A", 'I': "\<C-v>^o^I", 'gI': "\<C-v>0o$I"}
+function! s:NeoVisualLine(rhs) abort
+    return mode() ==# 'V' ? s:neo_visual_line_tbl[a:rhs] : a:rhs
+endfunction
+
+function! s:ReIndentPut(rhs, reg, count) abort
+    if a:rhs !~# '^g\?[pP]$' | return | endif
+    let is_g = len(a:rhs) == 2
+    execute 'normal! ' . a:count . '"' . a:reg . a:rhs
+    let pos = getpos('.')
+    if getregtype(a:reg) ==# 'V' && len(getreg(a:reg, 1, 1)) <= 500
+        keepjumps normal! '[=']
+        call setpos('.', pos)
+        normal! ^
+    endif
+endfunction
+
+function! s:YankBufnameOrFullPath() abort
+    let path = expand('%:p') | let bufname = bufname('%')
+    if empty(path) && empty(bufname) | echo 'No buffer name.' | return | endif
+    let @+ = !empty(path) ? path : bufname
+    echo 'Copied ' . (!empty(path) ? 'full path' : 'buffer name') . ' to @+.'
+endfunction
+
+" 空行を[count]行だけ挿入してカーソル位置/画面位置を完全に元に戻す.
+function! s:PutBlankLines(below, count) abort
+    let view = winsaveview()
+    let c = a:count > 0 ? a:count : 1
+
+    if a:below
+        silent keepjumps keepmarks put =repeat(nr2char(10), c)
+    else
+        silent keepjumps keepmarks put!=repeat(nr2char(10), c)
+        " 上に入れると元の行が l:c 行ぶん下にずれるので補正.
+        let view.lnum += c
+    endif
+
+    call winrestview(view)
+endfunction
+
+" Subword textobj: iS / aS.
+let s:subword_pat = '\v(\u+(\ze\u\l)|\u?\l+|\u+|\d+)'
+function! s:SubwordRange() abort
+    let l = getline('.')
+    let n = strlen(l)
+    if n == 0 | return [0, 1] | endif
+
+    let c = col('.') - 1
+    if c < 0 | let c = 0 | endif
+    if c >= n | let c = n - 1 | endif
+
+    " delimiter上なら隣へ寄せる.
+    if l[c] =~# '[_-]'
+        if c+1 < n && l[c+1] =~# '\k' | let c += 1
+        elseif c > 0 && l[c-1] =~# '\k' | let c -= 1
+        else | return [c, c+1]
+        endif
+    endif
+
+    let i = 0
+    while 1
+        let [m, s, e] = matchstrpos(l, s:subword_pat, i)
+        if s < 0 | return [c, c+1] | endif
+        if c >= s && c < e | return [s, e] | endif
+        if s > c | return [c, c+1] | endif
+        let i = e
+    endwhile
+endfunction
+function! s:SelectSubword(around) abort
+    let [s, e] = s:SubwordRange()
+    let l = getline('.')
+    let n = strlen(l)
+
+    if a:around
+        let left  = (s > 0 && l[s-1] =~# '[_-]')
+        let right = (e < n && l[e]   =~# '[_-]')
+
+        " ルール:
+        " - 前があるなら前を含める. (前後にあっても前だけ)
+        " - 前がなくて後ろだけなら後ろを含める.
+        if left
+            let s -= 1
+        elseif right
+            let e += 1
+        endif
+    endif
+
+    call setpos("'<", [0, line('.'), s+1, 0])
+    call setpos("'>", [0, line('.'), e,   0])
+    normal! `<v`>
+endfunction
+
+" ====================================================================
+" Functions: Autocmd
+" ====================================================================
+" --- Smart relativenumber -------------------------------------------
+function! s:RelNumRestore() abort
+    if &number && mode() !=# 'i' && !&relativenumber
+        set relativenumber
+    endif
+endfunction
+function! s:RelNumOnScroll() abort
+    if !&number | return | endif
+    if &relativenumber | set norelativenumber | endif
+
+    " 700msスクロールが止まったら相対行に戻す(Insert mode以外)j
+    call s:DeferLatest('s:RelNumOnScroll', 700, function('s:RelNumRestore'))
+endfunction
+
+" --- Remove ro from formatoptions -----------------------------------
+function! s:RemoveROFromFO(bufnr) abort
+    let l:bufnr = str2nr(a:bufnr)
+    if !bufexists(l:bufnr) | return | endif
+    if !empty(getbufvar(l:bufnr, '&buftype')) | return | endif
+    let fo = getbufvar(l:bufnr, '&formatoptions')
+    let fo2 = substitute(fo, '[ro]', '', 'g')
+    if fo2 ==# fo | return | endif
+    call setbufvar(l:bufnr, '&formatoptions', fo2)
+endfunction
+
+" --- Statusline -----------------------------------------------------
+function! s:StlBufCount__Update() abort
+    let g:vimrc_stl_buf_total = ':' . len(filter(
+                \ range(1, bufnr('$')), 'buflisted(v:val)'
+                \ ))
+    redrawstatus
+endfunction
+function! s:StlBufCount() abort
+    call s:DeferLatest('s:StlBufCount', 50, function('s:StlBufCount__Update'))
+endfunction
+
+function! s:StlFileSize(file) abort
+    let size = getfsize(expand(a:file))
+    if size > 0
+        let w:vimrc_stl_file_size = s:FmtBytes(size) . ' '
+    else
+        let w:vimrc_stl_file_size = ''
+    endif
+endfunction
+
+" ====================================================================
+" Late init
+" ====================================================================
+if s:is_vim
+    filetype plugin indent on
+    syntax enable
 endif
