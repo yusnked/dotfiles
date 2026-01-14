@@ -108,7 +108,7 @@ if exists('&pumwidth') | set pumwidth=20 | endif " Vim 8.0.1491+
 if exists('&pummaxwidth') | set pummaxwidth=60 | endif " Vim 9.1.1250+
 if exists('&pumblend') | set pumblend=10 | endif " Neovim only.
 
-set timeoutlen=500 " マッピングの待ち時間.
+set timeoutlen=800 " マッピングの待ち時間.
 set ttimeoutlen=50 " 端末から来るキーコードの待ち時間.
 set updatetime=1000
 
