@@ -335,6 +335,10 @@ xnoremap <expr> A  call(function('<SID>NeoVisualLine'), ['A'])
 xnoremap <expr> I  call(function('<SID>NeoVisualLine'), ['I'])
 xnoremap <expr> gI call(function('<SID>NeoVisualLine'), ['gI'])
 
+nnoremap <silent> gcA :<C-u>call <SID>CommentInsertAoO('A')<CR>
+nnoremap <silent> gco :<C-u>call <SID>CommentInsertAoO('o')<CR>
+nnoremap <silent> gcO :<C-u>call <SID>CommentInsertAoO('O')<CR>
+
 " Subwordテキストオブジェクト.
 if !s:is_ext_nvim
     xnoremap <silent> iS :<C-u>call <SID>SelectSubword(v:false)<CR>
@@ -568,6 +572,25 @@ function! s:PutBlankLines(below, count) abort
     endif
 
     call winrestview(view)
+endfunction
+
+" ドットリピート・カウント非対応.
+function! s:CommentInsertAoO(cmd) abort
+    if a:cmd !~# '^[AoO]$' | return | endif
+    let cs = &l:commentstring
+    if cs !~# '%s' | return | endif
+
+    let i   = stridx(cs, '%s')
+    let lhs = substitute(strpart(cs, 0, i), '<', '<LT>', 'g')
+    let rhs = substitute(strpart(cs, i + 2), '<', '<LT>', 'g')
+
+    if a:cmd ==# 'A'
+        silent keepjumps keeppatterns s/[ \t]\+$//e
+        if !empty(getline('.')) | let lhs = ' ' . lhs | endif
+    endif
+
+    let keys = a:cmd . lhs . rhs . repeat("\<C-g>U\<Left>", strchars(rhs))
+    call feedkeys(keys , 'n')
 endfunction
 
 " Subword textobj: iS / aS.
