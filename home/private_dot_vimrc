@@ -267,6 +267,9 @@ endif
 let g:mapleader = "\<Space>"
 nnoremap <Space> <Nop>
 
+nnoremap x "_x
+xnoremap x "_x
+
 nnoremap gf gF
 nnoremap gF gf
 xnoremap gf gF
