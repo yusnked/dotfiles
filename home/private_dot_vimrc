@@ -302,6 +302,12 @@ if exists('*complete_info') " *complete_info: 8.1.1068+
                 \ : '/'
 endif
 
+" タブ移動. Countは[t系は繰り返し. [T系はそのIDのタブへ.
+nnoremap <silent> [t :<C-u>call TabJump('prev')<CR>
+nnoremap <silent> ]t :<C-u>call TabJump('next')<CR>
+nnoremap <silent> [T :<C-u>call TabJump('first')<CR>
+nnoremap <silent> ]T :<C-u>call TabJump('last')<CR>
+
 " +は<CR>と同機能なので+レジスタ用にする.
 nnoremap + "+
 xnoremap + "+
@@ -559,6 +565,25 @@ function! s:YankBufnameOrFullPath() abort
     if empty(path) && empty(bufname) | echo 'No buffer name.' | return | endif
     let @+ = !empty(path) ? path : bufname
     echo 'Copied ' . (!empty(path) ? 'full path' : 'buffer name') . ' to @+.'
+endfunction
+
+" タブ移動. Countは[t系は繰り返し. [T系はそのIDのタブへ.
+function! TabJump(kind) abort
+    let last = tabpagenr('$')
+    if last <= 1 | return | endif
+
+    if a:kind ==# 'prev' || a:kind ==# 'next'
+        let dir  = (a:kind ==# 'next') ? 1 : -1
+        let cur  = tabpagenr() - 1 " 0-based
+        " wrap-around
+        let tabnr = ((((cur + dir * v:count1) % last) + last) % last) + 1
+    elseif a:kind ==# 'first' || a:kind ==# 'last'
+        let tabnr = v:count ? v:count : (a:kind ==# 'first' ? 1 : last)
+        let tabnr = tabnr < 1 ? 1 : (tabnr > last ? last : tabnr)
+    else
+        return
+    endif
+    execute 'tabnext' tabnr
 endfunction
 
 " 空行を[count]行だけ挿入してカーソル位置/画面位置を完全に元に戻す.
