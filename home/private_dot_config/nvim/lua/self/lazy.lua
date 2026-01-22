@@ -47,6 +47,14 @@ if ensure_lazy() then
         },
         ui = {
             border = "single",
+            custom_keys = {
+                ["<localleader>r"] = {
+                    function(plugin)
+                        require("lazy").load { plugins = { plugin.name } }
+                    end,
+                    desc = "Load Plugin",
+                },
+            },
         },
         performance = {
             rtp = {
