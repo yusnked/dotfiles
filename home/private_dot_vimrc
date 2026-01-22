@@ -235,6 +235,12 @@ if has('timers')
     augroup END
 endif
 
+" --- Auto-mkdir on write --------------------------------------------
+augroup vimrc_mkdir_on_write
+    autocmd!
+    autocmd BufWritePre * call s:MkdirOnWrite()
+augroup END
+
 " --- Statusline -----------------------------------------------------
 if !s:is_ext_nvim
     set laststatus=2 " 常にステータスライン表示.
@@ -699,6 +705,16 @@ function! s:RemoveROFromFO(bufnr) abort
     let fo2 = substitute(fo, '[ro]', '', 'g')
     if fo2 ==# fo | return | endif
     call setbufvar(l:bufnr, '&formatoptions', fo2)
+endfunction
+
+" --- Auto-mkdir on write --------------------------------------------
+function! s:MkdirOnWrite()
+    let dir = expand('<afile>:p:h')
+    let bt  = getbufvar(expand('<abuf>'), '&buftype')
+    if bt !=# '' || dir ==# '' || dir =~# '\w\+://' | return | endif
+    if !isdirectory(dir)
+        call mkdir(dir, 'p')
+    endif
 endfunction
 
 " --- Statusline -----------------------------------------------------
