@@ -4,29 +4,6 @@ local function cond_encoding()
     return not (vim.bo.fileencoding == "utf-8" and not vim.bo.bomb)
 end
 
-local statusline_lualine_c = {
-    { "%n" },
-    { "filesize", separator = "", padding = { left = 1 } },
-    { "filetype", icon_only = true, padding = { left = 1, right = 0 }, separator = "" },
-    {
-        function()
-            if vim.bo.filetype ~= "" then
-                return ""
-            else
-                return " "
-            end
-        end,
-        separator = "",
-        padding = 0,
-    },
-    { "filename", path = 1, padding = { left = 0, right = 1 } },
-}
-local statusline_lualine_x = {
-    { "encoding", show_bomb = true, cond = cond_encoding },
-    { "fileformat", cond = function() return vim.bo.fileformat ~= "unix" end },
-    { "%-5.(%l:%v%) %P" },
-}
-
 function M.setup()
     vim.opt.showmode = false
     vim.opt.showcmd = false
@@ -34,6 +11,25 @@ function M.setup()
     local lualine = require("lualine")
     local selcount_var = "lualine_selcount"
     local abbrev_cwd_var = "lualine_abbrev_cwd"
+
+    local winbar = {
+        lualine_c = {
+            { "%n" },
+            { "filesize", separator = "", padding = { left = 1 } },
+            { "filetype", icon_only = true, padding = { left = 1, right = 0 }, separator = "" },
+            {
+                function() return vim.bo.filetype ~= "" and "" or " " end,
+                separator = "",
+                padding = 0,
+            },
+            { "filename", path = 1, padding = { left = 0, right = 1 } },
+        },
+        lualine_x = {
+            { "encoding", show_bomb = true, cond = cond_encoding },
+            { "fileformat", cond = function() return vim.bo.fileformat ~= "unix" end },
+            { "%-5.(%l:%v%) %P" },
+        },
+    }
 
     lualine.setup {
         options = {
@@ -52,14 +48,8 @@ function M.setup()
             lualine_z = { "w:" .. abbrev_cwd_var },
 
         },
-        winbar = {
-            lualine_c = statusline_lualine_c,
-            lualine_x = statusline_lualine_x,
-        },
-        inactive_winbar = {
-            lualine_c = statusline_lualine_c,
-            lualine_x = statusline_lualine_x,
-        },
+        winbar = winbar,
+        inactive_winbar = winbar,
         tabline = {
             lualine_a = {
                 {
