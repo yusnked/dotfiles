@@ -1,14 +1,11 @@
 local strwidth = vim.fn.strwidth
 
+local is_absolute_path = require("self.lib.path.util").is_absolute_path
+
 local M = {}
 
--- Unix-like absolute path only
-local function is_abs_path(path)
-    return type(path) == "string" and path:sub(1, 1) == "/"
-end
-
 local function abbrev_home(path)
-    if is_abs_path(path) then
+    if is_absolute_path(path) then
         path = vim.fn.fnamemodify(path, ":~")
     end
     return path
@@ -55,7 +52,7 @@ local function find_project_root(start_dir, markers)
     if type(markers) ~= "table" then
         return nil
     end
-    if not is_abs_path(start_dir) then
+    if not is_absolute_path(start_dir) then
         return nil
     end
 
@@ -102,7 +99,7 @@ end
 function M.abbrev_with_projects(abs_path, effort_width, opts)
     opts = opts or {}
 
-    if not is_abs_path(abs_path) then
+    if not is_absolute_path(abs_path) then
         return ""
     end
 
