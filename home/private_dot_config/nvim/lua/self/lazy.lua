@@ -27,9 +27,7 @@ local function clone_lazy()
     vim.api.nvim_echo({
         { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
         { (res.stderr ~= "" and res.stderr or res.stdout), "WarningMsg" },
-        { "\nPress any key..." },
     }, true, {})
-    vim.fn.getchar()
     return false
 end
 
