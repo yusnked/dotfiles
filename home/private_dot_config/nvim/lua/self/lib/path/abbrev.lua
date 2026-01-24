@@ -36,41 +36,10 @@ function M.abbrev(path, effort_width)
     return path
 end
 
-local function exists(path)
-    return vim.uv.fs_stat(path) ~= nil
-end
-
 local function escape_lua_pattern(s)
     s = tostring(s)
     -- Luaパターンの特殊文字: ( ) . % + - * ? [ ] ^ $
     return (s:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1"))
-end
-
--- start_dir: 絶対パスのディレクトリ想定
--- return: root_dir or nil
-local function find_project_root(start_dir, markers)
-    if type(markers) ~= "table" then
-        return nil
-    end
-    if not is_absolute_path(start_dir) then
-        return nil
-    end
-
-    local dir = start_dir
-    while dir and dir ~= "" do
-        for _, marker in ipairs(markers) do
-            if exists(vim.fs.joinpath(dir, marker)) then
-                return dir
-            end
-        end
-
-        local parent = vim.fs.dirname(dir)
-        if parent == dir then
-            break
-        end
-        dir = parent
-    end
-    return nil
 end
 
 local function first_char(s)
@@ -103,7 +72,8 @@ function M.abbrev_with_projects(abs_path, effort_width, opts)
         return ""
     end
 
-    local project_root_dir = find_project_root(abs_path, opts.markers)
+    -- markers のどれかがあればOK (同優先度) にしたいのでネストする.
+    local project_root_dir = vim.fs.root(abs_path, { opts.markers })
     if project_root_dir then
         -- project_name/relative/path
         local project_name = project_root_dir:gsub("^.*/([^/]+)$", "%1")
