@@ -43,6 +43,7 @@ if ensure_lazy() then
             lazy = true,
             cond = nil,
         },
+        install = { colorscheme = { "tokyonight" } },
         ui = {
             border = "single",
             custom_keys = {
