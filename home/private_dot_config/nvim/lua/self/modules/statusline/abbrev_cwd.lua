@@ -39,7 +39,7 @@ local function set_abbrev_cwd()
         return
     end
 
-    local abbrev_with_projects = require("self.lib.path").abbrev_with_projects
+    local abbrev_with_projects = require("self.lib.path.abbrev").abbrev_with_projects
     local abbrev_path = abbrev_with_projects(path, width, { markers = M._opts.project_markers })
     vim.w[M._opts.wvar] = abbrev_path .. scope_label
 
