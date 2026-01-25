@@ -1,8 +1,27 @@
--- local verylazy_schedule_load = require("plugins.util").verylazy_schedule_load
+local schedule = require("plugins.util.verylazy_load").schedule
+
+local function is_real_file()
+    if vim.bo.buftype ~= "" then return false end
+    return vim.api.nvim_buf_get_name(0) ~= ""
+end
 
 return {
-    --     {
-    --         "lewis6991/gitsigns.nvim",
-    --         enabled = false,
-    --     },
+    {
+        "lewis6991/gitsigns.nvim",
+        cmd = "Gitsigns",
+        init = function(plugin)
+            schedule(plugin.name, function()
+                if is_real_file() then
+                    return 100
+                else
+                    return { "BufReadPre", "BufNewFile" }
+                end
+            end)
+        end,
+        config = function()
+            require("gitsigns").setup {
+                on_attach = require("plugins.config.gitsigns").on_attach,
+            }
+        end,
+    },
 }
