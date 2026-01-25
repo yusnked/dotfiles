@@ -3,6 +3,8 @@ local M = {}
 M._vltasks = M._vltasks or {}
 M._verylazy_hooked = M._verylazy_hooked or false
 
+local augroup = vim.api.nvim_create_augroup("plugins_util_verylazy_load_schedule", { clear = true })
+
 local function ensure_verylazy_runner()
     if M._verylazy_hooked then
         return
@@ -10,6 +12,7 @@ local function ensure_verylazy_runner()
     M._verylazy_hooked = true
 
     vim.api.nvim_create_autocmd("User", {
+        group = augroup,
         pattern = "VeryLazy",
         once = true,
         callback = function()
@@ -43,13 +46,13 @@ function M._run_task(task)
         return
     end
 
-    -- nil/true: 即ロード
+    -- nil/true: 即ロード.
     if ret == nil or ret == true then
         load()
         return
     end
 
-    -- number: 秒後にロード
+    -- number: 秒後にロード.
     if type(ret) == "number" then
         if ret > 0 then
             vim.defer_fn(load, math.floor(ret))
@@ -59,7 +62,7 @@ function M._run_task(task)
         return
     end
 
-    -- string or {string,...}: once autocmd を張って、発火時に再評価
+    -- string or {string,...}: once autocmd を張って発火時に再評価.
     local events
     if type(ret) == "string" then
         events = { ret }
@@ -70,17 +73,18 @@ function M._run_task(task)
     end
 
     vim.api.nvim_create_autocmd(events, {
+        group = augroup,
         once = true,
         callback = load,
     })
 end
 
---- lazy.nvimのinit関数内で呼ぶ必要がある
+--- lazy.nvimのinit関数内で呼ぶ必要あり.
 --- cbの戻り値:
 ---   nil/true      -> すぐload()
 ---   number(>0)    -> ms後にload()
 ---   "Event" / {..}-> そのイベントでonce発火、発火時にload()
-function M.verylazy_schedule_load(plugin, cb)
+function M.schedule(plugin, cb)
     ensure_verylazy_runner()
     table.insert(M._vltasks, { plugin = plugin, cb = cb, _done = false })
 end
