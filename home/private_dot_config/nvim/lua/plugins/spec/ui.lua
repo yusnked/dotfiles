@@ -15,8 +15,9 @@ return {
         dependencies = { "nvim-mini/mini.icons" },
         event = "VeryLazy",
         keys = {
-            { "<leader>?", function() require("which-key").show() end, mode = { "n", "x" }, desc = "Show Keymaps (which-key)" },
+            { "<leader>?", function() require("which-key").show() end, mode = { "n", "x" }, desc = "Show keymaps" },
         },
+        main = "which-key",
         opts = {
             delay = function(ctx)
                 return ctx.plugin and 0 or 500

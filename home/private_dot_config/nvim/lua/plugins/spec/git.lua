@@ -9,6 +9,7 @@ return {
     {
         "lewis6991/gitsigns.nvim",
         cmd = "Gitsigns",
+        main = "gitsigns",
         init = function(plugin)
             schedule(plugin.name, function()
                 if is_real_file() then
@@ -18,8 +19,8 @@ return {
                 end
             end)
         end,
-        config = function()
-            require("gitsigns").setup {
+        config = function(plugin)
+            require(plugin.main).setup {
                 on_attach = require("plugins.config.gitsigns").on_attach,
             }
         end,
