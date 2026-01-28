@@ -1,7 +1,7 @@
 return {
     {
         "nvim-lualine/lualine.nvim",
-        dependencies = { "nvim-tree/nvim-web-devicons" },
+        dependencies = { "nvim-mini/mini.icons" },
         event = "VeryLazy",
         init = function()
             vim.opt.laststatus = 0
@@ -12,7 +12,7 @@ return {
     },
     {
         "folke/which-key.nvim",
-        dependencies = { "nvim-tree/nvim-web-devicons" },
+        dependencies = { "nvim-mini/mini.icons" },
         event = "VeryLazy",
         keys = {
             { "<leader>?", function() require("which-key").show() end, mode = { "n", "x" }, desc = "Show Keymaps (which-key)" },
