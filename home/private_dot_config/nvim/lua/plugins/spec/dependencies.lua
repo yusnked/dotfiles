@@ -7,4 +7,5 @@ return {
             icons.mock_nvim_web_devicons()
         end,
     },
+    { "nvim-lua/plenary.nvim" },
 }
