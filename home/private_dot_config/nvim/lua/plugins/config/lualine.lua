@@ -77,7 +77,8 @@ function M.setup()
             globalstatus = true,
             disabled_filetypes = {
                 statusline = {},
-                winbar = { "man", "qf" },
+                -- NOTE: fyler は現時点ではルート変更しても bufname が変わらない為.
+                winbar = { "fyler", "man", "qf" },
             },
             component_separators = { left = left_soft_sep, right = right_soft_sep },
             section_separators = { left = left_hard_sep, right = right_hard_sep },
