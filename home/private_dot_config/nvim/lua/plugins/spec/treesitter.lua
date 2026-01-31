@@ -8,4 +8,9 @@ return {
         init = treesitter.init,
         config = treesitter.config,
     },
+    {
+        "folke/ts-comments.nvim",
+        event = "User TreesitterAttach",
+        opts = {},
+    },
 }
