@@ -25,4 +25,17 @@ return {
         },
         config = function() require("plugins.config.dial").config() end,
     },
+    {
+        "gbprod/substitute.nvim",
+        keys = keydesc.lazy {
+            { "<leader>s", desc = "Substitute (operator)" },
+            { "<leader>ss", desc = "Substitute line" },
+            { "<leader>S", desc = "Substitute to EOL" },
+            { "<leader>s", mode = "x", desc = "Substitute selection" },
+            { "<leader>sx", desc = "Exchange (operator)" },
+            { "<leader>sxx", desc = "Exchange line" },
+            { "X", mode = "x", desc = "Exchange selection" },
+        },
+        config = function() require("plugins.config.substitute").config() end,
+    },
 }
