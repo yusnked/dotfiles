@@ -4,12 +4,24 @@ return {
     {
         "kylechui/nvim-surround",
         version = "*",
-        keys = { "ys", "yss", "yS", "ySS", "cs", "cS", "ds",
-            { "<C-g>s", mode = "i" }, { "<C-g>S", mode = "i" },
+        keys = {
+            { "ys", desc = "Add a surrounding pair around a motion (normal mode)" },
+            { "yss", desc = "Add a surrounding pair around the current line (normal mode)" },
+            { "cs", desc = "Change a surrounding pair" },
+            { "ds", desc = "Delete a surrounding pair" },
             { "S", mode = "x", desc = "Add a surrounding pair around a visual selection" },
-            { "gS", mode = "x", desc = "Add a surrounding pair around a visual selection, on new lines" },
         },
-        opts = {},
+        opts = {
+            keymaps = {
+                insert = false,
+                insert_line = false,
+                normal_line = false,
+                normal_cur_line = false,
+                visual_line = false,
+                change_line = false,
+            },
+            move_cursor = "sticky",
+        },
     },
     {
         "monaqa/dial.nvim",
