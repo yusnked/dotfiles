@@ -9,7 +9,7 @@ return {
             { "yss", desc = "Add a surrounding pair around the current line (normal mode)" },
             { "cs", desc = "Change a surrounding pair" },
             { "ds", desc = "Delete a surrounding pair" },
-            { "S", mode = "x", desc = "Add a surrounding pair around a visual selection" },
+            { "<leader>S", mode = "x", desc = "Add a surrounding pair around a visual selection" },
         },
         opts = {
             keymaps = {
@@ -17,6 +17,7 @@ return {
                 insert_line = false,
                 normal_line = false,
                 normal_cur_line = false,
+                visual = "<leader>S",
                 visual_line = false,
                 change_line = false,
             },
