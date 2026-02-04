@@ -50,4 +50,21 @@ return {
         },
         config = function() require("plugins.config.substitute").config() end,
     },
+    {
+        "folke/flash.nvim",
+        keys = function(plugin)
+            local m = plugin.main
+            local a = { actions = { S = "next", s = "prev" } }
+            return {
+                { "s", mode = { "n", "x", "o" }, function() require(m).jump() end, desc = "Flash" },
+                { "S", mode = { "n", "x", "o" }, function() require(m).treesitter(a) end, desc = "Flash Treesitter" },
+                { "r", mode = "o", function() require(m).remote() end, desc = "Remote Flash" },
+            }
+        end,
+        main = "flash",
+        opts = {
+            modes = { char = { enabled = false } },
+            prompt = { prefix = { { "󱐋", "FlashPromptIcon" } } },
+        },
+    },
 }
