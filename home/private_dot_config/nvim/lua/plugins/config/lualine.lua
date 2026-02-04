@@ -124,7 +124,7 @@ function M.setup()
     require("self.modules.statusline.selcount").setup {
         wvar = selcount_var,
         poll_ms = 200,
-        on_update = lualine.refresh,
+        on_update = function() lualine.refresh { place = { "statusline" } } end,
     }
 end
 
