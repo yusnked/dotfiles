@@ -13,4 +13,20 @@ return {
         event = "User TreesitterAttach",
         opts = {},
     },
+    {
+        "Wansmer/treesj",
+        keys = keydesc.lazy { { "J", desc = "TreeSJ toggle; fallback to native J" } },
+        config = function()
+            local function treesj_or_native_J()
+                local bufnr = vim.api.nvim_get_current_buf()
+                local parser = vim.treesitter.get_parser(bufnr)
+                if not parser then
+                    vim.cmd(("normal! %dJ"):format(vim.v.count1))
+                    return
+                end
+                require("treesj").toggle()
+            end
+            keydesc.set("n", "J", treesj_or_native_J, { silent = true })
+        end,
+    },
 }
