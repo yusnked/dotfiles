@@ -1,5 +1,7 @@
 local M = {}
 
+local registry = require("mason-registry")
+
 local pending = {} ---@type table<string, true>
 local scheduled = false
 local refreshed = false
@@ -12,10 +14,25 @@ local function notify(message, level)
     })
 end
 
+---@type table<string, string>
+local lspconfig_to_package = {}
+---@return table<string, string>
+function M.get_lspconfig_to_package()
+    if #lspconfig_to_package > 0 then return lspconfig_to_package end
+
+    for _, pkg_spec in ipairs(registry.get_all_package_specs()) do
+        if vim.tbl_get(pkg_spec, "neovim", "lspconfig") ~= nil then
+            local key = pkg_spec.neovim.lspconfig
+            local value = pkg_spec.name or key
+            lspconfig_to_package[key] = value
+        end
+    end
+    return lspconfig_to_package
+end
+
 ---@param servers string[]
 local function install_servers(servers)
-    local map = require("mason-lspconfig").get_mappings().lspconfig_to_package
-    local registry = require("mason-registry")
+    local map = M.get_lspconfig_to_package()
 
     for _, server in ipairs(servers) do
         local lspconfig_name = server:gsub("@.*$", "")
@@ -63,7 +80,6 @@ function M.request_install(servers)
         pending = {}
 
         if not refreshed then
-            local registry = require("mason-registry")
             registry.refresh(vim.schedule_wrap(function(success)
                 if not success then
                     notify("Refresh failed.", "ERROR")

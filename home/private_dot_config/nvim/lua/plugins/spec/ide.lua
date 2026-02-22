@@ -24,9 +24,6 @@ return {
             })
         end,
     },
-    { -- lspconfig -> package 名の解決のために config/mason.lua で使用.
-        "mason-org/mason-lspconfig.nvim",
-    },
     {
         -- NOTE: lua_ls 3.17 以降には問題があるため 3.16.4 を使用すること.
         -- https://github.com/folke/lazydev.nvim/issues/136
