@@ -69,6 +69,14 @@ return {
         },
     },
     {
+        "chrisgrieser/nvim-various-textobjs",
+        keys = keydesc.lazy {
+            { "iS", mode = { "o", "x" }, desc = "inner subword" },
+            { "aS", mode = { "o", "x" }, desc = "subword" },
+        },
+        config = function() require("plugins.config.various-textobjs").config() end,
+    },
+    {
         "windwp/nvim-autopairs",
         event = { "InsertEnter" },
         opts = { map_c_h = true, map_c_w = true },
