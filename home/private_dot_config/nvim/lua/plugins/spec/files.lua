@@ -1,14 +1,15 @@
-local fyler_config = require("plugins.config.fyler")
+local keydesc = require("plugins.util.keydesc")
 
 return {
     {
         "A7Lavinraj/fyler.nvim",
         branch = "stable",
         dependencies = { "nvim-mini/mini.icons" },
-        keys = fyler_config.keys,
+        keys = keydesc.lazy {
+            { "<leader>e", desc = "Open/Focus left-most (fyler)" },
+            { "<leader>E", desc = "Close left-most (fyler)" },
+        },
         cmd = "Fyler",
-        main = "fyler",
-        init = fyler_config.init,
-        config = fyler_config.config,
+        config = function() require("plugins.config.fyler").config() end,
     },
 }
