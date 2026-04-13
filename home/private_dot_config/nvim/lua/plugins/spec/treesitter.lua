@@ -1,3 +1,4 @@
+local keydesc = require("plugins.util.keydesc")
 local treesitter = require("plugins.config.treesitter")
 
 return {
@@ -7,6 +8,23 @@ return {
         build = ":TSUpdate",
         init = treesitter.init,
         config = treesitter.config,
+    },
+    {
+        "nvim-treesitter/nvim-treesitter-textobjects",
+        event = "User TreesitterAttach",
+        init = function()
+            -- Disable entire built-in ftplugin mappings.
+            vim.g.no_plugin_maps = true
+        end,
+        config = function()
+            local select = require("nvim-treesitter-textobjects.select")
+            vim.keymap.set({ "x", "o" }, "im", function()
+                select.select_textobject("@function.inner", "textobjects")
+            end, { desc = "inner function" })
+            vim.keymap.set({ "x", "o" }, "am", function()
+                select.select_textobject("@function.outer", "textobjects")
+            end, { desc = "function" })
+        end,
     },
     {
         "folke/ts-comments.nvim",
