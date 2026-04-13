@@ -1,4 +1,18 @@
 local bufnr = vim.api.nvim_get_current_buf()
+local root_dir = require('fyler.views.finder')._current.dir
+
+-- WIP: fyler auto tcd
+vim.b._fyler_prev_cwd = vim.uv.cwd()
+vim.cmd.tcd(root_dir)
+require('self.modules.statusline.abbrev_cwd').refresh()
+
+vim.api.nvim_create_autocmd('BufHidden', {
+    buffer = bufnr,
+    callback = function()
+        vim.cmd.tcd(vim.b._fyler_prev_cwd)
+        require('self.modules.statusline.abbrev_cwd').refresh()
+    end,
+})
 
 do -- デフォルトキーを無効化する.
     local keys = { 'q', '<C-t>', '|', '^', '=', '.', '#' }

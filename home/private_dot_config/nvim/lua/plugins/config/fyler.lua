@@ -40,6 +40,7 @@ function M.config()
         return -1
     end
 
+    -- WIP: fyler auto tcd
     -- root_dir をトップレベルとして開き, ツリーでそのバッファにカーソルを合わせる.
     map('n', '<leader>e', function()
         local bufname = vim.api.nvim_buf_get_name(0)
@@ -55,6 +56,9 @@ function M.config()
         if is_absolute_path(bufname) then
             vim.defer_fn(function()
                 fyler.navigate(bufname)
+
+                local finder_mod = require('fyler.views.finder')
+                vim.notify(finder_mod._current.dir)
             end, 100)
         end
     end)
