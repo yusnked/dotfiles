@@ -25,8 +25,6 @@ return {
         end,
     },
     {
-        -- NOTE: lua_ls 3.17 以降には問題があるため 3.16.4 を使用すること.
-        -- https://github.com/folke/lazydev.nvim/issues/136
         "folke/lazydev.nvim",
         ft = "lua",
         opts = {
