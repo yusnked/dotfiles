@@ -14,14 +14,6 @@ return {
         opts = { PATH = "skip" },
         init = function()
             vim.env.PATH = vim.fn.stdpath("data") .. "/mason/bin:" .. vim.env.PATH
-
-            vim.api.nvim_create_autocmd("User", {
-                group = vim.api.nvim_create_augroup("plugins_lsp_server_install", {}),
-                pattern = "LspNotInstalled",
-                callback = function(ctx)
-                    require("plugins.config.mason").request_install(ctx.data.servers)
-                end,
-            })
         end,
     },
     {
