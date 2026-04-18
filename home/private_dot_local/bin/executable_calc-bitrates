@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+
+import sys
+import subprocess
+from collections import defaultdict
+from typing import List, Dict, Tuple
+
+
+class FrameData:
+    def __init__(self):
+        self.size = 0
+        self.count = 0
+
+
+def build_ffprobe_command(input_file: str, max_seconds: str = None) -> List[str]:
+    """ffprobe コマンドを構築"""
+    command = [
+        "ffprobe",
+        "-select_streams",
+        "v:0",
+        "-show_frames",
+        "-show_entries",
+        "frame=pict_type,pkt_size",
+        "-of",
+        "csv=p=0",
+        input_file,
+    ]
+    if max_seconds:
+        command.extend(["-read_intervals", f"%0:{max_seconds}"])
+    return command
+
+
+def get_frame_data(input_file: str, max_seconds: str = None) -> List[str]:
+    """ffprobe を使って指定されたフレーム数までのデータを取得"""
+    command = build_ffprobe_command(input_file, max_seconds)
+    result = subprocess.run(command, capture_output=True, text=True, check=True)
+    return result.stdout.strip().split("\n")
+
+
+def get_frame_rate(input_file: str) -> float:
+    """動画のフレームレートを取得"""
+    command = [
+        "ffprobe",
+        "-v",
+        "0",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=r_frame_rate",
+        "-of",
+        "csv=p=0",
+        input_file,
+    ]
+    result = subprocess.run(command, capture_output=True, text=True, check=True)
+    num, den = map(int, result.stdout.strip().split("/"))
+    return num / den
+
+
+def calculate_bitrates(
+    frame_data: List[str], frame_rate: float
+) -> Tuple[Dict[str, Tuple[int, float]], int, float]:
+    """フレームデータを解析し、I、P、Bフレームの平均ビットレートとフレーム数を計算"""
+    frame_stats = defaultdict(FrameData)
+
+    for line in frame_data:
+        if not line:
+            continue
+        try:
+            pkt_size, frame_type = line.split(",")
+            frame_stats[frame_type].size += int(pkt_size)
+            frame_stats[frame_type].count += 1
+        except (ValueError, IndexError):
+            continue
+
+    frame_bitrates = {
+        ftype: (
+            (data.count, (data.size / data.count * frame_rate * 8) / 1000)
+            if data.count > 0
+            else (0, 0)
+        )
+        for ftype, data in frame_stats.items()
+    }
+
+    total_frames = sum(data.count for data in frame_stats.values())
+    total_size = sum(data.size for data in frame_stats.values())
+    avg_total_bitrate = (
+        (total_size / total_frames * frame_rate * 8) / 1000 if total_frames else 0
+    )
+
+    return frame_bitrates, total_frames, avg_total_bitrate
+
+
+def format_output(
+    frame_bitrates: Dict[str, Tuple[int, float]],
+    total_frames: int,
+    avg_total_bitrate: float,
+) -> None:
+    """ビットレートの出力を整形"""
+    max_bitrate_width = len(
+        f"{int(max(avg_total_bitrate, *(bitrate for _, bitrate in frame_bitrates.values())))}"
+    )
+    max_frame_width = len(f"{total_frames}")
+
+    for frame_type in ["I", "P", "B"]:
+        count, bitrate = frame_bitrates.get(frame_type, (0, 0))
+        print(
+            f"Frame {frame_type}:{max_frame_width*' '}{count:>{max_frame_width}}, {bitrate:>{max_bitrate_width}.0f} kb/s"
+        )
+    print(
+        f"  TOTAL:{max_frame_width*' '}{total_frames}, {avg_total_bitrate:>{max_bitrate_width}.0f} kb/s"
+    )
+
+
+def main(input_file: str, max_seconds: str = None) -> None:
+    try:
+        frame_rate = get_frame_rate(input_file)
+        frame_data = get_frame_data(input_file, max_seconds)
+
+        if not frame_data or all(not line for line in frame_data):
+            raise SystemExit(
+                f"Error: No frame data found in the first {max_seconds} seconds."
+            )
+
+        frame_bitrates, total_frames, avg_total_bitrate = calculate_bitrates(
+            frame_data, frame_rate
+        )
+
+        if not frame_bitrates:
+            raise SystemExit(
+                f"Error: No valid frame data in the first {max_seconds} seconds."
+            )
+
+        format_output(frame_bitrates, total_frames, avg_total_bitrate)
+
+    except KeyboardInterrupt:
+        raise SystemExit("\nProcess interrupted by user.")
+    except subprocess.CalledProcessError as e:
+        raise SystemExit(f"Error executing ffprobe: {e}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
+        raise SystemExit("Usage: python calc_bitrates.py input.mp4 [max_seconds]")
+
+    input_file = sys.argv[1]
+    max_seconds = sys.argv[2] if len(sys.argv) == 3 else None
+    main(input_file, max_seconds)

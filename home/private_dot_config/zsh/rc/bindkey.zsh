@@ -24,4 +24,5 @@
     done
     bind-widget $keymap '^h' backward-delete-char-or-expantion
     bind-widget $keymap '^?' backward-delete-char-or-expantion
+    bind-widget $keymap '^I' smart-tab
 }

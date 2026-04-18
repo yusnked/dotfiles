@@ -1,0 +1,12 @@
+# カーソル位置までのバッファから最後の単語を抽出
+local cur_word=${LBUFFER##* }
+# もし単語が空なら通常の補完を実行
+[[ -z $cur_word ]] && { zle complete-word; return; }
+# 現在の単語がエイリアスかどうかをチェック
+if alias "$cur_word" &>/dev/null; then
+    # エイリアスなら展開
+    zle _expand_alias
+else
+    # それ以外は通常の補完
+    zle complete-word
+fi

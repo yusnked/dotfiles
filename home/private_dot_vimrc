@@ -267,10 +267,29 @@ if !s:is_ext_nvim
     set statusline+=\ %-6.(%l:%v%)\ %-4.P
 endif
 
+" --- Clipboard ------------------------------------------------------
+if has('clipboard') && stridx(&clipboard, 'unnamed') == -1
+    let s:_clipboard_snap_text = ''
+    function! s:ClipboardPullIfChanged() abort
+        let text = getreg('+')
+        if text ==# s:_clipboard_snap_text | return | endif
+        let type = stridx(text, "\n") >= 0 ? 'V' : 'v'
+        call setreg('"', text, type)
+        let s:_clipboard_snap_text = text
+    endfunction
+    augroup vimrc_clipboard_pull_on_focus
+        autocmd!
+        autocmd VimEnter    * let s:_clipboard_snap_text = getreg('+')
+        autocmd FocusLost   * let s:_clipboard_snap_text = getreg('+')
+        autocmd FocusGained * call s:ClipboardPullIfChanged()
+    augroup END
+endif
+
 " ====================================================================
 " Maps
 " ====================================================================
 let g:mapleader = "\<Space>"
+let g:maplocalleader = "\\"
 nnoremap <Space> <Nop>
 
 nnoremap x "_x
@@ -285,8 +304,8 @@ cnoremap <C-b> <Left>
 cnoremap <C-f> <Right>
 cnoremap <C-a> <Home>
 
-cnoremap <C-o> <C-f>
-cnoremap <C-q> <C-a>
+cnoremap <C-g>f <C-f>
+cnoremap <C-g>a <C-a>
 
 cnoremap <C-n>  <Down>
 cnoremap <C-p>  <Up>
@@ -744,3 +763,34 @@ if s:is_vim
     filetype plugin indent on
     syntax enable
 endif
+
+" <C-g>! で「先頭に ! をトグル」しつつカーソル位置を維持する（右側倍増バグ修正）
+function! s:cmdline_toggle_bang_keepcursor() abort
+    if getcmdtype() !=# ':'
+        return ''
+    endif
+
+    let l:line = getcmdline()
+    let l:pos  = getcmdpos()          " 1..(strchars(line)+1)
+
+    if l:line =~# '^!'
+        let l:newline = strcharpart(l:line, 1)  " 先頭の ! を落とす（マルチバイト安全）
+        let l:newpos  = max([1, l:pos - 1])
+    else
+        let l:newline = '!' . l:line
+        let l:newpos  = l:pos + 1
+    endif
+
+    " new line を入れた直後は末尾にいるので、左へ戻す回数を計算
+    let l:endpos = strchars(l:newline) + 1
+    let l:left   = l:endpos - l:newpos
+    if l:left < 0
+        let l:left = 0
+    endif
+
+    " 重要: <C-U> は「カーソルより左」しか消さないので、先に <C-E> で末尾へ
+    return "\<C-E>\<C-U>" . l:newline . repeat("\<Left>", l:left)
+endfunction
+
+cnoremap <expr> <C-g>! <SID>cmdline_toggle_bang_keepcursor()
+

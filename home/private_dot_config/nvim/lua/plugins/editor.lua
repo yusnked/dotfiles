@@ -57,8 +57,9 @@ return {
     },
     {
         'karb94/neoscroll.nvim',
+        enabled = false,
         keys = { '<C-u>', '<C-d>', '<C-b>', '<C-f>', 'zt', 'zz', 'zb' },
-        cond = NOT_VSCODE,
+        cond = NOT_NEOVIDE and NOT_VSCODE,
         config = function(plugin)
             require('neoscroll').setup {
                 mappings = plugin.keys,
@@ -176,10 +177,5 @@ return {
                 keymap({ 'o', 'x' }, 'ih', gitsigns.select_hunk, { desc = 'inner hunk' })
             end,
         },
-    },
-    {
-        'jghauser/mkdir.nvim',
-        event = { 'BufWritePre' },
-        cond = NOT_VSCODE,
     },
 }

@@ -331,7 +331,7 @@ SAVEHIST=10000
 setopt IGNORE_EOF
 
 # INTERACTIVE_COMMENTS <KS>: コマンドラインでコメントを入力できるようになる。
-#setopt INTERACTIVE_COMMENTS
+setopt INTERACTIVE_COMMENTS
 
 # HASH_CMDS <D>: 各コマンドを初めて使用したときにパスをハッシュ化しそれ以降の呼び出しでPATH検索を回避する。
 #unsetopt HASH_CMDS

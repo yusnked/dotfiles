@@ -76,7 +76,7 @@ return {
     },
     {
         'andymass/vim-matchup',
-        version = '*',
+        -- version = '*',
         event = { 'CursorHold', 'CursorHoldI' },
         config = function()
             if not NOT_VSCODE then

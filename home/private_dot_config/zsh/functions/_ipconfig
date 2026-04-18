@@ -1,0 +1,39 @@
+#compdef ipconfig
+
+# サブコマンドとその説明（"word:description" の形式）
+local -a subcmds
+subcmds=(
+  'getifaddr:Get the IP address of the specified interface'
+  'getoption:Get a DHCP option value for the specified interface'
+  'set:Set DHCP configuration for the specified interface'
+  'getpacket:Get DHCP packet information for the specified interface'
+  'release:Release the DHCP lease for the specified interface'
+  'renew:Renew the DHCP lease for the specified interface'
+)
+
+# 動的にネットワークインターフェイス名を取得（ifconfig -l の出力を空白区切りで配列に展開）
+local -a ifaces
+ifaces=("${(s: :)$(ifconfig -l)}")
+# 必要なら不要なインターフェイス（例：lo0）を除外することも可能
+# ifaces=(${ifaces:#lo0})
+
+# 補完候補の説明ヘッダーを空に設定
+# zstyle ':completion:*:descriptions' header ''
+
+# 補完候補の表示フォーマットを設定（候補名：20文字幅、太字、" - "区切り）
+# zstyle ':completion:*:descriptions' format '%B%-20s%b - %s'
+
+# 補完の引数定義（1: サブコマンド、2: インターフェイス、その他はそのまま）
+_arguments -C \
+  '1:command:->command' \
+  '2:interface:->iface' \
+  '*:args:->args'
+
+case $state in
+  command)
+    _describe 'ipconfig commands' subcmds
+    ;;
+  iface)
+    _values 'network interface' $ifaces
+    ;;
+esac

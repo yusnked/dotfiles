@@ -55,8 +55,8 @@ EOF
     # これによりマウントポイント用の空の /nix ディレクトリの自動生成を停止
     target_file='/etc/synthetic.conf'
     temp_file="$(mktemp)"
-    sed '/^nix$/d' "$target_file" >"$tempfile"
-    sudo mv "$tempfile" "$target_file"
+    sed '/^nix$/d' "$target_file" >"$temp_file"
+    sudo mv "$temp_file" "$target_file"
     sudo chown 'root:wheel' "$target_file"
     sudo chmod 644 "$target_file"
 

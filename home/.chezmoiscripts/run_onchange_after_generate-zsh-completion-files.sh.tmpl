@@ -5,6 +5,7 @@ set -eu
 {{ $funcDir := joinPath .xdg.config "zsh/functions" -}}
 {{ $commandLines := list
      "chezmoi completion zsh"
+     "uv generate-shell-completion zsh"
      "wezterm shell-completion --shell zsh"
     -}}
 {{ range $commandLines -}}

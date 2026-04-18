@@ -1,58 +1,292 @@
-#!/usr/bin/env bash
-# renban {start number} {target file regex}
-set -eu
+#!/usr/bin/env python3
+# renban [-s start_number] [target file regex]
 
-readonly uniq_prefix="${$}${RANDOM}"
+from __future__ import annotations
 
-function get_sorted_files() {
-    find . -maxdepth 1 -type f -regextype posix-egrep -regex "$regex" -a -not -name '.*' -type f -printf '%T@ %p\n' | sort | cut -d' ' -f2-
-}
+import argparse
+import os
+import random
+import re
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
 
-function rename_without_ext() {
-    local -r orig=${1#./}
-    local -r ext=${orig##*.}
-    if [[ $ext != $orig ]]; then
-        mv "$orig" "${2}.$ext"
-    else
-        mv "$orig" "$2"
-    fi
-}
 
-if [[ $(uname -s) != 'Darwin' ]] && ! which xsel &> /dev/null; then
-    echo 'Error: xsel not installed' >&2
-    exit 1
-fi
+MAX_CLIPBOARD_PREFIX_LEN = 255
+TRIM_CHARS = " \u3000\r\n"
 
-readonly start_number=${1:-1}
-if ! (( start_number >= 0 )); then
-    echo 'Error: need $1 >= 0' >&2
-    exit 1
-fi
 
-readonly regex=${2:-.\*}
+@dataclass(frozen=True)
+class RenamePlan:
+    source: Path
+    temp: Path
+    final: Path
 
-files=( $(get_sorted_files) )
-readonly last_number=$((${#files[*]} + start_number))
-count=$start_number
-for file in "${files[@]}"; do
-    rename_without_ext "$file" "$(printf "%d_%0${#last_number}d" $uniq_prefix $count)"
-    count=$((count + 1))
-done
 
-files=( $(get_sorted_files) )
-if [[ $(uname -s) == Darwin ]]; then
-    readonly clipboard="$(pbpaste)"
-else
-    readonly clipboard="$(xsel -bo)"
-fi
+def die(message: str) -> None:
+    print(f"Error: {message}", file=sys.stderr)
+    raise SystemExit(1)
 
-if [[ -z $clipboard ]]; then
-    echo 'Error: clipboard is empty' >&2
-    exit 1
-fi
 
-for file in "${files[@]}"; do
-    without_prefix="${file#./$uniq_prefix}"
-    mv "$file" "${clipboard}${without_prefix}"
-done
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="renban",
+        description="Rename top-level files to clipboard prefix + sequential number.",
+    )
+    parser.add_argument(
+        "-s",
+        "--start",
+        type=int,
+        default=1,
+        help="start number (default: 1)",
+    )
+    parser.add_argument(
+        "regex",
+        nargs="?",
+        default=None,
+        help="target file regex",
+    )
 
+    if len(sys.argv) == 1:
+        parser.print_help()
+        raise SystemExit(0)
+
+    args = parser.parse_args()
+
+    if args.start < 0:
+        die("need -s/--start >= 0")
+
+    return args
+
+
+def sanitize_clipboard_text(raw: str) -> str:
+    text = raw.strip(TRIM_CHARS)
+
+    if not text:
+        die("clipboard is empty after trimming leading/trailing spaces/newlines")
+
+    if "\n" in text or "\r" in text:
+        die("clipboard must be a single line after trimming leading/trailing spaces/newlines")
+
+    if len(text) > MAX_CLIPBOARD_PREFIX_LEN:
+        die(
+            f"clipboard prefix is too long "
+            f"(max {MAX_CLIPBOARD_PREFIX_LEN} characters after trimming)"
+        )
+
+    text = text.replace("/", "／")
+
+    return text
+
+
+def read_clipboard() -> str:
+    if sys.platform == "darwin":
+        cmd = ["pbpaste"]
+    else:
+        if shutil.which("xsel") is None:
+            die("xsel not installed")
+        cmd = ["xsel", "-bo"]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        die(f"{cmd[0]} not found")
+    except subprocess.CalledProcessError as exc:
+        stderr = (exc.stderr or "").strip()
+        if stderr:
+            die(f"failed to read clipboard: {stderr}")
+        die("failed to read clipboard")
+
+    return sanitize_clipboard_text(result.stdout)
+
+
+def compile_regex(pattern: str) -> re.Pattern[str]:
+    try:
+        return re.compile(pattern)
+    except re.error as exc:
+        die(f"invalid regex: {exc}")
+
+
+def list_target_files(pattern: re.Pattern[str]) -> list[Path]:
+    items: list[tuple[int, str, Path]] = []
+
+    try:
+        with os.scandir(".") as entries:
+            for entry in entries:
+                if entry.name.startswith("."):
+                    continue
+
+                try:
+                    if not entry.is_file(follow_symlinks=False):
+                        continue
+                    stat_result = entry.stat(follow_symlinks=False)
+                except OSError as exc:
+                    die(f"failed to inspect {entry.name}: {exc}")
+
+                relative_path = f"./{entry.name}"
+                if pattern.fullmatch(relative_path) is None:
+                    continue
+
+                items.append((stat_result.st_mtime_ns, relative_path, Path(entry.name)))
+    except OSError as exc:
+        die(f"failed to scan current directory: {exc}")
+
+    items.sort(key=lambda item: (item[0], item[1]))
+    return [path for _, _, path in items]
+
+
+def build_numbered_name(prefix: str, number: int, width: int, original_name: str) -> str:
+    base = f"{prefix}_{number:0{width}d}"
+
+    if "." in original_name:
+        ext = original_name.rsplit(".", 1)[1]
+        return f"{base}.{ext}"
+
+    return base
+
+
+def abspath_for_compare(path: Path) -> str:
+    return os.path.abspath(os.fspath(path))
+
+
+def safe_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except OSError as exc:
+        die(f"failed to access path {path}: {exc}")
+
+
+def safe_is_dir(path: Path) -> bool:
+    try:
+        return path.is_dir()
+    except OSError as exc:
+        die(f"failed to inspect directory {path}: {exc}")
+
+
+def choose_temp_prefix(files: list[Path], start: int, width: int) -> str:
+    source_set = {abspath_for_compare(path) for path in files}
+    rng = random.SystemRandom()
+
+    for _ in range(1000):
+        prefix = f"renban_tmp_{os.getpid()}_{rng.randrange(10**12)}"
+        temp_paths = [
+            Path(build_numbered_name(prefix, start + i, width, file.name))
+            for i, file in enumerate(files)
+        ]
+        temp_set = {abspath_for_compare(path) for path in temp_paths}
+
+        if len(temp_set) != len(temp_paths):
+            continue
+
+        if temp_set & source_set:
+            continue
+
+        if any(safe_exists(path) for path in temp_paths):
+            continue
+
+        return prefix
+
+    die("failed to allocate temporary filenames without collision")
+
+
+def build_rename_plans(files: list[Path], start: int, clipboard_prefix: str) -> list[RenamePlan]:
+    if files:
+        end_number = start + len(files) - 1
+        width = len(str(end_number))
+    else:
+        width = len(str(start))
+
+    temp_prefix = choose_temp_prefix(files, start, width)
+
+    plans: list[RenamePlan] = []
+    for i, source in enumerate(files):
+        number = start + i
+        temp = Path(build_numbered_name(temp_prefix, number, width, source.name))
+        final = Path(build_numbered_name(clipboard_prefix, number, width, source.name))
+        plans.append(RenamePlan(source=source, temp=temp, final=final))
+
+    return plans
+
+
+def validate_plans(plans: list[RenamePlan], sources: list[Path]) -> None:
+    source_set = {abspath_for_compare(path) for path in sources}
+    temp_set = {abspath_for_compare(plan.temp) for plan in plans}
+    final_set = {abspath_for_compare(plan.final) for plan in plans}
+
+    if len(temp_set) != len(plans):
+        die("temporary filenames collide with each other")
+
+    if len(final_set) != len(plans):
+        die("final filenames collide with each other")
+
+    if temp_set & source_set:
+        die("temporary filenames collide with source filenames")
+
+    for plan in plans:
+        final_parent = plan.final.parent
+
+        if not safe_exists(final_parent):
+            die(f"destination directory does not exist: {final_parent}")
+
+        if not safe_is_dir(final_parent):
+            die(f"destination parent is not a directory: {final_parent}")
+
+        final_abs = abspath_for_compare(plan.final)
+
+        if final_abs in temp_set:
+            die(f"final filename collides with a temporary filename: {plan.final}")
+
+        if safe_exists(plan.final) and final_abs not in source_set:
+            die(f"destination already exists: {plan.final}")
+
+
+def move_file(src: Path, dst: Path) -> None:
+    try:
+        shutil.move(os.fspath(src), os.fspath(dst))
+    except Exception as exc:
+        die(f"failed to move {src} -> {dst}: {exc}")
+
+
+def execute_plans(plans: list[RenamePlan]) -> None:
+    moved_to_temp: list[RenamePlan] = []
+
+    try:
+        for plan in plans:
+            move_file(plan.source, plan.temp)
+            moved_to_temp.append(plan)
+
+        for plan in plans:
+            move_file(plan.temp, plan.final)
+    except SystemExit:
+        for plan in reversed(moved_to_temp):
+            if safe_exists(plan.temp) and not safe_exists(plan.source):
+                try:
+                    shutil.move(os.fspath(plan.temp), os.fspath(plan.source))
+                except Exception:
+                    pass
+        raise
+
+
+def main() -> None:
+    args = parse_args()
+
+    if args.regex is None:
+        return
+
+    pattern = compile_regex(args.regex)
+    files = list_target_files(pattern)
+    clipboard_prefix = read_clipboard()
+    plans = build_rename_plans(files, args.start, clipboard_prefix)
+    validate_plans(plans, files)
+    execute_plans(plans)
+
+
+if __name__ == "__main__":
+    main()

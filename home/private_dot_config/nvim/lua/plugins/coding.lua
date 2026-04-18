@@ -149,16 +149,6 @@ return {
         end,
     },
     {
-        'sQVe/sort.nvim',
-        keys = desc.lazy_keys {
-            { 'go', ':Sort<CR>', mode = 'x', silent = true },
-            { 'gO', ':Sort!<CR>', mode = 'x', silent = true },
-            { 'g<C-o>', ':Sort ', mode = 'x' },
-        },
-        cmd = 'Sort',
-        opts = { delimiters = { ',', '|', ';', ':', 's', 't' } },
-    },
-    {
         'chrisgrieser/nvim-various-textobjs',
         event = { 'VeryLazy' },
         config = function()

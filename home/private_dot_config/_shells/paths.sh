@@ -4,6 +4,8 @@ path-add /nix/var/nix/profiles/default/bin "$HOME/.nix-profile/bin"
 if [[ ${DOTS_OS:=$(uname -s)} == Darwin ]]; then
     # Homebrew
     path-add /usr/local/{sbin,bin} /opt/homebrew/{sbin,bin}
+    # ffmpeg-full
+    path-add /opt/homebrew/opt/ffmpeg-full/bin
 
 elif [[ $DOTS_OS == Linux ]]; then
     # Flatpak

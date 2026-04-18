@@ -20,6 +20,12 @@ source "$ZDOTDIR/rc/directories.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/prompt.zsh"
 
+# Temporary nvim with separate XDG dirs
+alias nvim-new='XDG_CONFIG_HOME=~/nvim-new/config \
+                XDG_DATA_HOME=~/nvim-new/data \
+                XDG_STATE_HOME=~/nvim-new/state \
+                XDG_CACHE_HOME=~/nvim-new/cache nvim'
+
 # zsh-defer dummy
 autoload -Uz _zsh-defer-dummy
 zsh-defer() { _zsh-defer-dummy "$@"; }

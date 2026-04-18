@@ -1,5 +1,7 @@
-DISABLE_ALL_PLUGINS = false
-NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
+NOT_NEOVIDE = not vim.g.neovide
+NOT_VSCODE = vim.g.vscode ~= 1
+
+vim.g.neovide_input_ime = true
 
 require('self.options')
 
