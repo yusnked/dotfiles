@@ -27,4 +27,16 @@ return {
             },
         },
     },
+    {
+        "saghen/blink.cmp",
+        dependencies = { "rafamadriz/friendly-snippets" },
+        version = "1.*",
+        lazy = false,
+        opts = function() return require("plugins.config.blink").opts end,
+        opts_extend = { "sources.default" },
+        config = function(...) require("plugins.config.blink").config(...) end,
+    },
+    {
+        "rafamadriz/friendly-snippets",
+    },
 }
