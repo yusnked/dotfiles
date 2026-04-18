@@ -1,55 +1,15 @@
-DISABLE_ALL_PLUGINS = false
-NOT_VSCODE = (not DISABLE_ALL_PLUGINS) and vim.g.vscode ~= 1
+vim.loader.enable()
 
-require('self.options')
+require('self.source_vimrc')
 
-local vimrc = vim.fn.expand('~/.vimrc')
-if vim.fn.filereadable(vimrc) == 1 then
-    vim.g.is_extended_nvim = 1
-    vim.cmd.source(vimrc)
+-- TODO: vscode-neovim / neovide 向けの設定分岐を実装する.
+-- 現時点では未対応環境で本体設定を読み込まず, 最低限起動のみ保証する.
+local is_neovide = vim.g.neovide
+local is_vscode = vim.g.vscode == 1
+if is_neovide or is_vscode then
+    return
 end
 
-if vim.g.vscode == 1 then
-    require('self.vscode')
-else
-    Helper = require('self.helpers')
-end
+require('self.lsp')
 
--- lazy.nvim
-local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
-if not vim.uv.fs_stat(lazypath) then
-    vim.fn.system {
-        'git',
-        'clone',
-        '--filter=blob:none',
-        'https://github.com/folke/lazy.nvim.git',
-        '--branch=stable', -- latest stable release
-        lazypath,
-    }
-end
-vim.opt.rtp:prepend(lazypath)
-require('lazy').setup('plugins', {
-    defaults = { lazy = true, cond = not DISABLE_ALL_PLUGINS },
-    install = { colorscheme = { 'carbonfox', 'default' } },
-    performance = {
-        rtp = {
-            disabled_plugins = {
-                -- 'editorconfig',
-                'gzip',
-                'health',
-                'man',
-                'matchit',
-                'matchparen',
-                'netrwPlugin',
-                -- 'nvim',
-                'rplugin',
-                -- 'shada',
-                'spellfile',
-                'tarPlugin',
-                'tohtml',
-                'tutor',
-                'zipPlugin',
-            },
-        },
-    },
-})
+require('self.lazy')
