@@ -267,10 +267,30 @@ if !s:is_ext_nvim
     set statusline+=\ %-6.(%l:%v%)\ %-4.P
 endif
 
+" --- Clipboard ------------------------------------------------------
+" Vim フォーカス時にクリップボードの内容が変わってたら "レジスタにセット.
+if has('clipboard') && stridx(&clipboard, 'unnamed') == -1
+    let s:_clipboard_snap_text = ''
+    function! s:ClipboardPullIfChanged() abort
+        let text = getreg('+')
+        if text ==# s:_clipboard_snap_text | return | endif
+        let type = stridx(text, "\n") >= 0 ? 'V' : 'v'
+        call setreg('"', text, type)
+        let s:_clipboard_snap_text = text
+    endfunction
+    augroup vimrc_clipboard_pull_on_focus
+        autocmd!
+        autocmd VimEnter    * let s:_clipboard_snap_text = getreg('+')
+        autocmd FocusLost   * let s:_clipboard_snap_text = getreg('+')
+        autocmd FocusGained * call s:ClipboardPullIfChanged()
+    augroup END
+endif
+
 " ====================================================================
 " Maps
 " ====================================================================
 let g:mapleader = "\<Space>"
+let g:maplocalleader = "\\"
 nnoremap <Space> <Nop>
 
 nnoremap x "_x
@@ -285,8 +305,8 @@ cnoremap <C-b> <Left>
 cnoremap <C-f> <Right>
 cnoremap <C-a> <Home>
 
-cnoremap <C-o> <C-f>
-cnoremap <C-q> <C-a>
+cnoremap <C-g>f <C-f>
+cnoremap <C-g>a <C-a>
 
 cnoremap <C-n>  <Down>
 cnoremap <C-p>  <Up>
