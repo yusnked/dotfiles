@@ -1,14 +1,14 @@
 local M = {}
 
 local defaults_opts = {
-    wvar = "statusline_abbrev_cwd",
-    augroup = "statusline_abbrev_cwd",
+    wvar = 'statusline_abbrev_cwd',
+    augroup = 'statusline_abbrev_cwd',
     scope_label = {
-        win_local = " [L]",
-        tab_local = " [T]",
+        win_local = ' [L]',
+        tab_local = ' [T]',
     },
     project_markers = {
-        ".git",
+        '.git',
     },
     effort_width_fn = function()
         return 0
@@ -16,7 +16,7 @@ local defaults_opts = {
 }
 
 local function get_scope_label()
-    local scope_label = ""
+    local scope_label = ''
     if vim.fn.haslocaldir() ~= 0 then
         scope_label = M._opts.scope_label.win_local
     elseif vim.fn.haslocaldir(-1, 0) ~= 0 then
@@ -39,7 +39,7 @@ local function set_abbrev_cwd()
         return
     end
 
-    local abbrev_with_projects = require("self.lib.path.abbrev").abbrev_with_projects
+    local abbrev_with_projects = require('self.lib.path.abbrev').abbrev_with_projects
     local abbrev_path = abbrev_with_projects(path, width, { markers = M._opts.project_markers })
     vim.w[M._opts.wvar] = abbrev_path .. scope_label
 
@@ -50,10 +50,10 @@ local function set_abbrev_cwd()
 end
 
 function M.setup(user_opts)
-    local opts = vim.tbl_deep_extend("force", defaults_opts, user_opts or {})
+    local opts = vim.tbl_deep_extend('force', defaults_opts, user_opts or {})
     M._opts = opts
     local group = vim.api.nvim_create_augroup(opts.augroup, { clear = true })
-    vim.api.nvim_create_autocmd({ "WinEnter", "DirChanged", "VimResized" }, {
+    vim.api.nvim_create_autocmd({ 'WinEnter', 'DirChanged', 'VimResized' }, {
         group = group,
         callback = set_abbrev_cwd,
     })

@@ -1,6 +1,6 @@
 return {
     {
-        "nvim-mini/mini.icons",
+        'nvim-mini/mini.icons',
         config = function(plugin)
             local icons = require(plugin.name)
             local function get(category, name)
@@ -9,11 +9,11 @@ return {
             end
             icons.setup {
                 filetype = {
-                    fyler = get("default", "directory"),
+                    fyler = get('default', 'directory'),
                 },
             }
             icons.mock_nvim_web_devicons()
         end,
     },
-    { "nvim-lua/plenary.nvim" },
+    { 'nvim-lua/plenary.nvim' },
 }

@@ -1,23 +1,23 @@
 return {
     {
-        "nvim-lualine/lualine.nvim",
-        dependencies = { "nvim-mini/mini.icons" },
-        event = "VeryLazy",
+        'nvim-lualine/lualine.nvim',
+        dependencies = { 'nvim-mini/mini.icons' },
+        event = 'VeryLazy',
         init = function()
             vim.opt.laststatus = 0
         end,
         config = function()
-            require("plugins.config.lualine").setup()
+            require('plugins.config.lualine').setup()
         end,
     },
     {
-        "folke/which-key.nvim",
-        dependencies = { "nvim-mini/mini.icons" },
-        event = "VeryLazy",
+        'folke/which-key.nvim',
+        dependencies = { 'nvim-mini/mini.icons' },
+        event = 'VeryLazy',
         keys = {
-            { "<leader>?", function() require("which-key").show() end, mode = { "n", "x" }, desc = "Show keymaps" },
+            { '<leader>?', function() require('which-key').show() end, mode = { 'n', 'x' }, desc = 'Show keymaps' },
         },
-        main = "which-key",
+        main = 'which-key',
         opts = {
             delay = function(ctx)
                 return ctx.plugin and 0 or 500
@@ -25,9 +25,9 @@ return {
         },
     },
     {
-        "sphamba/smear-cursor.nvim",
-        event = "VeryLazy",
-        main = "smear_cursor",
+        'sphamba/smear-cursor.nvim',
+        event = 'VeryLazy',
+        main = 'smear_cursor',
         opts = {
             smear_insert_mode = false,
             min_vertical_distance_smear = 2,

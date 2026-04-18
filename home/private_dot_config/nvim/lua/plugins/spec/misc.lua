@@ -1,6 +1,6 @@
 return {
     {
-        "vim-jp/vimdoc-ja",
-        keys = { { "h", mode = "c" } },
+        'vim-jp/vimdoc-ja',
+        keys = { { 'h', mode = 'c' } },
     },
 }

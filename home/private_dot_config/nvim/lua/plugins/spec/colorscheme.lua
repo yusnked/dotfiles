@@ -1,10 +1,10 @@
 return {
     {
-        "folke/tokyonight.nvim",
+        'folke/tokyonight.nvim',
         lazy = false,
         priority = 1000,
         opts = {
-            style = "night",
+            style = 'night',
             on_highlights = function(hl, c)
                 -- gitsigns.nvim
                 hl.GitSignsAdd = { fg = c.green }
@@ -13,8 +13,8 @@ return {
             end,
         },
         config = function(_, opts)
-            require("tokyonight").setup(opts)
-            vim.cmd.colorscheme("tokyonight")
+            require('tokyonight').setup(opts)
+            vim.cmd.colorscheme('tokyonight')
         end,
     },
 }

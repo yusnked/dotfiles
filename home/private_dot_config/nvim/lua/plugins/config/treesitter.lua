@@ -4,12 +4,12 @@
 
 local M = {}
 
-local install_dir = vim.fn.stdpath("data") .. "/site"
+local install_dir = vim.fn.stdpath('data') .. '/site'
 local max_size_bytes = 2 * 1024 * 1024 -- 2MB
 
 M.languages = {
     awk = true,
-    bash = { ft = { "bash", "sh" }, indent = true },
+    bash = { ft = { 'bash', 'sh' }, indent = true },
     css = { indent = true },
     csv = true,
     diff = true,
@@ -21,7 +21,7 @@ M.languages = {
     ini = true,
     javascript = { indent = true },
     json = { indent = true },
-    json5 = { ft = { "json5", "jsonc" } },
+    json5 = { ft = { 'json5', 'jsonc' } },
     lua = { indent = true },
     markdown = true,
     markdown_inline = true,
@@ -33,7 +33,7 @@ M.languages = {
     scss = { indent = true },
     sql = { indent = true },
     toml = { indent = true },
-    tsx = { ft = "typescriptreact", indent = true },
+    tsx = { ft = 'typescriptreact', indent = true },
     typescript = { indent = true },
     vim = true,
     vimdoc = true,
@@ -52,13 +52,13 @@ function M.get_languages_ft()
     for k, v in pairs(M.languages) do
         if v == true then
             languages_ft[k] = k
-        elseif type(v) == "table" then
+        elseif type(v) == 'table' then
             if v.ft == nil then
                 languages_ft[k] = k
             else
-                if type(v.ft) == "string" then
+                if type(v.ft) == 'string' then
                     languages_ft[v.ft] = k
-                elseif type(v.ft) == "table" then
+                elseif type(v.ft) == 'table' then
                     ---@diagnostic disable-next-line: param-type-mismatch
                     for _, x in ipairs(v.ft) do
                         languages_ft[x] = k
@@ -72,7 +72,7 @@ end
 
 local function set_treesitter_indentexpr(bufnr, lang)
     local spec = M.languages[lang]
-    if type(spec) == "table" and spec.indent == true then
+    if type(spec) == 'table' and spec.indent == true then
         vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
     end
 end
@@ -92,8 +92,8 @@ end
 function M.init()
     vim.opt.runtimepath:prepend(install_dir)
 
-    vim.api.nvim_create_autocmd("FileType", {
-        group = vim.api.nvim_create_augroup("plugins_ts_lazy_loader", { clear = true }),
+    vim.api.nvim_create_autocmd('FileType', {
+        group = vim.api.nvim_create_augroup('plugins_ts_lazy_loader', { clear = true }),
         callback = function(ctx)
             local bufnr = ctx.buf
             local ft = ctx.match
@@ -114,7 +114,7 @@ function M.init()
                 end
 
                 local bufname = vim.api.nvim_buf_get_name(bufnr)
-                if bufname ~= "" then
+                if bufname ~= '' then
                     local stat = vim.uv.fs_stat(bufname)
                     if stat and stat.size > max_size_bytes then
                         ts_stop(bufnr)
@@ -140,8 +140,8 @@ function M.init()
 
                     set_treesitter_indentexpr(bufnr, lang)
 
-                    vim.api.nvim_exec_autocmds("User", {
-                        pattern = "TreesitterAttach",
+                    vim.api.nvim_exec_autocmds('User', {
+                        pattern = 'TreesitterAttach',
                         data = { buf = bufnr, ft = ft, lang = lang },
                     })
                 end
@@ -152,7 +152,7 @@ end
 
 -- :TSUpdate 主にで呼ばれる想定.
 function M.config()
-    local ts = require("nvim-treesitter")
+    local ts = require('nvim-treesitter')
     ts.setup { install_dir = install_dir }
     ts.install(vim.tbl_keys(M.languages))
 end

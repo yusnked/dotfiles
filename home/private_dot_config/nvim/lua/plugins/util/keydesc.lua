@@ -18,9 +18,9 @@ end
 
 local function norm_modes(modes)
     if modes == nil then
-        return { "n" }
+        return { 'n' }
     end
-    if type(modes) == "string" then
+    if type(modes) == 'string' then
         return { modes }
     end
     return modes

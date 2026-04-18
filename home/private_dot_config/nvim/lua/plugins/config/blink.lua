@@ -1,4 +1,4 @@
----@module "blink.cmp"
+---@module 'blink.cmp'
 
 local M = {}
 
@@ -11,8 +11,8 @@ local function cmdline_cr(cmp)
     if item == nil then return false end
 
     -- 選択項目が Dir なら accept() それ以外なら accept_and_enter()
-    local text = item.textEdit and item.textEdit.newText or item.label or ""
-    if text:sub(-1) == "/" then
+    local text = item.textEdit and item.textEdit.newText or item.label or ''
+    if text:sub(-1) == '/' then
         return cmp.accept()
     end
 
@@ -22,22 +22,22 @@ end
 ---@type blink.cmp.Config
 M.opts = {
     keymap = {
-        preset = "enter",
-        ["<C-n>"] = { "show", "select_next", "fallback_to_mappings" },
-        ["<C-p>"] = { "show", "select_prev", "fallback_to_mappings" },
-        ["<C-u>"] = { "scroll_signature_up", "fallback" },
-        ["<C-d>"] = { "scroll_signature_down", "fallback" },
+        preset = 'enter',
+        ['<C-n>'] = { 'show', 'select_next', 'fallback_to_mappings' },
+        ['<C-p>'] = { 'show', 'select_prev', 'fallback_to_mappings' },
+        ['<C-u>'] = { 'scroll_signature_up', 'fallback' },
+        ['<C-d>'] = { 'scroll_signature_down', 'fallback' },
     },
 
     sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { 'lsp', 'path', 'snippets', 'buffer' },
         per_filetype = {
-            lua = { inherit_defaults = true, "lazydev" },
+            lua = { inherit_defaults = true, 'lazydev' },
         },
         providers = {
             lazydev = {
-                name = "LazyDev",
-                module = "lazydev.integrations.blink",
+                name = 'LazyDev',
+                module = 'lazydev.integrations.blink',
                 score_offset = 100,
             },
         },
@@ -66,8 +66,8 @@ M.opts = {
 
     cmdline = {
         keymap = {
-            preset = "cmdline",
-            ["<CR>"] = { cmdline_cr, "fallback" },
+            preset = 'cmdline',
+            ['<CR>'] = { cmdline_cr, 'fallback' },
         },
         completion = {
             menu = {
@@ -93,7 +93,7 @@ function M.config(_, opts)
     -- blink.cmp の cmdline completion と競合する為.
     vim.opt.wildmenu = false
 
-    require("blink.cmp").setup(opts)
+    require('blink.cmp').setup(opts)
 end
 
 return M

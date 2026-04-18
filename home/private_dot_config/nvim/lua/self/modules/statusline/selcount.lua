@@ -1,6 +1,6 @@
 -- selcount.lua
--- Visual/Select中の選択量を "L C B" で表示する (マルチバイト対応)
--- 例: "3L 31C 62B"
+-- Visual/Select中の選択量を 'L C B' で表示する (マルチバイト対応)
+-- 例: '3L 31C 62B'
 -- 特徴:
 -- - setup() 1発で autocmd + タイマー + キャッシュ (vim.w) まで全部設定
 -- - Visual/Select 中のみポーリングしてカウントを更新
@@ -18,8 +18,8 @@ local fn = vim.fn
 local uv = vim.uv
 
 local defaults = {
-    wvar = "statusline_selcount", -- 保存先: vim.w.{wvar}
-    augroup = "statusline_selection_count",
+    wvar = 'statusline_selcount', -- 保存先: vim.w.{wvar}
+    augroup = 'statusline_selection_count',
     poll_ms = 200,                -- Visual/Select 中のポーリング間隔 (ms)
     on_update = nil,              -- 再計算が発生したときのみ呼ばれる関数
 }
@@ -27,16 +27,16 @@ local defaults = {
 -- Visual/Select の判定
 local function is_selecting(mode)
     -- \22: CTRL-V (block), \19: CTRL-S (select block)
-    return mode:find("[vVsS\22\19]") ~= nil
+    return mode:find('[vVsS\22\19]') ~= nil
 end
 
 local function is_linewise(mode)
     local m = mode:sub(1, 1)
-    return m == "V" or m == "S"
+    return m == 'V' or m == 'S'
 end
 
 local function is_blockwise(mode)
-    return mode:find("\22") or mode:find("\19")
+    return mode:find('\22') or mode:find('\19')
 end
 
 local function clamp_col(col, line_len_bytes)
@@ -71,7 +71,7 @@ local function to_exclusive_endcol(line, end_col)
 end
 
 local function make_key(mode, selection, winid, bufnr, l1, c1, l2, c2)
-    return table.concat({ mode, selection, winid, bufnr, l1, c1, l2, c2 }, ":")
+    return table.concat({ mode, selection, winid, bufnr, l1, c1, l2, c2 }, ':')
 end
 
 -- Visual/Select の現在の範囲取得
@@ -79,8 +79,8 @@ end
 -- - '< と '> は Visual を抜けるまで更新されないことがあるため、
 --   Visual 中の「生きた範囲」は 'v (開始) と . (カーソル) を使う。
 local function get_region_live()
-    local l1, c1 = fn.line("v"), fn.col("v")
-    local l2, c2 = fn.line("."), fn.col(".")
+    local l1, c1 = fn.line('v'), fn.col('v')
+    local l2, c2 = fn.line('.'), fn.col('.')
     return l1, c1, l2, c2
 end
 
@@ -164,18 +164,18 @@ end
 
 local function format_lcb(lines, chars, bytes)
     if chars == bytes then
-        return string.format("%dL %dC", lines, chars)
+        return string.format('%dL %dC', lines, chars)
     else
-        return string.format("%dL %dC %dB", lines, chars, bytes)
+        return string.format('%dL %dC %dB', lines, chars, bytes)
     end
 end
 
 local function calc_lcb(mode, selection, l1, c1, l2, c2)
     if not is_selecting(mode) then
-        return ""
+        return ''
     end
 
-    local inclusive = (selection ~= "exclusive")
+    local inclusive = (selection ~= 'exclusive')
 
     -- 計算用に正規化 (上 -> 下)
     l1, c1, l2, c2 = normalize_region(l1, c1, l2, c2)
@@ -209,7 +209,7 @@ local function clear_all_wins(wvar, keyvar)
     local wins = list_wins()
     for i = 1, #wins do
         local win = wins[i]
-        pcall(win_set_var, win, wvar, "")
+        pcall(win_set_var, win, wvar, '')
         pcall(win_del_var, win, keyvar)
     end
 end
@@ -224,7 +224,7 @@ local function sanitize_poll_ms(ms)
 end
 
 function M.setup(user_opts)
-    local opts = vim.tbl_deep_extend("force", {}, defaults, user_opts or {})
+    local opts = vim.tbl_deep_extend('force', {}, defaults, user_opts or {})
     M._opts = opts
 
     local state = M._state or {}
@@ -235,7 +235,7 @@ function M.setup(user_opts)
     state.running = state.running or false
     state.poll_ms = sanitize_poll_ms(opts.poll_ms)
 
-    local keyvar = "_" .. opts.wvar .. "_key"
+    local keyvar = '_' .. opts.wvar .. '_key'
 
     local function stop_poll()
         if state.running and state.timer and not state.timer:is_closing() then
@@ -328,16 +328,16 @@ function M.setup(user_opts)
 
     -- autocmds
     local group = api.nvim_create_augroup(opts.augroup, { clear = true })
-    api.nvim_create_autocmd("ModeChanged", {
+    api.nvim_create_autocmd('ModeChanged', {
         group = group,
-        pattern = "*",
+        pattern = '*',
         callback = on_mode_changed,
     })
-    api.nvim_create_autocmd("FocusLost", {
+    api.nvim_create_autocmd('FocusLost', {
         group = group,
         callback = on_focus_lost,
     })
-    api.nvim_create_autocmd("FocusGained", {
+    api.nvim_create_autocmd('FocusGained', {
         group = group,
         callback = on_focus_gained,
     })
@@ -352,7 +352,7 @@ end
 
 function M.component()
     local opts = M._opts or defaults
-    return vim.w[opts.wvar] or ""
+    return vim.w[opts.wvar] or ''
 end
 
 return M

@@ -1,7 +1,7 @@
 ---@diagnostic disable: undefined-global
 return {
     {
-        "folke/snacks.nvim",
+        'folke/snacks.nvim',
         priority = 1000,
         lazy = false,
         opts = {
@@ -10,12 +10,12 @@ return {
             picker = {},
         },
         keys = {
-            { "<leader><space>", function() Snacks.picker.smart() end, desc = "Smart Find Files" },
-            { "<leader>N", function() Snacks.picker.notifications() end, desc = "Notification History" },
-            { "<leader>,", function() Snacks.picker.buffers() end, desc = "Buffers" },
-            { "<leader>/", function() Snacks.picker.grep() end, desc = "Grep" },
-            { "<leader>:", function() Snacks.picker.command_history() end, desc = "Command History" },
-            { "<leader>;", function() Snacks.picker() end, desc = "Snacks all pickers" },
+            { '<leader><space>', function() Snacks.picker.smart() end, desc = 'Smart Find Files' },
+            { '<leader>N', function() Snacks.picker.notifications() end, desc = 'Notification History' },
+            { '<leader>,', function() Snacks.picker.buffers() end, desc = 'Buffers' },
+            { '<leader>/', function() Snacks.picker.grep() end, desc = 'Grep' },
+            { '<leader>:', function() Snacks.picker.command_history() end, desc = 'Command History' },
+            { '<leader>;', function() Snacks.picker() end, desc = 'Snacks all pickers' },
         },
         init = function()
             do -- :bd をウィンドウレイアウトを崩さない :Bd に置き換え.
@@ -30,7 +30,7 @@ return {
                     return nil
                 end
 
-                vim.api.nvim_create_user_command("Bd", function(opts)
+                vim.api.nvim_create_user_command('Bd', function(opts)
                     if #opts.fargs == 0 then
                         Snacks.bufdelete()
                         return
@@ -42,7 +42,7 @@ return {
                             Snacks.bufdelete(bufnr)
                         end
                     end
-                end, { nargs = "*", complete = "buffer" })
+                end, { nargs = '*', complete = 'buffer' })
                 vim.cmd([[
                     cnoreabbrev <expr> bd ((getcmdtype() == ':' && getcmdline() == 'bd') ? 'Bd' : 'bd')
                 ]])

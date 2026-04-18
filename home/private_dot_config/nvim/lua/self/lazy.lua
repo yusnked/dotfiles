@@ -1,12 +1,12 @@
-local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-local plugins_spec = "plugins/spec"
+local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
+local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
+local plugins_spec = 'plugins/spec'
 
 local fs_stat = vim.uv.fs_stat
 
 local function has_plugins()
-    local path = vim.fn.stdpath("config") .. "/lua/" .. plugins_spec
-    return fs_stat(path) ~= nil or fs_stat(path .. ".lua") ~= nil
+    local path = vim.fn.stdpath('config') .. '/lua/' .. plugins_spec
+    return fs_stat(path) ~= nil or fs_stat(path .. '.lua') ~= nil
 end
 
 local function has_lazy()
@@ -15,7 +15,7 @@ end
 
 local function clone_lazy()
     local job = vim.system({
-        "git", "clone", "--filter=blob:none", "--branch=stable",
+        'git', 'clone', '--filter=blob:none', '--branch=stable',
         lazyrepo, lazypath,
     }, { text = true })
 
@@ -25,8 +25,8 @@ local function clone_lazy()
     end
 
     vim.api.nvim_echo({
-        { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-        { (res.stderr ~= "" and res.stderr or res.stdout), "WarningMsg" },
+        { 'Failed to clone lazy.nvim:\n', 'ErrorMsg' },
+        { (res.stderr ~= '' and res.stderr or res.stdout), 'WarningMsg' },
     }, true, {})
     return false
 end
@@ -38,34 +38,34 @@ end
 if ensure_lazy() then
     vim.opt.rtp:prepend(lazypath)
 
-    require("lazy").setup(plugins_spec:gsub("/", "."), {
+    require('lazy').setup(plugins_spec:gsub('/', '.'), {
         defaults = {
             lazy = true,
             cond = nil,
         },
-        install = { colorscheme = { "tokyonight" } },
+        install = { colorscheme = { 'tokyonight' } },
         ui = {
-            border = "single",
+            border = 'single',
             custom_keys = {
-                ["<localleader>r"] = {
+                ['<localleader>r'] = {
                     function(plugin)
-                        require("lazy").load { plugins = { plugin.name } }
+                        require('lazy').load { plugins = { plugin.name } }
                     end,
-                    desc = "Load Plugin",
+                    desc = 'Load Plugin',
                 },
             },
         },
         performance = {
             rtp = {
                 disabled_plugins = {
-                    "gzip",
-                    "netrwPlugin",
-                    "shada",
-                    "spellfile",
-                    "tarPlugin",
-                    "tohtml",
-                    "tutor",
-                    "zipPlugin",
+                    'gzip',
+                    'netrwPlugin',
+                    'shada',
+                    'spellfile',
+                    'tarPlugin',
+                    'tohtml',
+                    'tutor',
+                    'zipPlugin',
                 },
             },
         },

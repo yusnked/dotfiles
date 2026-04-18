@@ -1,16 +1,16 @@
 local M = {}
 
-local registry = require("mason-registry")
+local registry = require('mason-registry')
 
 local pending = {} ---@type table<string, true>
 local scheduled = false
 local refreshed = false
 
 ---@param message string
----@param level "TRACE" | "DEBUG" | "INFO" | "ERROR" | "WARN" | "ERROR" | "OFF"
+---@param level 'TRACE' | 'DEBUG' | 'INFO' | 'ERROR' | 'WARN' | 'ERROR' | 'OFF'
 local function notify(message, level)
     vim.notify(message, vim.log.levels[level], {
-        title = "mason.nvim",
+        title = 'mason.nvim',
     })
 end
 
@@ -21,7 +21,7 @@ function M.get_lspconfig_to_package()
     if #lspconfig_to_package > 0 then return lspconfig_to_package end
 
     for _, pkg_spec in ipairs(registry.get_all_package_specs()) do
-        if vim.tbl_get(pkg_spec, "neovim", "lspconfig") ~= nil then
+        if vim.tbl_get(pkg_spec, 'neovim', 'lspconfig') ~= nil then
             local key = pkg_spec.neovim.lspconfig
             local value = pkg_spec.name or key
             lspconfig_to_package[key] = value
@@ -35,7 +35,7 @@ local function install_servers(servers)
     local map = M.get_lspconfig_to_package()
 
     for _, server in ipairs(servers) do
-        local lspconfig_name = server:gsub("@.*$", "")
+        local lspconfig_name = server:gsub('@.*$', '')
         local pkg_name = map[lspconfig_name] or lspconfig_name
 
         local pkg = registry.get_package(pkg_name)
@@ -44,19 +44,19 @@ local function install_servers(servers)
             goto continue
         end
 
-        notify(("Installing: %s (for %s)"):format(pkg_name, lspconfig_name), "INFO")
+        notify(('Installing: %s (for %s)'):format(pkg_name, lspconfig_name), 'INFO')
 
         pkg:install({}, function(ok, result)
             if ok then
-                notify(("Installed: %s (for %s)"):format(pkg_name, lspconfig_name), "INFO")
+                notify(('Installed: %s (for %s)'):format(pkg_name, lspconfig_name), 'INFO')
                 vim.schedule(function()
                     if not vim.lsp.is_enabled(lspconfig_name) then
                         vim.lsp.enable { lspconfig_name }
                     end
                 end)
             else
-                notify(("Install failed: %s (%s)")
-                    :format(pkg_name, tostring(result)), "ERROR")
+                notify(('Install failed: %s (%s)')
+                    :format(pkg_name, tostring(result)), 'ERROR')
             end
         end)
 
@@ -82,7 +82,7 @@ function M.request_install(servers)
         if not refreshed then
             registry.refresh(vim.schedule_wrap(function(success)
                 if not success then
-                    notify("Refresh failed.", "ERROR")
+                    notify('Refresh failed.', 'ERROR')
                     return
                 end
                 refreshed = true

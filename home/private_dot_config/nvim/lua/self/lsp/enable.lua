@@ -1,13 +1,13 @@
 local M = {}
 
-local ft_to_config_specs = require("self.lsp.ft_to_config_specs")
+local ft_to_config_specs = require('self.lsp.ft_to_config_specs')
 
 ---@param ft string
 ---@return string[]
 local function get_config_specs(ft)
     local config_specs = ft_to_config_specs[ft]
     if not config_specs then return {} end
-    if type(config_specs) == "string" then
+    if type(config_specs) == 'string' then
         config_specs = { config_specs }
     end
 
@@ -17,7 +17,7 @@ end
 ---@param config_specs string[]
 local function enable_lsp(config_specs)
     local to_enable = vim.iter(config_specs)
-        :map(function(config_spec) return (config_spec:gsub("@.*$", "")) end)
+        :map(function(config_spec) return (config_spec:gsub('@.*$', '')) end)
         :filter(function(config_name) return not vim.lsp.is_enabled(config_name) end)
         :totable()
 

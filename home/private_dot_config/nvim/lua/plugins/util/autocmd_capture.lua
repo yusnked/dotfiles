@@ -1,13 +1,13 @@
 local M = {}
 
 -- =========================
--- CaptureResult "class"
+-- CaptureResult 'class'
 -- =========================
 local CaptureResult = {}
 CaptureResult.__index = CaptureResult
 
 -- captured_autocmds (配列ライク) を
--- { ["EventName"] = { group_identifier, ... }, ... } に変換する
+-- { ['EventName'] = { group_identifier, ... }, ... } に変換する
 -- group_identifier は (string|integer) を許容.
 local function index_groups_by_event(captured_autocmds)
     local out = {} ---@type table<string, (string|integer)[]>
@@ -24,20 +24,20 @@ local function index_groups_by_event(captured_autocmds)
         end
     end
 
-    if type(captured_autocmds) ~= "table" then
+    if type(captured_autocmds) ~= 'table' then
         return out
     end
 
     for _, item in ipairs(captured_autocmds) do
-        if type(item) == "table" then
-            local group = (type(item.opts) == "table") and item.opts.group or nil
-            if type(group) == "number" or type(group) == "string" then
+        if type(item) == 'table' then
+            local group = (type(item.opts) == 'table') and item.opts.group or nil
+            if type(group) == 'number' or type(group) == 'string' then
                 local ev = item.event
-                if type(ev) == "string" then
+                if type(ev) == 'string' then
                     push(ev, group)
-                elseif type(ev) == "table" then
+                elseif type(ev) == 'table' then
                     for _, e in ipairs(ev) do
-                        if type(e) == "string" then
+                        if type(e) == 'string' then
                             push(e, group)
                         end
                     end
@@ -58,24 +58,24 @@ function CaptureResult:fire(event, exec_opts)
 
     local function fire_one(ev)
         local groups = self.groups_by_event[ev]
-        if type(groups) ~= "table" then
+        if type(groups) ~= 'table' then
             return 0
         end
         local fired = 0
         for _, grp in ipairs(groups) do
-            local opts = vim.tbl_extend("force", exec_opts, { group = grp })
+            local opts = vim.tbl_extend('force', exec_opts, { group = grp })
             api.nvim_exec_autocmds(ev, opts)
             fired = fired + 1
         end
         return fired
     end
 
-    if type(event) == "string" then
+    if type(event) == 'string' then
         return fire_one(event)
-    elseif type(event) == "table" then
+    elseif type(event) == 'table' then
         local total = 0
         for _, ev in ipairs(event) do
-            if type(ev) == "string" then
+            if type(ev) == 'string' then
                 total = total + fire_one(ev)
             end
         end
@@ -92,7 +92,7 @@ end
 --- lazy.load の間だけ nvim_create_autocmd をフックしてキャプチャする
 --- 戻り値は :fire() を持つオブジェクト
 --- {
----   groups_by_event = { ["Event"] = { group_identifier... }, ... },
+---   groups_by_event = { ['Event'] = { group_identifier... }, ... },
 ---   raw = { { event=..., opts=... }, ... },
 ---   lazy_result = ret,
 --- }
@@ -112,7 +112,7 @@ function M.load_and_capture_events(lazy_opts)
     end
 
     local ok, ret = pcall(function()
-        return require("lazy").load(lazy_opts)
+        return require('lazy').load(lazy_opts)
     end)
 
     ---@diagnostic disable-next-line: duplicate-set-field

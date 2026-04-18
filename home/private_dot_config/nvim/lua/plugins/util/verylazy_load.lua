@@ -3,7 +3,7 @@ local M = {}
 M._vltasks = M._vltasks or {}
 M._verylazy_hooked = M._verylazy_hooked or false
 
-local augroup = vim.api.nvim_create_augroup("plugins_util_verylazy_load_schedule", { clear = true })
+local augroup = vim.api.nvim_create_augroup('plugins_util_verylazy_load_schedule', { clear = true })
 
 local function ensure_verylazy_runner()
     if M._verylazy_hooked then
@@ -11,9 +11,9 @@ local function ensure_verylazy_runner()
     end
     M._verylazy_hooked = true
 
-    vim.api.nvim_create_autocmd("User", {
+    vim.api.nvim_create_autocmd('User', {
         group = augroup,
-        pattern = "VeryLazy",
+        pattern = 'VeryLazy',
         once = true,
         callback = function()
             for _, task in ipairs(M._vltasks) do
@@ -35,13 +35,13 @@ function M._run_task(task)
             return
         end
         task._done = true
-        require("lazy").load { plugins = { task.plugin } }
+        require('lazy').load { plugins = { task.plugin } }
     end
 
     local ok, ret = pcall(task.cb, load)
     if not ok then
         vim.schedule(function()
-            vim.notify(("verylazy_load cb failed for %s: %s"):format(task.plugin, ret), vim.log.levels.ERROR)
+            vim.notify(('verylazy_load cb failed for %s: %s'):format(task.plugin, ret), vim.log.levels.ERROR)
         end)
         return
     end
@@ -53,7 +53,7 @@ function M._run_task(task)
     end
 
     -- number: 秒後にロード.
-    if type(ret) == "number" then
+    if type(ret) == 'number' then
         if ret > 0 then
             vim.defer_fn(load, math.floor(ret))
         else
@@ -64,9 +64,9 @@ function M._run_task(task)
 
     -- string or {string,...}: once autocmd を張って発火時に再評価.
     local events
-    if type(ret) == "string" then
+    if type(ret) == 'string' then
         events = { ret }
-    elseif type(ret) == "table" then
+    elseif type(ret) == 'table' then
         events = ret
     else
         return
@@ -83,7 +83,7 @@ end
 --- cbの戻り値:
 ---   nil/true      -> すぐload()
 ---   number(>0)    -> ms後にload()
----   "Event" / {..}-> そのイベントでonce発火、発火時にload()
+---   'Event' / {..}-> そのイベントでonce発火、発火時にload()
 function M.schedule(plugin, cb)
     ensure_verylazy_runner()
     table.insert(M._vltasks, { plugin = plugin, cb = cb, _done = false })
