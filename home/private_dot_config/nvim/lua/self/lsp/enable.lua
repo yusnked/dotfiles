@@ -1,23 +1,18 @@
 local M = {}
 
-local ft_to_config_specs = require('self.lsp.ft_to_config_specs')
+local registry = require('self.lsp.registry')
 
 ---@param ft string
 ---@return string[]
-local function get_config_specs(ft)
-    local config_specs = ft_to_config_specs[ft]
-    if not config_specs then return {} end
-    if type(config_specs) == 'string' then
-        config_specs = { config_specs }
-    end
-
-    return config_specs
+local function get_config_names(ft)
+    local config_names = registry.ft_to_config_names[ft]
+    if not config_names then return {} end
+    return config_names
 end
 
----@param config_specs string[]
-local function enable_lsp(config_specs)
-    local to_enable = vim.iter(config_specs)
-        :map(function(config_spec) return (config_spec:gsub('@.*$', '')) end)
+---@param config_names string[]
+local function enable_lsp(config_names)
+    local to_enable = vim.iter(config_names)
         :filter(function(config_name) return not vim.lsp.is_enabled(config_name) end)
         :totable()
 
@@ -31,14 +26,14 @@ function M.run(ctx)
     local bufnr = ctx.buf
     local ft = ctx.match
 
-    local config_specs = get_config_specs(ft)
-    if #config_specs == 0 then return end
+    local config_names = get_config_names(ft)
+    if #config_names == 0 then return end
 
     vim.defer_fn(function()
         if not vim.api.nvim_buf_is_valid(bufnr) then return end
         if vim.bo[bufnr].filetype ~= ft then return end
 
-        enable_lsp(config_specs)
+        enable_lsp(config_names)
     end, 50)
 end
 

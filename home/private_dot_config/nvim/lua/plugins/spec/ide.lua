@@ -10,12 +10,14 @@ return {
     },
     {
         'mason-org/mason.nvim',
-        cmd = 'Mason',
-        main = 'mason',
-        opts = { PATH = 'skip' },
+        cmd = { 'Mason', 'MasonInstallRegistered' },
         init = function()
             vim.env.PATH = vim.fn.stdpath('data') .. '/mason/bin:' .. vim.env.PATH
         end,
+        ---@module 'mason'
+        ---@type MasonSettings
+        opts = { PATH = 'skip' },
+        config = function(...) require('plugins.config.mason').config(...) end,
     },
     {
         'folke/lazydev.nvim',
