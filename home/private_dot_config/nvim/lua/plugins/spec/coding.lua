@@ -1,5 +1,6 @@
 local keydesc = require('plugins.util.keydesc')
 
+---@type LazySpec
 return {
     {
         'kylechui/nvim-surround',

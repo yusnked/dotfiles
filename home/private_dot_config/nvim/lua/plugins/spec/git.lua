@@ -5,6 +5,7 @@ local function is_real_file()
     return vim.api.nvim_buf_get_name(0) ~= ''
 end
 
+---@type LazySpec
 return {
     {
         'lewis6991/gitsigns.nvim',

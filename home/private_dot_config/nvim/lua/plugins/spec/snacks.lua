@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global
+---@type LazySpec
 return {
     {
         'folke/snacks.nvim',

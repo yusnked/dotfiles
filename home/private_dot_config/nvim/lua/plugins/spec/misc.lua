@@ -1,3 +1,4 @@
+---@type LazySpec
 return {
     {
         'vim-jp/vimdoc-ja',

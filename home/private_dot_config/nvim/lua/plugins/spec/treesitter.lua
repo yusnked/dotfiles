@@ -1,6 +1,7 @@
 local keydesc = require('plugins.util.keydesc')
 local treesitter = require('plugins.config.treesitter')
 
+---@type LazySpec
 return {
     {
         'nvim-treesitter/nvim-treesitter',
