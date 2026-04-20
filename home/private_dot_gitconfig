@@ -1,0 +1,140 @@
+[branch]
+    sort = -committerdate
+[color]
+    ui = auto
+[column]
+    ui = auto
+[commit]
+    gpgsign = false
+    verbose = true
+[core]
+    autocrlf  = false
+    safecrlf  = true
+    quotepath = false
+[diff]
+    algorithm      = histogram
+    colorMoved     = zebra
+    mnemonicPrefix = true
+    renames        = true
+[fetch]
+    prune = true
+[init]
+    defaultBranch = main
+[log]
+    date = iso
+[merge]
+    ff = only
+[pull]
+    ff     = only
+    rebase = false
+[push]
+    default         = simple
+    autoSetupRemote = true
+[rebase]
+    missingCommitsCheck = error
+    updateRefs          = true
+[rerere]
+    enabled    = true
+    autoUpdate = true
+[alias]
+    a     = add
+    aa    = add --all
+    ai    = add --interactive
+    ap    = add --patch
+    au    = add --update
+    b     = branch
+    bd    = branch --delete
+    bm    = branch --move
+    c     = commit
+    ca    = commit --amend
+    can   = commit --amend --no-edit
+    d     = diff
+    dh    = diff HEAD
+    ds    = diff --staged
+    dm    = diff main...HEAD
+    du    = diff @{upstream}...HEAD
+    f     = fetch
+    ha    = help-alias
+    l     = log-oneline --show-pulls --simplify-merges
+    la    = log-oneline --exclude=refs/stash --all
+    ll    = log --pretty=fuller --show-pulls --simplify-merges
+    lla   = log --pretty=fuller --exclude=refs/stash --all
+    lf    = log-oneline --follow --
+    llf   = log --pretty=fuller --follow --
+    lfp   = log --pretty=fuller-patch --follow --patch --
+    m     = merge
+    mc    = merge --continue
+    mn    = merge --no-ff
+    mnu   = merge --no-ff @{upstream}
+    ms    = merge --squash
+    mu    = merge @{upstream}
+    pl    = pull --ff-only --no-rebase
+    ps    = push
+    psf   = push --force-with-lease
+    psu   = push --set-upstream origin HEAD
+    r     = restore
+    rp    = restore --patch
+    rs    = restore --staged
+    rw    = restore --staged --worktree
+    rb    = rebase
+    rbc   = rebase --continue
+    rbi   = rebase --interactive
+    rbu   = rebase @{upstream}
+    re    = reset
+    reh   = reset --hard
+    res   = reset --soft
+    rl    = reflog
+    rla   = reflog show --all
+    rlg   = log --walk-reflogs
+    rlga  = log --walk-reflogs --all
+    s     = status --short --branch
+    sv    = status -vv --show-stash
+    st    = stash
+    sta   = stash apply
+    stl   = stash list
+    stp   = stash pop
+    sts   = stash show --include-untracked
+    stsp  = stash show --include-untracked --patch
+    stu   = stash push --include-untracked
+    sw    = switch
+    swc   = switch --create
+    swd   = switch --detach
+    swm   = switch main
+    w     = worktree
+    wa    = worktree add
+    wab   = worktree add --branch
+    wl    = worktree list
+    wr    = worktree remove
+    xc    = commit --no-gpg-sign
+    xca   = commit --no-gpg-sign --amend
+    xcan  = commit --no-gpg-sign --amend --no-edit
+    xm    = merge --no-gpg-sign
+    xmu   = merge --no-gpg-sign @{upstream}
+    xmn   = merge --no-gpg-sign --no-ff
+    xmnu  = merge --no-gpg-sign --no-ff @{upstream}
+    xrb   = rebase --no-gpg-sign
+    xrbu  = rebase --no-gpg-sign @{upstream}
+    xrbi  = rebase --no-gpg-sign --interactive
+[pretty]
+    flow         = format:%C(yellow)%h%Creset%C(red)%d%Creset %C(green)[%ad]%Creset %C(bold blue)<%an>%Creset%n %s%n
+    fuller-patch = tformat:%C(bold magenta)═══════════════════════ COMMIT INFO ════════════════════════%Creset%n%C(yellow)commit     %H%Creset%C(red)%d%Creset%n%C(blue)parents    %p%Creset%n%C(blue)tree       %T%Creset%nAuthor:     %an <%ae>%nAuthorDate: %aI%nCommit:     %cn <%ce>%nCommitDate: %cI%n%n%C(bold)%s%Creset%+b%n%C(bold magenta)════════════════════════════════════════════════════════════%Creset%n
+[alias]
+    help-alias = "!git config --get-regexp '^alias\\.' | awk '{ \
+        if (index($0, \"__HELP_ALIAS_IGNORE_7z1d__\")) next; \
+        key=$1; \
+        sub(/^alias\\./, \"\", key); \
+        val=$0; \
+        sub(/^[^[:space:]]+[[:space:]]+/, \"\", val); \
+        keys[++n]=key; vals[n]=val; \
+        if (length(key)>max) max=length(key) \
+    } \
+    END { \
+        for (i=1; i<=n; i++) printf \"%-*s  %s\\n\", max, keys[i], vals[i] \
+    }' # __HELP_ALIAS_IGNORE_7z1d__"
+
+    log-oneline = "!f() { \
+        cols=$(stty size 2>/dev/null | cut -d ' ' -f2); \
+        [ -z \"$cols\" -o \"$cols\" -lt 80 ] && cols=80; \
+        pretty=\"tformat:%C(yellow)%h%Creset %C(green)%cd%Creset %<($((cols - 30)),trunc)%s%+(decorate:prefix=↳ %x1b[31m(,suffix=%x29%x1b[0m,separator=%x2C ,pointer= -> ,tag=tag: )\"; \
+        git log --graph --date=format:%y/%m/%d --pretty=\"$pretty\" \"$@\"; \
+    }; __HELP_ALIAS_IGNORE_7z1d__=1 f"
