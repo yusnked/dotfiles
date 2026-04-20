@@ -34,7 +34,8 @@ return {
         'saghen/blink.cmp',
         dependencies = { 'rafamadriz/friendly-snippets' },
         version = '1.*',
-        lazy = false,
+        -- LSP Capabilities を設定するので vim.lsp.enable の前に読み込む必要あり.
+        event = { 'InsertEnter', 'CmdlineEnter', 'User LspEnablePre' },
         opts = function() return require('plugins.config.blink').opts end,
         opts_extend = { 'sources.default' },
         config = function(...) require('plugins.config.blink').config(...) end,

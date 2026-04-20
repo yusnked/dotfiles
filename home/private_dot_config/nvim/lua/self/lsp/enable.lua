@@ -12,11 +12,20 @@ end
 
 ---@param config_names string[]
 local function enable_lsp(config_names)
+    ---@type string[]
     local to_enable = vim.iter(config_names)
         :filter(function(config_name) return not vim.lsp.is_enabled(config_name) end)
         :totable()
 
     if #to_enable > 0 then
+        vim.api.nvim_exec_autocmds('User', {
+            pattern = 'LspEnablePre',
+            modeline = false,
+            data = {
+                config_names = to_enable,
+            },
+        })
+
         vim.lsp.enable(to_enable)
     end
 end
