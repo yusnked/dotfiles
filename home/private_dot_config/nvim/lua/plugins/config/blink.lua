@@ -2,6 +2,17 @@
 
 local M = {}
 
+---@return number[]
+local function get_bufnrs_normal_listed()
+    return vim.iter(vim.api.nvim_list_bufs())
+        :filter(function(bufnr)
+            return vim.api.nvim_buf_is_loaded(bufnr)
+                and vim.bo[bufnr].buftype == ''
+                and vim.bo[bufnr].buflisted
+        end)
+        :totable()
+end
+
 ---@param cmp blink.cmp.API
 ---@return boolean|nil
 local function cmdline_cr(cmp)
@@ -35,6 +46,12 @@ M.opts = {
             lua = { inherit_defaults = true, 'lazydev' },
         },
         providers = {
+            buffer = {
+                opts = {
+                    get_bufnrs = get_bufnrs_normal_listed,
+                    max_total_buffer_size = 1024 * 1024,
+                },
+            },
             lazydev = {
                 name = 'LazyDev',
                 module = 'lazydev.integrations.blink',
