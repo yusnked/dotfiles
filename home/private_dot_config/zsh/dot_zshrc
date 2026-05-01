@@ -1,3 +1,6 @@
+[[ -o interactive ]] || return
+[[ -v DOTS_ZPROFILE_LOADED ]] || source "$ZDOTDIR/.zprofile"
+
 autoload -Uz compinit
 compinit
 
