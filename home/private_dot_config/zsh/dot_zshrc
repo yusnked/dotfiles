@@ -1,6 +1,11 @@
 [[ -o interactive ]] || return
 [[ -v DOTS_ZPROFILE_LOADED ]] || source "$ZDOTDIR/.zprofile"
 
+# 端末ドライバ側で ^S/^Q による出力停止・再開を無効にする.
+[[ -t 0 ]] && stty -ixon 2> /dev/null
+
+source "$ZDOTDIR/rc/options.zsh"
+
 autoload -Uz compinit
 compinit
 
