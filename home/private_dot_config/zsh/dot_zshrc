@@ -5,8 +5,7 @@
 [[ -t 0 ]] && stty -ixon 2> /dev/null
 
 source "$ZDOTDIR/rc/options.zsh"
+source "$ZDOTDIR/rc/completion.zsh"
 
-autoload -Uz compinit
-compinit
 
 # vi: set ft=zsh:
