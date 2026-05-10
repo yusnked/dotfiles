@@ -1,9 +1,9 @@
-export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
-export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
-
 () {
+    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+    export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+    export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
     local dir
     for dir in \
         "$XDG_DATA_HOME/zsh" \
@@ -12,19 +12,24 @@ export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
     do
         [[ -d "$dir" ]] || command mkdir -p -- "$dir"
     done
+
+    typeset -gxU PATH path FPATH fpath
+
+    fpath[1,0]="$XDG_CONFIG_HOME/zsh/functions"
+    autoload -Uz __source_generated_cache
+
+    local brew_path='/opt/homebrew/bin/brew'
+    if [[ -x "$brew_path" ]]; then
+        __source_generated_cache "$brew_path" homebrew.zsh "$brew_path shellenv"
+    fi
+
+    path=(
+        "$HOME/.local/bin"(N-/)
+        "$XDG_DATA_HOME/mise/shims"(N-/)
+        $path
+    )
+
+    export DOTS_ZPROFILE_LOADED=1
 }
-
-typeset -U PATH path FPATH fpath
-
-if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
-path=(
-    "$HOME/.local/bin"(N-/)
-    $path
-)
-
-export DOTS_ZPROFILE_LOADED=1
 
 # vi: set ft=zsh:

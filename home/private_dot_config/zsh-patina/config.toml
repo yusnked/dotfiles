@@ -1,0 +1,2 @@
+[highlighting]
+theme = "file:$XDG_CONFIG_HOME/zsh-patina/themes/main.toml"

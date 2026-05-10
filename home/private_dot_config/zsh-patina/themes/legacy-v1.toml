@@ -1,0 +1,174 @@
+# zsh-syntax-highlighting で使っていた色に寄せた zsh-patina theme.
+# legacy/v1:home/private_dot_config/sheldon/zsh-syntax-highlight-settings.zsh
+
+# --------------------
+# Basic text.
+# --------------------
+
+"source.shell" = 254
+"text" = 254
+
+# default, arg0 相当.
+"meta" = 254
+"meta.function-call" = 254
+
+# comment: fg=035
+"comment" = 35
+
+# --------------------
+# Errors.
+# --------------------
+
+# unknown-token, bracket-error, path_prefix 相当.
+"invalid" = 197
+"invalid.illegal" = 197
+"invalid.deprecated" = 197
+
+# --------------------
+# Shell syntax.
+# --------------------
+
+# reserved-word, commandseparator, redirection, fd, bracket-level-1 相当.
+"keyword" = 220
+"keyword.control" = 220
+"keyword.operator" = 220
+"punctuation.separator" = 220
+"punctuation.terminator" = 220
+"punctuation.definition.pipe" = 220
+"punctuation.definition.logical-expression" = 220
+
+# リダイレクト.
+"keyword.operator.redirect" = 220
+"punctuation.definition.redirect" = 220
+
+# --------------------
+# Commands.
+# --------------------
+
+# command: fg=040
+"variable.function" = 40
+"support.function" = 40
+"entity.name.function" = 40
+
+# function: fg=099
+"entity.name.function.shell" = 99
+"meta.function-call.shell" = 99
+
+# builtin, precommand: fg=220,underline
+# dynamic 側の builtin でも上書きする.
+"support.function.builtin" = { foreground = 220, underline = true }
+"support.function.builtin.shell" = { foreground = 220, underline = true }
+
+# --------------------
+# Options.
+# --------------------
+
+# single-hyphen-option, double-hyphen-option: fg=087
+"variable.parameter" = 87
+"variable.parameter.option" = 87
+"constant.other.option" = 87
+"keyword.operator.option" = 87
+
+# --------------------
+# Paths.
+# --------------------
+
+# path, autodirectory: fg=087
+# 実在パスは dynamic.path で下線を付ける.
+"string.unquoted.path" = 87
+"meta.path" = 87
+
+# globbing: fg=219
+"string.unquoted.glob" = 219
+"keyword.operator.glob" = 219
+"constant.other.glob" = 219
+
+# --------------------
+# Expansions.
+# --------------------
+
+# command-substitution, process-substitution, history-expansion: fg=141
+"meta.function-call.arguments.shell meta.embedded" = 141
+"meta.embedded" = 141
+"meta.embedded.command" = 141
+"punctuation.section.embedded" = 141
+"punctuation.definition.command-substitution" = 141
+"variable.language.history" = 141
+
+# arithmetic-expansion: fg=039
+"meta.arithmetic" = 39
+"constant.numeric" = 39
+"keyword.operator.arithmetic" = 39
+
+# assign, $var, ${var}, "$foo": fg=087
+"variable" = 87
+"variable.other" = 87
+"variable.other.shell" = 87
+"punctuation.definition.variable" = 87
+"string.interpolated variable" = 87
+
+# --------------------
+# Quotes and escapes.
+# --------------------
+
+# quoted: fg=215
+"string" = 215
+"string.quoted" = 215
+"string.quoted.single" = 215
+"string.quoted.double" = 215
+"string.quoted.other" = 215
+
+# escape sequence, rc-quote: fg=038
+"constant.character.escape" = 38
+"constant.character.escape.shell" = 38
+"punctuation.definition.escape" = 38
+
+# --------------------
+# Brackets.
+# --------------------
+
+# bracket-level-1: fg=220
+# bracket-level-2: fg=035
+# bracket-level-3: fg=087
+# bracket-level-4: fg=213
+#
+# zsh-patina は zsh-syntax-highlighting の brackets highlighter のように
+# ネストレベルごとの style をそのまま持つわけではないので,
+# 基本の括弧類だけ近い色に寄せる.
+
+"punctuation.section.group" = 220
+"punctuation.section.parens" = 220
+"punctuation.section.brackets" = 35
+"punctuation.section.braces" = 87
+
+# --------------------
+# Dynamic highlighting.
+# --------------------
+
+# callable: command 色.
+"dynamic.callable" = 40
+
+# missing callable: error 色.
+"dynamic.callable.missing" = 197
+
+# alias: command 色 + underline.
+"dynamic.callable.alias" = { foreground = 40, underline = true }
+
+# builtin/precommand 的なもの: shell 色 + underline.
+"dynamic.callable.builtin" = { foreground = 220, underline = true }
+
+# external command: command 色.
+"dynamic.callable.command" = 40
+
+# shell function: function 色.
+"dynamic.callable.function" = 99
+
+# existing path: path 色 + underline.
+"dynamic.path" = { foreground = 87, underline = true }
+"dynamic.path.file.complete" = { foreground = 87, underline = true }
+"dynamic.path.directory.complete" = { foreground = 87, underline = true }
+
+# partial path は旧設定だと path_prefix=error に寄っていたので赤系.
+# config で paths="complete" にしている限り基本的には出にくい.
+"dynamic.path.file.partial" = 197
+"dynamic.path.directory.partial" = 197

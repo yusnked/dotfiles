@@ -1,0 +1,245 @@
+# blue       =  39  外部コマンド.
+# light_blue =  45  シェルビルトイン・シェル関数・シェル構文補助.
+# purple     = 141  制御構文・オプション・演算子・ディレクトリパス.
+# red        = 203  変数・展開・グロブ・正規表現.
+# gray       = 244  コメント行・無効な値・未解決の値.
+# orange     = 214  数値・エスケープ・リダイレクト・ファイルパス.
+# green      = 113  クォート文字列・文字列本文.
+
+# -----------------------------------------------------------------------------
+# Dynamic highlighting.
+# -----------------------------------------------------------------------------
+
+# 実在する外部コマンド.
+"dynamic.callable.command" = 39
+
+# 実在するエイリアス.
+"dynamic.callable.alias" = { foreground = 39, underline = true }
+
+# 実在するシェルビルトイン.
+"dynamic.callable.builtin" = 45
+
+# 実在するシェル関数.
+"dynamic.callable.function" = { foreground = 45, underline = true }
+
+# 存在しないコマンド.
+"dynamic.callable.missing" = 244
+
+# 実在するファイルパス.
+"dynamic.path.file.complete" = { foreground = 214, underline = true }
+
+# 入力途中のファイルパス.
+"dynamic.path.file.partial" = 244
+
+# 実在するディレクトリパス.
+"dynamic.path.directory.complete" = { foreground = 141, underline = true }
+
+# 入力途中のディレクトリパス.
+"dynamic.path.directory.partial" = 244
+
+# -----------------------------------------------------------------------------
+# Comments and invalid tokens.
+# -----------------------------------------------------------------------------
+
+# コメント行.
+"comment" = 244
+
+# コメント開始記号.
+"punctuation.definition.comment.begin" = 244
+
+# 構文エラー.
+"invalid" = 244
+
+# 行継続記号.
+"punctuation.separator.continuation.line" = 244
+
+# -----------------------------------------------------------------------------
+# Commands and definitions.
+# -----------------------------------------------------------------------------
+
+# コマンド位置.
+"variable.function" = 39
+
+# 関数定義名.
+"entity.name.function" = { foreground = 45, underline = true }
+
+# エイリアス定義名.
+"entity.name.function.alias" = { foreground = 39, underline = true }
+
+# coproc 定義名.
+"entity.name.function.coproc" = { foreground = 45, underline = true }
+
+# 宣言・修飾子.
+"storage" = 45
+
+# シェル構文補助関数.
+"support.function" = 45
+
+# -----------------------------------------------------------------------------
+# Precommands.
+# -----------------------------------------------------------------------------
+
+# ビルトイン precommand modifier.
+"precommand.builtin" = { foreground = 45, bold = true }
+
+# ビルトイン precommand modifier の互換 scope.
+"keyword.builtin" = { foreground = 45, bold = true }
+
+# -----------------------------------------------------------------------------
+# Control syntax and operators.
+# -----------------------------------------------------------------------------
+
+# 制御構文キーワード.
+"keyword.control" = 141
+
+# その他のキーワード.
+"keyword.other" = 141
+
+# 演算子.
+"keyword.operator" = 141
+
+# 区切り記号.
+"punctuation.separator" = 141
+
+# case 終端記号.
+"punctuation.terminator.case" = 141
+
+# オプション終端.
+"keyword.operator.end-of-options" = 244
+
+# オプション値代入演算子.
+"keyword.operator.assignment.option" = 141
+
+# リダイレクト演算子.
+"keyword.operator.assignment.redirection" = 214
+
+# プロセス置換リダイレクト演算子.
+"keyword.operator.assignment.redirection.process" = 214
+
+# here-string 演算子.
+"keyword.operator.herestring" = 214
+
+# heredoc 終端トークン.
+"keyword.control.heredoc-token" = 214
+
+# 算術演算子.
+"keyword.operator.arithmetic" = 214
+
+# 展開演算子.
+"keyword.operator.expansion" = 203
+
+# パラメータ置換演算子.
+"keyword.operator.substitution" = 203
+
+# 部分文字列指定演算子.
+"keyword.operator.substring" = 203
+
+# 間接参照演算子.
+"keyword.operator.indirection" = 203
+
+# 正規表現演算子.
+"keyword.operator.regexp" = 203
+
+# 正規表現量指定子.
+"keyword.operator.regexp.quantifier" = 203
+
+# -----------------------------------------------------------------------------
+# Options and parameters.
+# -----------------------------------------------------------------------------
+
+# オプション・スイッチ.
+"variable.parameter" = 141
+
+# オプション開始記号.
+"punctuation.definition.parameter" = 141
+
+# -----------------------------------------------------------------------------
+# Variables and expansions.
+# -----------------------------------------------------------------------------
+
+# 変数.
+"variable" = 203
+
+# 変数開始記号.
+"punctuation.definition.variable" = 203
+
+# ジョブ参照開始記号.
+"punctuation.definition.variable.job" = 203
+
+# パラメータ展開の括弧.
+"punctuation.section.expansion.parameter" = 203
+
+# ブレース展開の括弧.
+"punctuation.section.expansion.brace" = 203
+
+# 履歴展開.
+"meta.group.expansion.history" = 203
+
+# ジョブ展開.
+"variable.language.job" = 203
+
+# チルダ展開.
+"variable.language.tilde" = 203
+
+# 正規表現.
+"meta.regexp" = 203
+
+# コマンド置換の内部.
+"meta.group.expansion.command.parens" = {}
+
+# バッククォート形式コマンド置換の内部.
+"meta.group.expansion.command.backticks" = {}
+
+# -----------------------------------------------------------------------------
+# Numbers, escapes, and file descriptors.
+# -----------------------------------------------------------------------------
+
+# 数値.
+"constant.numeric" = 214
+
+# 数値基数記号.
+"punctuation.definition.numeric" = 214
+
+# エスケープ文字.
+"constant.character.escape" = 214
+
+# ファイルディスクリプタ番号.
+"constant.numeric.integer.decimal.file-descriptor" = 214
+
+# ファイルディスクリプタ終端記号.
+"punctuation.terminator.file-descriptor" = 214
+
+# -----------------------------------------------------------------------------
+# Strings.
+# -----------------------------------------------------------------------------
+
+# クォート文字列.
+"string.quoted" = 113
+
+# 文字列開始・終了記号.
+"punctuation.definition.string" = 113
+
+# heredoc 本文.
+"string.unquoted.heredoc" = 113
+
+# -----------------------------------------------------------------------------
+# Brackets and compound punctuation.
+# -----------------------------------------------------------------------------
+
+# compound 構文記号.
+"punctuation.definition.compound" = 141
+
+# 算術式の括弧.
+"punctuation.section.arithmetic" = 214
+
+# 通常の括弧.
+"punctuation.section.parens" = 141
+
+# ブラケット構文の括弧.
+"punctuation.section.brackets" = 203
+
+# ブレース構文の括弧.
+"punctuation.section.braces" = 141
+
+# グループ構文の括弧.
+"punctuation.section.group" = 141
