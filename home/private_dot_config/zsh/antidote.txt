@@ -1,0 +1,3 @@
+romkatv/zsh-defer path:zsh-defer.plugin.zsh
+
+zsh-users/zsh-completions kind:fpath path:src

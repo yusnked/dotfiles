@@ -15,17 +15,11 @@
 
     typeset -gxU PATH path FPATH fpath
 
-    fpath[1,0]="$XDG_CONFIG_HOME/zsh/functions"
-    autoload -Uz __source_generated_cache
-
-    local brew_path='/opt/homebrew/bin/brew'
-    if [[ -x "$brew_path" ]]; then
-        __source_generated_cache "$brew_path" homebrew.zsh "$brew_path shellenv"
-    fi
-
     path=(
         "$HOME/.local/bin"(N-/)
         "$XDG_DATA_HOME/mise/shims"(N-/)
+        /opt/homebrew/bin(N-/)
+        /opt/homebrew/sbin(N-/)
         $path
     )
 
