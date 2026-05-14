@@ -1,3 +1,8 @@
+# zsh-vi-mode 設定関数. 自動で呼び出される.
+zvm_config() {
+    ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
+}
+
 () {
     local antidote_git="$XDG_DATA_HOME/zsh/antidote"
     if [[ ! -d "$antidote_git" ]]; then
