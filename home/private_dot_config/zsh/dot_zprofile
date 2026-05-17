@@ -13,8 +13,7 @@
         [[ -d "$dir" ]] || command mkdir -p -- "$dir"
     done
 
-    typeset -gxU PATH path FPATH fpath
-
+    typeset -gU path
     path=(
         "$HOME/.local/bin"(N-/)
         "$XDG_DATA_HOME/mise/shims"(N-/)
@@ -22,6 +21,7 @@
         /opt/homebrew/sbin(N-/)
         $path
     )
+    export PATH
 
     export DOTS_ZPROFILE_LOADED=1
 }

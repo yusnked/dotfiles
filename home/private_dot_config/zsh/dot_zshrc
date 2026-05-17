@@ -4,6 +4,8 @@
 # 端末ドライバ側で ^S/^Q による出力停止・再開を無効にする.
 [[ -t 0 ]] && stty -ixon
 
+typeset -gU path fpath
+
 fpath[1,0]="$ZDOTDIR/functions"
 autoload -Uz __source_generated_cache __zcompile_sourced
 
