@@ -25,6 +25,7 @@ source "$ZDOTDIR/rc/completion.zsh"
 
 source "$ZDOTDIR/rc/plugins.zsh"
 
+source "$ZDOTDIR/rc/prompt.zsh"
 source "$ZDOTDIR/rc/bindkey.zsh"
 
 zsh-defer -a +2 __source_generated_cache "${commands[brew]}" homebrew.zsh 'brew shellenv'

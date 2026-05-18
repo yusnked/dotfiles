@@ -2,5 +2,7 @@ romkatv/zsh-defer path:zsh-defer.plugin.zsh
 
 zsh-users/zsh-completions kind:fpath path:src
 
+yusnked/powerlevel10k kind:fpath
+
 # 初回プロンプトのカーソル形状が設定されないため遅延ロードしない.
 yusnked/zsh-vi-mode
