@@ -1,0 +1,5 @@
+#compdef mkcd
+
+_mkdir "$@"
+
+# vi: set ft=zsh:

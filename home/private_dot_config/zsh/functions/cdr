@@ -1,0 +1,18 @@
+local root_dir target_dir
+
+if (( $+commands[git] )); then
+    root_dir="${$(git rev-parse --show-toplevel 2>/dev/null):-"$HOME"}"
+else
+    root_dir=$HOME
+fi
+
+target_dir="${root_dir}${1:+/$1}"
+
+if [[ -d $target_dir ]]; then
+    builtin cd -- "$target_dir"
+else
+    print -u2 -- "cdr: no such directory: $target_dir"
+    return 1
+fi
+
+# vi: set ft=zsh:

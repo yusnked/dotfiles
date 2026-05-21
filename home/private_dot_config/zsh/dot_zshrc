@@ -6,7 +6,7 @@
 
 typeset -gU path fpath
 
-fpath[1,0]="$ZDOTDIR/functions"
+fpath[1,0]=("$ZDOTDIR/"{functions,completions})
 autoload -Uz __source_generated_cache __zcompile_sourced
 
 typeset -gaU __dots_sourced_paths=("$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc")
@@ -36,6 +36,8 @@ zsh-defer -c '(( $+commands[zsh-patina] )) && eval "$(zsh-patina activate)"'
 
 autoload -Uz compinit
 zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
+
+zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"
 
 zsh-defer -a +2 __zcompile_sourced
 

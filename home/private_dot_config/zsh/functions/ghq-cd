@@ -1,0 +1,21 @@
+(( $+commands[ghq] )) || return 127
+
+local repo root
+
+if (( $# )); then
+    repo=$1
+else
+    if (( $+commands[fzf] )); then
+        repo="$(ghq list | fzf)" || return
+    else
+        print -u2 'ghq-cd: repo argument required.'
+        return 1
+    fi
+fi
+
+[[ -n $repo ]] || return 1
+
+root="$(ghq root 2>/dev/null)" || return 1
+builtin cd -- "$root/$repo" || return
+
+# vi: set ft=zsh:
