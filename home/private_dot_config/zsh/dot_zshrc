@@ -27,8 +27,8 @@ source "$ZDOTDIR/rc/plugins.zsh"
 
 source "$ZDOTDIR/rc/prompt.zsh"
 source "$ZDOTDIR/rc/bindkey.zsh"
+source "$ZDOTDIR/rc/env.zsh"
 
-zsh-defer -a +2 __source_generated_cache "${commands[brew]}" homebrew.zsh 'brew shellenv'
 zsh-defer -a +2 __source_generated_cache "${commands[mise]}" mise.zsh 'mise activate zsh'
 
 # zsh-patina activate は daemon 起動や socket path 生成を伴うためキャッシュ不可.
@@ -40,12 +40,5 @@ zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
 zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"
 
 zsh-defer -a +2 __zcompile_sourced
-
-# PATH の一番上に更新.
-zsh-defer -a -c '
-    [[ -d "$HOME/.local/bin" ]] && path[1,0]="$HOME/.local/bin"
-    [[ -d "$ZDOTDIR/functions" ]] && fpath[1,0]="$ZDOTDIR/functions"
-'
-
 
 # vi: set ft=zsh:
