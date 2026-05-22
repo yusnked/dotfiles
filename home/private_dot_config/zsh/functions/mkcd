@@ -1,0 +1,18 @@
+if (( ! $# )); then
+    print -u2 'mkcd: missing operand.'
+    return 1
+fi
+
+command mkdir -p "$@" || return
+
+local target
+target="${@[-1]}"
+
+if [[ -d "$target" && -x "$target" ]]; then
+    builtin cd -- "$target"
+else
+    print -u2 -- "mkcd: cannot change directory: $target"
+    return 1
+fi
+
+# vi: set ft=zsh:

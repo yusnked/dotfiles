@@ -1,0 +1,61 @@
+prompt_dots_fallback_help() {
+    cat <<'EOF'
+dots_fallback - minimal ASCII fallback prompt using zsh vcs_info
+
+Symbols:
+  +  staged changes
+  *  unstaged changes
+
+Examples:
+  user@host:~/src/repo [main]
+  user@host:~/src/repo [main+!]
+  user@host:~/src/repo [main|merge+!]
+EOF
+}
+
+prompt_dots_fallback_precmd() {
+    emulate -L zsh
+
+    vcs_info
+
+    PS1="%B%F{yellow}%n@%m%f%b:%F{green}%(4~|%-1~/|)%(5~|.../|)%3~%f${vcs_info_msg_0_}
+%B%(?|%F{green}|%F{red})%(2L|%L|)%#%f%b "
+}
+
+prompt_dots_fallback_setup() {
+    emulate -L zsh
+
+    prompt_opts=(cr percent sp subst)
+
+    autoload -Uz add-zsh-hook vcs_info prompt_pipestatus
+
+    zstyle ':vcs_info:*' enable git
+
+    # 重くなる可能性あり.
+    zstyle ':vcs_info:git:*' check-for-changes true
+
+    zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'
+    zstyle ':vcs_info:git:*' unstagedstr '%F{yellow}!%f'
+    zstyle ':vcs_info:git:*' formats ' %F{blue}[%b%f%c%u%F{blue}]%f'
+    zstyle ':vcs_info:git:*' actionformats ' %F{blue}[%b|%a%f%c%u%F{blue}]%f'
+
+    # prompt_THEME_HOOK 形式の関数はテーマ切り替え時に自動でフック解除される.
+    add-zsh-hook precmd prompt_dots_fallback_precmd
+    prompt_dots_fallback_precmd
+
+    prompt_pipestatus enable --color=8
+    RPS1='${_prompt_pipestatus}'
+
+    prompt_cleanup __prompt_dots_fallback_cleanup
+}
+
+__prompt_dots_fallback_cleanup() {
+    emulate -L zsh
+
+    prompt_pipestatus disable
+    RPS1=
+}
+
+prompt_dots_fallback_setup "$@"
+
+# vi: set ft=zsh:

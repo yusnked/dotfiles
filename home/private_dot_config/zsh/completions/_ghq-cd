@@ -1,0 +1,12 @@
+#compdef ghq-cd
+
+(( $+commands[ghq] )) || return 1
+
+local -a repos
+
+repos=("${(@f)$(ghq list 2>/dev/null)}")
+(( $#repos )) || return 1
+
+_describe -t repositories 'ghq repositories' repos
+
+# vi: set ft=zsh:

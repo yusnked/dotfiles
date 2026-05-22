@@ -1,0 +1,14 @@
+#compdef cdr
+
+local root_dir expl
+
+if (( $+commands[git] )); then
+    root_dir="${$(git rev-parse --show-toplevel 2>/dev/null):-"$HOME"}"
+else
+    root_dir=$HOME
+fi
+
+_wanted directories expl 'repository directories' \
+    _files -/ -W "$root_dir"
+
+# vi: set ft=zsh:

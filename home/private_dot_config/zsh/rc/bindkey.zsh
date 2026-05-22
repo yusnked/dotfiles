@@ -1,27 +1,46 @@
-# This file must be loaded after "zsh-vi-mode" is loaded.
+__bindkey_copy_emacs_esc_bindings_to_viins_ctrl_q() {
+    local line
+    local -a keylist
+    bindkey -pM emacs '^[' | while IFS= read -r line; do
+        # 矢印キー系 (^[[, ^[O) のバインドは除外.
+        [[ "$line" == \"\^\[[O[]* ]] && continue
+        keylist+=( "^Q${${(Q)${line%% *}}#\^\[}" "${line#* }" )
+    done
+    if (( $#keylist )); then
+        bindkey -M viins "${keylist[@]}"
+        bindkey -M viins -r '^Q'
+    fi
+}
 
-() {
-    autoload -Uz bind-widget
+__bindkey_setup() {
+    local keymap="${1:-viins}"
+    if [[ "$keymap" == viins ]]; then
+        bindkey -M $keymap \
+            '^H'   backward-delete-char \
+            '^Q^Q' push-line \
+            '^X*'  expand-word
 
-    if [[ -n $ZVM_VERSION ]]; then
-        local keymap='viins'
-        bindkey -v
-    else
-        local keymap='emacs'
+        zsh-defer -a __bindkey_copy_emacs_esc_bindings_to_viins_ctrl_q
+    elif [[ "$keymap" == emacs ]]; then
         bindkey -e
     fi
 
-    # ^g keybindings
-    bindkey -M $keymap -r '^g'
-    bindkey -M $keymap '^gg' complete-migemo
-    bindkey -M $keymap '^g^g' complete-migemo
-    bindkey -M $keymap '^gh' run-help
-    bindkey -M $keymap '^g^h' run-help
+    bindkey -M command '^[' send-break
+    bindkey -M isearch '^[' send-break
 
-    local key
-    for key in \' \" \` \( \) \{ \} \[ \]; do
-        bind-widget $keymap $key brackets-and-quotes-expantion
-    done
-    bind-widget $keymap '^h' backward-delete-char-or-expantion
-    bind-widget $keymap '^?' backward-delete-char-or-expantion
+    if bindkey -M menuselect &>/dev/null; then
+        bindkey -M menuselect \
+            '^J' accept-and-infer-next-history \
+            '^[' send-break
+    fi
 }
+
+# =========================================================
+# zsh-vi-mode
+# =========================================================
+if [[ -n "$ZVM_VERSION" ]]; then
+    zvm_after_init_commands+=(__bindkey_setup)
+else
+    # zsh-vi-mode がロードされてなければフォールバック.
+    zsh-defer -a -c '__bindkey_setup emacs'
+fi

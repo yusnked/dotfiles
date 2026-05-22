@@ -1,0 +1,42 @@
+if [[ -z $__zsh_defer_dummy_warned ]]; then
+    __zsh_defer_dummy_warned=1
+    print -u2 -r -- $'\e[1;31mWARN\e[0m: zsh-defer is not loaded.'
+fi
+
+local pattern='^[+-][12dmshpra]+$'
+while (( $# )); do
+    case $1 in
+        [-+][12dmshpra]*)
+            if [[ $1 =~ $pattern ]]; then
+                shift
+            else
+                break
+            fi
+            ;;
+        -t)
+            if (( $# < 2 )); then
+                print -u2 -r -- 'zsh-defer-dummy: missing argument for -t'
+                return 1
+            fi
+            shift 2
+            ;;
+        -c)
+            if (( $# < 2 )); then
+                print -u2 -r -- 'zsh-defer-dummy: missing argument for -c'
+                return 1
+            fi
+            shift
+            eval "$1"
+            return $?
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+(( $# )) || return 0
+
+"$@"
+
+# vi: set ft=zsh:

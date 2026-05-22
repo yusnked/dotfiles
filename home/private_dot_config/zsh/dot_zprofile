@@ -1,0 +1,32 @@
+() {
+    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+    export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+    export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+    export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+
+    local dir
+    for dir in \
+        "$XDG_DATA_HOME/zsh" \
+        "$XDG_STATE_HOME/zsh" \
+        "$XDG_CACHE_HOME/zsh"
+    do
+        [[ -d "$dir" ]] || command mkdir -p -- "$dir"
+    done
+
+    typeset -gU path
+    path=(
+        "$HOME/.local/bin"(N-/)
+        "$XDG_DATA_HOME/mise/shims"(N-/)
+        /opt/homebrew/bin(N-/)
+        /opt/homebrew/sbin(N-/)
+        $path
+    )
+    export PATH
+
+    export LANG=en_US.UTF-8
+    export LC_TIME=C
+
+    export DOTS_ZPROFILE_LOADED=1
+}
+
+# vi: set ft=zsh:

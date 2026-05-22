@@ -1,0 +1,150 @@
+prompt_pipestatus() {
+    emulate -L zsh
+
+    local cmd=$1
+    (( $# )) && shift
+
+    case $cmd in
+        enable)
+            __prompt_pipestatus_enable "$@"
+            ;;
+        disable)
+            __prompt_pipestatus_disable
+            ;;
+        render)
+            __prompt_pipestatus_render "$@"
+            ;;
+        *)
+            print -u2 'usage: prompt_pipestatus {enable|disable|render} [--color=8|--color=256] [--show-success]'
+            print -u2 '       Add ${_prompt_pipestatus} to PROMPT or RPROMPT with PROMPT_SUBST enabled.'
+            return 2
+            ;;
+    esac
+}
+
+__prompt_pipestatus_enable() {
+    emulate -L zsh
+    autoload -Uz add-zsh-hook
+
+    local color_mode=256
+    local show_success=0
+
+    while (( $# > 0 )); do
+        case $1 in
+            --color=8|--color=256)
+                color_mode=${1#*=}
+                shift
+                ;;
+            --show-success)
+                show_success=1
+                shift
+                ;;
+            --)
+                shift
+                break
+                ;;
+            *)
+                print -u2 "prompt_pipestatus: unknown option: $1"
+                return 2
+                ;;
+        esac
+    done
+
+    typeset -g _prompt_pipestatus=
+    typeset -g __prompt_pipestatus_executing=
+    typeset -g __prompt_pipestatus_color_mode=$color_mode
+    typeset -g __prompt_pipestatus_show_success=$show_success
+
+    add-zsh-hook -d precmd __prompt_pipestatus_precmd 2>/dev/null
+    add-zsh-hook -d preexec __prompt_pipestatus_preexec 2>/dev/null
+
+    precmd_functions=(
+        __prompt_pipestatus_precmd
+        ${precmd_functions:#__prompt_pipestatus_precmd}
+    )
+    add-zsh-hook preexec __prompt_pipestatus_preexec
+}
+
+__prompt_pipestatus_disable() {
+    emulate -L zsh
+    autoload -Uz add-zsh-hook
+
+    add-zsh-hook -d precmd __prompt_pipestatus_precmd 2>/dev/null
+    add-zsh-hook -d preexec __prompt_pipestatus_preexec 2>/dev/null
+
+    unset _prompt_pipestatus
+    unset __prompt_pipestatus_executing
+    unset __prompt_pipestatus_color_mode
+    unset __prompt_pipestatus_show_success
+}
+
+__prompt_pipestatus_preexec() {
+    __prompt_pipestatus_executing=1
+}
+
+__prompt_pipestatus_precmd() {
+    local  ret=$? ps=("${pipestatus[@]}")
+
+    emulate -L zsh
+
+    if [[ $__prompt_pipestatus_executing != 1 ]]; then
+        _prompt_pipestatus=
+        return
+    fi
+
+    __prompt_pipestatus_executing=
+
+    if (( ret == 0 && ${__prompt_pipestatus_show_success:-0} == 0 )); then
+        _prompt_pipestatus=
+        return
+    fi
+
+    __prompt_pipestatus_render "${ps[@]}"
+}
+
+__prompt_pipestatus_render() {
+    emulate -L zsh
+    local color_success color_error color_signal color_default
+
+    case ${__prompt_pipestatus_color_mode:-256} in
+        8)
+            color_success='%F{green}'
+            color_error='%F{red}'
+            color_signal='%F{yellow}'
+            color_default='%F{white}'
+            ;;
+        256)
+            color_success='%F{70}'
+            color_error='%F{124}'
+            color_signal='%F{136}'
+            color_default='%F{247}'
+            ;;
+        *)
+            print -u2 "prompt_pipestatus: invalid color mode: ${__prompt_pipestatus_color_mode}"
+            return 2
+            ;;
+    esac
+
+    local code color value out
+
+    for code in "$@"; do
+        if (( code >= 129 && code <= 159 )); then
+            color=$color_signal
+            value=${signals[code - 127]:-$code}
+        elif (( code == 0 )); then
+            color=$color_success
+            value=$code
+        else
+            color=$color_error
+            value=$code
+        fi
+
+        out+=" ${color}${value}"
+    done
+
+    _prompt_pipestatus="${color_default}[${out# }${color_default}]%f"
+}
+
+prompt_pipestatus "$@"
+
+# vi: set ft=zsh:

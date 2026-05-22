@@ -1,27 +1,46 @@
-# 補完機能を有効にする
-autoload -Uz compinit
-compinit -d "$DOTS_CACHE_HOME/zsh/.zcompdump"
+zstyle ':completion:*' use-cache true
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/zcompcache"
 
-# ^wで単語削除などをする際の単語の区切りを設定(word-charsで設定した以外の文字を全て単語の構成要素とみなす)
-autoload -Uz select-word-style
-select-word-style default
-zstyle ':zle:*' word-chars " /:@+|"
-zstyle ':zle:*' word-style unspecified
+zstyle ':completion:*' completer _expand_alias _complete _match _prefix _ignored
+zstyle ':completion:*:prefix:*:*:*' completer _complete
 
-# M-.で直前コマンドの最後の引数を取得する際に&などがあるとそれを拾ってしまうので、より適切な物を拾ってくれるように設定。
-autoload -Uz smart-insert-last-word
-zle -N insert-last-word smart-insert-last-word
+# 補完を smart-case 的にマッチさせ, 区切り文字や部分語での補完も試す.
+zstyle ':completion:*' matcher-list \
+    'm:{a-z}={A-Z}' '+r:|[-_./]=* r:|=*' 'm:{a-z}={A-Z} l:|=* r:|=*'
+zstyle ':completion:*:prefix:*:*:*' matcher-list 'm:{a-z}={A-Z}'
 
-# 補完で小文字でも大文字にマッチさせる
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+# パス中の // を / と同じように扱う. (false なら // は /*/ と同じになる)
+zstyle ':completion:*' squeeze-slashes true
 
-# 補完候補を詰めて表示
-setopt list_packed
+# 既に存在するディレクトリ名はそのまま受け入れ, 余計な補完探索を避ける.
+zstyle ':completion:*' accept-exact-dirs true
 
-# 補完候補一覧をカラー表示
-autoload colors
-zstyle ':completion:*' list-colors ''
+# ファイルの補完候補を新しい順に並べる.
+zstyle ':completion:*' file-sort modification
 
-# migemoでファイル補完
-autoload -Uz _complete-migemo
-zle -C complete-migemo menu-complete _complete-migemo
+# 補完候補をグループごとにまとめる.
+zstyle ':completion:*' group-name ''
+
+# 補完候補の説明を表示する.
+zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
+
+# 補完候補がない場合の表示.
+zstyle ':completion:*:warnings' format '%F{red}-- no matches found --%f'
+
+# 補完候補を詳しく表示する.
+zstyle ':completion:*' verbose true
+
+# cd/chdir/pushd で - から始まるときもオプション補完を候補に含める.
+zstyle ':completion:*:options' complete-options true
+
+# LS_COLORS を使う. なければ GNU ls 風のデフォルト色を使う.
+if [[ -n "${LS_COLORS-}" ]]; then
+    zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+else
+    zstyle ':completion:*:default' list-colors ''
+fi
+
+# メニュー補完を有効にする.
+# zsh/complist は compinit より前にロードする必要あり.
+zmodload zsh/complist
+zstyle ':completion:*' menu select

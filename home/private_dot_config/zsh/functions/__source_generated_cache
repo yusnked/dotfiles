@@ -1,0 +1,35 @@
+local watch="$1" cache="$XDG_CACHE_HOME/zsh/$2" cmdline="$3"
+if [[ ! "$watch" -ot "$cache" ]]; then
+    __dots_sgc_message () {
+        local esc_num=33
+        [[ "$1" == ERROR* ]] && esc_num=31
+        [[ -o interactive ]] && print -u2 -- "\e[1;${esc_num}m${1}\e[0m:" "$cache"
+    }
+
+    {
+        local cmd=${${(z)cmdline}[1]}
+        if ! {
+            [[ -n "$cmd" && -e "$watch" ]] &&
+                {
+                    [[ -n "${commands[$cmd]}" ]] ||
+                    [[ "$cmd" == /* && -x "$cmd" ]] ||
+                    (( $+functions[$cmd] ))
+                }
+        }; then
+            __dots_sgc_message "ERROR(arg)"
+            return 1
+        fi
+
+        if ! eval "$cmdline" >| "$cache"; then
+            __dots_sgc_message "ERROR(cmd)"
+            return 1
+        fi
+        __dots_sgc_message Cached
+    } always {
+        unfunction __dots_sgc_message 2>/dev/null
+    }
+fi
+
+source "$cache"
+
+# vi: set ft=zsh:
