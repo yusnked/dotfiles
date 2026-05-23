@@ -1,3 +1,45 @@
+# ==========================================================
+# Completion options
+# ==========================================================
+
+# 補完で完全な候補を挿入した後, カーソルを単語末尾へ移動する.
+# setopt ALWAYS_TO_END
+
+# 絶対パスを値に持つパラメータを, 自動的に named directory として扱う.
+# setopt AUTO_NAME_DIRS
+
+# 曖昧補完時, 1回目では候補一覧を出さず, 2回連続の補完で一覧を表示する.
+# setopt BASH_AUTO_LIST
+
+# alias を展開せず, alias 自体を補完対象として扱う.
+# setopt COMPLETE_ALIASES
+
+# 補完開始時にカーソルを単語末尾へ移動せず, カーソル位置の前後を使って補完する.
+setopt COMPLETE_IN_WORD
+
+# glob パターンを含む語を, 即展開せず補完候補として扱う.
+setopt GLOB_COMPLETE
+
+# 曖昧補完時にビープ音を鳴らさない.
+unsetopt LIST_BEEP
+
+# 補完候補一覧を詰めて表示する.
+setopt LIST_PACKED
+
+# 補完候補一覧を列優先ではなく行優先で表示する.
+# setopt LIST_ROWS_FIRST
+
+# 曖昧補完時, 候補一覧を出す代わりに最初の候補を即挿入する.
+# setopt MENU_COMPLETE
+
+# 入力文字列が補完候補と完全一致する場合, より長い候補があってもその候補を採用する.
+# setopt REC_EXACT
+
+
+# ==========================================================
+# Completion Styles
+# ==========================================================
+
 zstyle ':completion:*' use-cache true
 zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/zcompcache"
 

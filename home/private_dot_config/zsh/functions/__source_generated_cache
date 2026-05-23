@@ -1,32 +1,46 @@
 local watch="$1" cache="$XDG_CACHE_HOME/zsh/$2" cmdline="$3"
+
+# キャッシュが有効なホットパスでは1回の判定で読み込めるようにする.
 if [[ ! "$watch" -ot "$cache" ]]; then
     __dots_sgc_message () {
         local esc_num=33
         [[ "$1" == ERROR* ]] && esc_num=31
-        [[ -o interactive ]] && print -u2 -- "\e[1;${esc_num}m${1}\e[0m:" "$cache"
+        [[ -o interactive ]] && { zle -I; print -u2 -- "\e[1;${esc_num}m${1}\e[0m:" "$cache"; }
     }
 
     {
-        local cmd=${${(z)cmdline}[1]}
-        if ! {
-            [[ -n "$cmd" && -e "$watch" ]] &&
-                {
-                    [[ -n "${commands[$cmd]}" ]] ||
-                    [[ "$cmd" == /* && -x "$cmd" ]] ||
-                    (( $+functions[$cmd] ))
-                }
-        }; then
-            __dots_sgc_message "ERROR(arg)"
+        if ! [[ -e "$watch" ]]; then
+            __dots_sgc_message "ERROR(watch)"
             return 1
         fi
 
-        if ! eval "$cmdline" >| "$cache"; then
+        local cmd=${${(z)cmdline}[1]}
+
+        # cmd が現在の環境で使える外部コマンド, 実行可能な絶対パス, または関数でなければ
+        # その環境では不要なキャッシュとして, エラーメッセージを出さずに戻る.
+        if ! {
+            (( $+commands[$cmd] )) ||
+            [[ "$cmd" == /* && -x "$cmd" ]] ||
+            (( $+functions[$cmd] ))
+        }; then
+            return 1
+        fi
+
+        local tmp="${cache}.$$"
+        if ! eval "$cmdline" >| "$tmp"; then
             __dots_sgc_message "ERROR(cmd)"
             return 1
         fi
+
+        if ! command mv -f -- "$tmp" "$cache"; then
+            __dots_sgc_message "ERROR(mv)"
+            return 1
+        fi
+
         __dots_sgc_message Cached
     } always {
-        unfunction __dots_sgc_message 2>/dev/null
+        [[ -e "$tmp" ]] && command rm -f -- "$tmp"
+        unset -f __dots_sgc_message 2>/dev/null
     }
 fi
 

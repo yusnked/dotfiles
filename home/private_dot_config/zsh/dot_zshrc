@@ -12,7 +12,7 @@ autoload -Uz __source_generated_cache __zcompile_sourced
 typeset -gaU __dots_sourced_paths=("$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc")
 source() {
     __dots_sourced_paths+="$1"
-    builtin source "$1"
+    builtin source "$@"
 }
 
 zsh-defer() {
@@ -29,7 +29,7 @@ source "$ZDOTDIR/rc/prompt.zsh"
 source "$ZDOTDIR/rc/bindkey.zsh"
 source "$ZDOTDIR/rc/env.zsh"
 
-zsh-defer -a +2 __source_generated_cache "${commands[mise]}" mise.zsh 'mise activate zsh'
+zsh-defer -a -c '(( $+commands[mise] )) && eval "$(mise activate zsh)"'
 
 # zsh-patina activate は daemon 起動や socket path 生成を伴うためキャッシュ不可.
 zsh-defer -c '(( $+commands[zsh-patina] )) && eval "$(zsh-patina activate)"'
@@ -39,6 +39,6 @@ zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
 zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"
 
-zsh-defer -a +2 __zcompile_sourced
+zsh-defer -a __zcompile_sourced
 
 # vi: set ft=zsh:

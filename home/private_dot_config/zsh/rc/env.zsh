@@ -22,7 +22,7 @@ export GPG_TTY="$TTY"
 export RUNEWIDTH_EASTASIAN=0
 
 # Homebrew.
-zsh-defer -a +2 __source_generated_cache "${commands[brew]}" homebrew.zsh 'brew shellenv'
+zsh-defer -a __source_generated_cache "${commands[brew]}" homebrew.zsh 'brew shellenv'
 # brew shellenv が FPATH を環境変数に設定するため解除.
 zsh-defer -a typeset -g +x FPATH
 

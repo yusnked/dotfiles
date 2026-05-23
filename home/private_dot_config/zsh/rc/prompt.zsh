@@ -1,3 +1,8 @@
+# Named directories.
+hash -d dots="$HOME/.local/share/chezmoi"
+hash -d dots-config=~dots/home/private_dot_config
+
+# Prompt.
 autoload -Uz promptinit && promptinit
 
 if [[ "$FPATH" == *powerlevel10k* ]]; then

@@ -16,7 +16,7 @@ fi
 
 if (( $+commands[eza] )); then
     alias ls='eza --color --icons --hyperlink --group-directories-first --group --git --time-style="+%y/%m/%d %H:%M"'
-elif ls --version &>/dev/null; then
+elif command ls --version &>/dev/null; then
     # GNU ls
     alias ls="ls -hF --color=auto --time-style='+%Y-%m-%d %H:%M'"
 else
