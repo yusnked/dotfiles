@@ -1,16 +1,14 @@
 (( ${#__dots_sourced_paths[@]} )) || return
 
 local src
-local -a messages
 for src in "${__dots_sourced_paths[@]}"; do
     # NOTE: ! "$src" -ot "${src}.zwc" の比較の仕方はキャッシュが古い場合とない場合を
     #       同時に扱えて便利な一方, mtime が粗いファイルシステムだと同じ時刻に丸められて
     #       毎回コンパイルが走る可能性がある.
     if [[ ! "$src" -ot "${src}.zwc" && -r "$src" ]]; then
-        zcompile "$src" && messages+=($'\e[1;33mCompiled\e[0m: '"$src")
+        zcompile "$src" && (( $+functions[__rc_print] )) &&
+            __rc_print $'\e[1;33mCompiled\e[0m: '"$src"
     fi
 done
-
-[[ -o interactive ]] && (( ${#messages} )) && { zle -I; print -lu2 -- "${messages[@]}"; }
 
 # vi: set ft=zsh:

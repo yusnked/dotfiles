@@ -20,6 +20,24 @@ zsh-defer() {
     __zsh_defer_dummy "$@"
 }
 
+# メッセージをまとめて zle -I によるプロンプト再描画を(できるだけ)1回に抑える.
+typeset -ga __dots_rc_messages
+__rc_print() {
+    if (( $+__dots_rc_messages )); then
+        __dots_rc_messages+=("$1")
+    else
+        zle -I
+        print -u2 -- "$1"
+    fi
+}
+__rc_print_flush() {
+    if (( ${#__dots_rc_messages} )); then
+        zle -I
+        print -lu2 -- "${__dots_rc_messages[@]}"
+    fi
+    unset __dots_rc_messages
+}
+
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/completion.zsh"
 
@@ -40,5 +58,7 @@ zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
 zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"
 
 zsh-defer -a __zcompile_sourced
+
+zsh-defer -a __rc_print_flush
 
 # vi: set ft=zsh:
