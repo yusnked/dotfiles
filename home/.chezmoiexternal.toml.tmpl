@@ -1,7 +1,7 @@
 # chezmoi:template:missing-key=invalid
 {{ if and (ne .xdg.configR nil) (ne .xdg.dataR nil) -}}
 
-['{{ .xdg.configR }}/git/themes.gitconfig']
+['.config/delta/themes.gitconfig']
     type = 'file'
     url = 'https://raw.githubusercontent.com/dandavison/delta/main/themes.gitconfig'
     refreshPeriod = '720h'

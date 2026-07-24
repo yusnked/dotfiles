@@ -1,0 +1,17 @@
+[core]
+    pager = $XDG_CONFIG_HOME/git/scripts/pager
+[interactive]
+    diffFilter = $XDG_CONFIG_HOME/git/scripts/diff-filter
+[user]
+    name  = {{ .name }}
+    email = {{ .email }}
+[delta]
+    features       = calochortus-lyallii
+    navigate       = true
+    line-numbers   = true
+    hyperlinks     = true
+    relative-paths = true
+    true-color     = auto
+    paging         = auto
+[include]
+    path = ../delta/themes.gitconfig

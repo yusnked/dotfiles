@@ -32,6 +32,9 @@
 {{ end -}}
 
 [data]
+name  = {{ promptString "name" "yusnked" | quote }}
+email = {{ promptString "email" "yusnked@gmail.com" | quote }}
+
 # Nix
 nix.system       = {{ $nixSystem | quote }}
 nix.mypkgsDir    = {{ joinPath $xdgConfig "nix/mypkgs" | quote }}
