@@ -1,0 +1,504 @@
+#!/usr/bin/env python3
+
+"""
+audelay
+
+動画の音声差し替え、音声位置調整、ラウドネス正規化を行うFFmpegラッパー。
+
+位置引数:
+  audelay.py VIDEO
+      VIDEO自身の先頭音声ストリームを使用する。
+
+  audelay.py VIDEO AUDIO
+      VIDEOの映像に、AUDIOの先頭音声ストリームを組み合わせる。
+      AUDIOには音声ファイルだけでなく、別の動画ファイルも指定できる。
+
+--lossless:
+  音声を再エンコードせず stream copy する。
+  --norm、および無音追加が必要な --mode longest とは併用できない。
+  遅延・前倒しはパケット単位なので、サンプル単位の精密さは保証されない。
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import shlex
+import shutil
+import subprocess
+import sys
+from dataclasses import dataclass
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from pathlib import Path
+from typing import Sequence
+
+
+AUDIO_BITRATE = "192k"
+LOUDNORM_FILTER = "loudnorm=I=-16:TP=-1.5:LRA=11"
+
+
+class AudelayError(RuntimeError):
+    """利用者向けエラー。"""
+
+
+@dataclass(frozen=True)
+class MediaInfo:
+    duration: Decimal
+    sample_rate: int | None = None
+    audio_codec: str | None = None
+
+
+def decimal_number(value: str) -> Decimal:
+    try:
+        number = Decimal(value)
+    except InvalidOperation as exc:
+        raise argparse.ArgumentTypeError(f"数値ではありません: {value}") from exc
+
+    if not number.is_finite():
+        raise argparse.ArgumentTypeError(f"有限の数値を指定してください: {value}")
+    return number
+
+
+def positive_int(value: str) -> int:
+    try:
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(f"整数ではありません: {value}") from exc
+    if number <= 0:
+        raise argparse.ArgumentTypeError("1以上の整数を指定してください")
+    return number
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="audelay",
+        description=(
+            "動画の音声差し替え、位置調整、ラウドネス正規化を行います。"
+            "入力が1個なら動画自身の音声、2個なら2個目の先頭音声を使用します。"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""例:
+  audelay movie.mp4 --delay 0.230 --norm
+  audelay movie.mov mic.m4a --delay -1.5 --mode longest --norm
+  audelay movie.mp4 other-video.mp4
+  audelay movie.mkv voice.mka --delay 2 --lossless
+
+注意:
+  --lossless は音声の再エンコードを避けるモードです。
+  --norm とは併用できません。
+  longestで無音追加が必要な場合にも使用できません。
+  stream copyでの位置調整はパケット単位のため、完全なサンプル精度ではありません。
+""",
+    )
+    parser.add_argument("video", type=Path, help="映像として使用する動画ファイル")
+    parser.add_argument(
+        "audio",
+        nargs="?",
+        type=Path,
+        help="音声元。省略時はvideo自身の先頭音声を使用",
+    )
+    parser.add_argument(
+        "-d",
+        "--delay",
+        type=decimal_number,
+        default=Decimal("0"),
+        metavar="SECONDS",
+        help="音声を映像に対してずらす秒数。正で遅延、負で前倒し（既定: 0）",
+    )
+    parser.add_argument(
+        "-m",
+        "--mode",
+        choices=("shortest", "longest"),
+        default="shortest",
+        help="出力長。shortestは短い方、longestは映像長まで音声を無音で補完（既定: shortest）",
+    )
+    parser.add_argument(
+        "--norm",
+        action="store_true",
+        help="loudnorm I=-16:TP=-1.5:LRA=11 を適用",
+    )
+    parser.add_argument(
+        "-l",
+        "--lossless",
+        action="store_true",
+        help="音声を再エンコードせず -c:a copy で処理",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        help="出力先。省略時は VIDEO_sync.拡張子",
+    )
+    parser.add_argument(
+        "--audio-stream",
+        type=positive_int,
+        default=1,
+        metavar="N",
+        help="音声元のN番目の音声ストリームを使用（1始まり、既定: 1）",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="ffmpegコマンドを表示するだけで実行しない",
+    )
+    parser.add_argument(
+        "-y",
+        "--overwrite",
+        action="store_true",
+        help="既存の出力ファイルを確認なしで上書き",
+    )
+    return parser
+
+
+def require_command(name: str) -> None:
+    if shutil.which(name) is None:
+        raise AudelayError(f"必要なコマンドが見つかりません: {name}")
+
+
+def validate_input_file(path: Path, label: str) -> None:
+    if not path.exists():
+        raise AudelayError(f"{label}が存在しません: {path}")
+    if not path.is_file():
+        raise AudelayError(f"{label}は通常ファイルではありません: {path}")
+
+
+def run_capture(command: Sequence[str]) -> str:
+    result = subprocess.run(
+        command,
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip()
+        raise AudelayError(f"コマンドに失敗しました:\n{shlex.join(command)}\n{detail}")
+    return result.stdout
+
+
+def probe_media(path: Path, audio_stream_zero_based: int, need_audio: bool) -> MediaInfo:
+    command = [
+        "ffprobe",
+        "-v",
+        "error",
+        "-show_entries",
+        "format=duration:stream=index,codec_type,codec_name,sample_rate",
+        "-of",
+        "json",
+        "--",
+        str(path),
+    ]
+    raw = run_capture(command)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise AudelayError(f"ffprobeのJSONを解釈できませんでした: {path}") from exc
+
+    duration_raw = data.get("format", {}).get("duration")
+    if duration_raw is None:
+        raise AudelayError(f"長さを取得できませんでした: {path}")
+
+    try:
+        duration = Decimal(str(duration_raw))
+    except InvalidOperation as exc:
+        raise AudelayError(f"不正なdurationです: {path}: {duration_raw}") from exc
+
+    audio_streams = [
+        stream
+        for stream in data.get("streams", [])
+        if stream.get("codec_type") == "audio"
+    ]
+
+    if not need_audio:
+        return MediaInfo(duration=duration)
+
+    if audio_stream_zero_based >= len(audio_streams):
+        raise AudelayError(
+            f"{path}には{audio_stream_zero_based + 1}番目の音声ストリームがありません"
+            f"（音声ストリーム数: {len(audio_streams)}）"
+        )
+
+    stream = audio_streams[audio_stream_zero_based]
+    sample_rate_raw = stream.get("sample_rate")
+    sample_rate = None
+    if sample_rate_raw not in (None, ""):
+        try:
+            sample_rate = int(sample_rate_raw)
+        except (TypeError, ValueError):
+            sample_rate = None
+
+    return MediaInfo(
+        duration=duration,
+        sample_rate=sample_rate,
+        audio_codec=stream.get("codec_name"),
+    )
+
+
+def output_path_for(video: Path, explicit: Path | None) -> Path:
+    if explicit is not None:
+        return explicit
+
+    if video.suffix:
+        return video.with_name(f"{video.stem}_sync{video.suffix}")
+    return video.with_name(f"{video.name}_sync.mkv")
+
+
+def ffmpeg_time(value: Decimal) -> str:
+    # 指数表記を避け、末尾の不要な0だけ除去する。
+    text = format(value, "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text or "0"
+
+
+def audio_encoder_for(output: Path) -> list[str]:
+    ext = output.suffix.lower()
+    if ext == ".webm":
+        return ["-c:a", "libopus", "-b:a", AUDIO_BITRATE]
+    return ["-c:a", "aac", "-b:a", AUDIO_BITRATE]
+
+
+def add_container_options(command: list[str], output: Path) -> None:
+    if output.suffix.lower() in {".mp4", ".m4v", ".mov"}:
+        command.extend(["-movflags", "+faststart"])
+
+
+def effective_audio_duration(audio_duration: Decimal, delay: Decimal) -> Decimal:
+    return max(Decimal("0"), audio_duration + delay)
+
+
+def rounded_sample_count(seconds: Decimal, sample_rate: int) -> int:
+    samples = (seconds * sample_rate).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return max(0, int(samples))
+
+
+def build_filtered_command(
+    *,
+    video: Path,
+    audio: Path,
+    output: Path,
+    delay: Decimal,
+    mode: str,
+    norm: bool,
+    sample_rate: int,
+    video_duration: Decimal,
+    audio_duration: Decimal,
+    audio_stream_zero_based: int,
+    overwrite: bool,
+) -> list[str]:
+    same_input = video.resolve() == audio.resolve()
+    command = ["ffmpeg", "-y" if overwrite else "-n", "-i", str(video)]
+
+    if same_input:
+        audio_input_index = 0
+    else:
+        command.extend(["-i", str(audio)])
+        audio_input_index = 1
+
+    audio_selector = f"[{audio_input_index}:a:{audio_stream_zero_based}]"
+    filters: list[str] = []
+
+    if delay > 0:
+        delay_samples = rounded_sample_count(delay, sample_rate)
+        filters.append(f"adelay={delay_samples}S:all=1")
+    elif delay < 0:
+        filters.extend(
+            [
+                f"atrim=start={ffmpeg_time(-delay)}",
+                "asetpts=PTS-STARTPTS",
+            ]
+        )
+
+    if norm:
+        filters.append(LOUDNORM_FILTER)
+
+    effective_duration = effective_audio_duration(audio_duration, delay)
+    needs_padding = mode == "longest" and video_duration > effective_duration
+
+    if needs_padding:
+        # whole_durで映像長まで伸ばす。pad_lenの手計算より丸め誤差に強い。
+        filters.append(f"apad=whole_dur={ffmpeg_time(video_duration)}")
+
+    # filter_complexには最低1フィルタ必要なので、単なる差し替え時はanullを使う。
+    if not filters:
+        filters.append("anull")
+
+    filtergraph = f"{audio_selector}{','.join(filters)}[aout]"
+    command.extend(
+        [
+            "-filter_complex",
+            filtergraph,
+            "-map",
+            "0:v:0",
+            "-map",
+            "[aout]",
+            "-c:v",
+            "copy",
+            *audio_encoder_for(output),
+            "-ar",
+            str(sample_rate),
+        ]
+    )
+
+    if mode == "shortest":
+        command.append("-shortest")
+    elif needs_padding:
+        # apadは無限に伸ばせるため、映像終了で打ち切る。
+        command.append("-shortest")
+
+    add_container_options(command, output)
+    command.append(str(output))
+    return command
+
+
+def build_lossless_command(
+    *,
+    video: Path,
+    audio: Path,
+    output: Path,
+    delay: Decimal,
+    mode: str,
+    video_duration: Decimal,
+    audio_duration: Decimal,
+    audio_stream_zero_based: int,
+    overwrite: bool,
+) -> list[str]:
+    effective_duration = effective_audio_duration(audio_duration, delay)
+    needs_padding = mode == "longest" and video_duration > effective_duration
+
+    if needs_padding:
+        raise AudelayError(
+            "--losslessでは無音を生成できないため、"
+            "--mode longestで必要になる音声パディングを実行できません。"
+            " --losslessを外すか、--mode shortestを使用してください。"
+        )
+
+    command = ["ffmpeg", "-y" if overwrite else "-n", "-i", str(video)]
+
+    # 音声だけに入力タイムスタンプ操作を適用するため、
+    # 同一ファイルでも音声入力として内部的にもう一度開く。
+    if delay > 0:
+        command.extend(["-itsoffset", ffmpeg_time(delay), "-i", str(audio)])
+    elif delay < 0:
+        # 入力シークなのでstream copyではパケット境界単位になる。
+        command.extend(["-ss", ffmpeg_time(-delay), "-i", str(audio)])
+    else:
+        command.extend(["-i", str(audio)])
+
+    command.extend(
+        [
+            "-map",
+            "0:v:0",
+            "-map",
+            f"1:a:{audio_stream_zero_based}",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "copy",
+        ]
+    )
+
+    if mode == "shortest":
+        command.append("-shortest")
+
+    add_container_options(command, output)
+    command.append(str(output))
+    return command
+
+
+def confirm_overwrite(path: Path) -> bool:
+    try:
+        answer = input(f"出力ファイル '{path}' は既に存在します。上書きしますか？ [y/N] ")
+    except EOFError:
+        return False
+    return answer.lower().startswith("y")
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    try:
+        require_command("ffmpeg")
+        require_command("ffprobe")
+
+        video: Path = args.video.expanduser()
+        audio: Path = (args.audio or args.video).expanduser()
+        output = output_path_for(video, args.output.expanduser() if args.output else None)
+        audio_stream_zero_based = args.audio_stream - 1
+
+        validate_input_file(video, "動画入力")
+        validate_input_file(audio, "音声入力")
+
+        if output.resolve() in {video.resolve(), audio.resolve()}:
+            raise AudelayError("出力先を入力ファイルと同じパスにはできません")
+
+        if args.lossless and args.norm:
+            raise AudelayError("--losslessと--normは併用できません")
+
+        video_info = probe_media(video, audio_stream_zero_based, need_audio=False)
+        audio_info = probe_media(audio, audio_stream_zero_based, need_audio=True)
+
+        sample_rate = audio_info.sample_rate or 48000
+
+        if args.lossless:
+            command = build_lossless_command(
+                video=video,
+                audio=audio,
+                output=output,
+                delay=args.delay,
+                mode=args.mode,
+                video_duration=video_info.duration,
+                audio_duration=audio_info.duration,
+                audio_stream_zero_based=audio_stream_zero_based,
+                overwrite=args.overwrite,
+            )
+        else:
+            command = build_filtered_command(
+                video=video,
+                audio=audio,
+                output=output,
+                delay=args.delay,
+                mode=args.mode,
+                norm=args.norm,
+                sample_rate=sample_rate,
+                video_duration=video_info.duration,
+                audio_duration=audio_info.duration,
+                audio_stream_zero_based=audio_stream_zero_based,
+                overwrite=args.overwrite,
+            )
+
+        print(shlex.join(command))
+
+        if args.dry_run:
+            return 0
+
+        if output.exists() and not args.overwrite:
+            if not confirm_overwrite(output):
+                print("中止しました。", file=sys.stderr)
+                return 1
+            # 先ほどは-nで組み立てているため、確認後だけ-yへ差し替える。
+            command[1] = "-y"
+
+        completed = subprocess.run(command, check=False)
+        if completed.returncode != 0:
+            raise AudelayError(
+                "ffmpegが失敗しました。音声codecと出力コンテナの非互換、"
+                "または入力ストリーム構成を確認してください。"
+            )
+
+        print(f"出力しました: {output}")
+        return 0
+
+    except AudelayError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\n中断しました。", file=sys.stderr)
+        return 130
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
