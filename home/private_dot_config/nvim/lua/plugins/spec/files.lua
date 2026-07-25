@@ -35,12 +35,11 @@ return {
         opts = {},
     },
     {
-        'A7Lavinraj/fyler.nvim',
-        branch = 'stable',
+        'FylerOrg/fyler.nvim',
         dependencies = { 'nvim-mini/mini.icons' },
         keys = keydesc.lazy {
-            { '<leader>e', desc = 'Open/Focus left-most (fyler)' },
-            { '<leader>E', desc = 'Close left-most (fyler)' },
+            { '<leader>e', desc = 'Open or focus the leftmost finder (fyler)' },
+            { '<leader>E', desc = 'Close the leftmost finder (fyler)' },
         },
         cmd = 'Fyler',
         config = function() require('plugins.config.fyler').config() end,

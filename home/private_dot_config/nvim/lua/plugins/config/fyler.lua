@@ -2,63 +2,117 @@ local M = {}
 
 local fyler = require('fyler')
 
-local is_absolute_path = require('self.lib.path.util').is_absolute_path
 local map = require('plugins.util.keydesc').set
 
+local function fyler_width()
+    return math.min(35, math.max(20, math.floor(vim.o.columns * 0.25)))
+end
+
+---@param self fyler.Finder
+local function get_cursor_path(self)
+    local entry = require('fyler.finder').parse_cursor_line(self)
+    if not entry then return end
+
+    return entry.path
+end
+
 function M.config()
+    ---@type fyler.Mapping
+    local map_disabled = { disabled = true }
+    ---@type fyler.Mapping
+    local map_open = {
+        action = 'select',
+        args = { pick = true },
+        opts = { desc = 'Open with window picker (fyler)' },
+    }
+    ---@type fyler.UserConfig
     local opts = {
-        views = {
-            finder = {
-                default_explorer = false,
-                close_on_select = false,
-                follow_current_file = false,
-                mappings = {
-                    ['gx'] = function(self) vim.ui.open(self:cursor_node_entry().path) end,
-                    ['-'] = 'GotoParent',
-                    ['_'] = 'GotoCwd',
-                    ['<C-g>'] = 'GotoNode',
-                    ['<CR>'] = 'Select',
-                    ['<BS>'] = 'CollapseAll',
-                    ['<localleader>c'] = function(self) vim.cmd.cd(self.files.root_path) end,
-                    ['<localleader>l'] = function(self) vim.cmd.lcd(self.files.root_path) end,
-                    ['<localleader>t'] = function(self) vim.cmd.tcd(self.files.root_path) end,
+        use_as_default_explorer = false,
+        kind = 'split_left_most',
+        mappings = {
+            n = {
+                ['.'] = map_disabled,
+                ['='] = map_disabled,
+                ['g.'] = map_disabled,
+                ['gi'] = map_disabled,
+                ['q'] = map_disabled,
+                ['<C-r>'] = map_disabled,
+                ['<C-s>'] = map_disabled,
+                ['<C-t>'] = map_disabled,
+                ['<C-v>'] = map_disabled,
+                ['gx'] = {
+                    action = function(self)
+                        local path = get_cursor_path(self)
+                        if path then
+                            vim.ui.open(path)
+                        end
+                    end,
+                    opts = { desc = 'Open externally (fyler)' },
+                },
+                ['-'] = {
+                    action = 'visit',
+                    args = { parent = true },
+                    opts = { desc = 'Go to parent directory (fyler)' },
+                },
+                ['<2-LeftMouse>'] = map_open,
+                ['<CR>'] = map_open,
+                ['<BS>'] = {
+                    action = 'shrink',
+                    args = { parent = true },
+                    opts = { desc = 'Collapse parent directory (fyler)' },
+                },
+                ['<localleader>.'] = {
+                    action = 'visit',
+                    args = { cursor = true },
+                    opts = { desc = 'Enter directory under cursor (fyler)' },
+                },
+                ['<localleader>h'] = {
+                    action = 'toggle_ui',
+                    args = { 'hidden_items' },
+                    opts = { desc = 'Toggle hidden files (fyler)' },
+                },
+                ['<localleader>r'] = {
+                    action = 'refresh',
+                    args = { recursive = true, force = true },
+                    opts = { desc = 'Force refresh tree (fyler)' },
+                },
+                ['<localleader><C-s>'] = {
+                    action = 'select',
+                    args = { split = true },
+                    opts = { desc = 'Open in horizontal split (fyler)' },
+                },
+                ['<localleader><C-t>'] = {
+                    action = 'select',
+                    args = { tabedit = true },
+                    opts = { desc = 'Open in new tab (fyler)' },
+                },
+                ['<localleader><C-v>'] = {
+                    action = 'select',
+                    args = { vsplit = true },
+                    opts = { desc = 'Open in vertical split (fyler)' },
                 },
             },
+        },
+        ui = {
+            hidden_items = {
+                switches = { 'dotfiles' },
+                patterns = {},
+                always_visible = {},
+                always_hidden = {},
+            },
+            indent_guides = true,
+        },
+        extensions = {
+            git = { enabled = true },
+        },
+        integrations = {
+            icon = 'mini_icons',
         },
     }
     fyler.setup(opts)
 
-    ---@return integer
-    local function get_fyler_win_id()
-        local win_get_buf = vim.api.nvim_win_get_buf
-        for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-            local bufnr = win_get_buf(win)
-            if vim.bo[bufnr].filetype == 'fyler' then
-                return win
-            end
-        end
-        return -1
-    end
-
-    -- root_dir をトップレベルとして開き, ツリーでそのバッファにカーソルを合わせる.
-    map('n', '<leader>e', function()
-        local bufname = vim.api.nvim_buf_get_name(0)
-        local fyler_win_id = get_fyler_win_id()
-
-        if fyler_win_id ~= -1 then
-            fyler.focus()
-        else
-            local root_dir = vim.fs.root(0, { '.git' })
-            fyler.open { dir = root_dir, kind = 'split_left_most' }
-        end
-
-        if is_absolute_path(bufname) then
-            vim.defer_fn(function()
-                fyler.navigate(bufname)
-            end, 100)
-        end
-    end)
-    map('n', '<leader>E', function() fyler.close() end)
+    map('n', '<leader>e', function() fyler.open { width = fyler_width() } end)
+    map('n', '<leader>E', fyler.close)
 end
 
 return M
