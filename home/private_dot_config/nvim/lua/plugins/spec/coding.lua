@@ -4,26 +4,16 @@ local keydesc = require('plugins.util.keydesc')
 return {
     {
         'kylechui/nvim-surround',
-        version = '*',
+        version = '^4.0.0',
         keys = {
-            { 'ys', desc = 'Add a surrounding pair around a motion (normal mode)' },
-            { 'yss', desc = 'Add a surrounding pair around the current line (normal mode)' },
-            { 'cs', desc = 'Change a surrounding pair' },
-            { 'ds', desc = 'Delete a surrounding pair' },
-            { '<leader>S', mode = 'x', desc = 'Add a surrounding pair around a visual selection' },
+            { 'ys', '<Plug>(nvim-surround-normal)', desc = 'Surround motion (surround)' },
+            { 'yss', '<Plug>(nvim-surround-normal-cur)', desc = 'Surround line (surround)' },
+            { 'cs', '<Plug>(nvim-surround-change)', desc = 'Change surround (surround)' },
+            { 'ds', '<Plug>(nvim-surround-delete)', desc = 'Delete surround (surround)' },
+            { '<leader>S', '<Plug>(nvim-surround-visual)', mode = 'x', desc = 'Surround selection (surround)' },
         },
-        opts = {
-            keymaps = {
-                insert = false,
-                insert_line = false,
-                normal_line = false,
-                normal_cur_line = false,
-                visual = '<leader>S',
-                visual_line = false,
-                change_line = false,
-            },
-            move_cursor = 'sticky',
-        },
+        opts = { move_cursor = 'sticky' },
+        init = function() vim.g.nvim_surround_no_mappings = true end,
     },
     {
         'monaqa/dial.nvim',
