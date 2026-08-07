@@ -4,16 +4,22 @@ local keydesc = require('plugins.util.keydesc')
 return {
     {
         'kylechui/nvim-surround',
-        version = '^4.0.0',
         keys = {
             { 'ys', '<Plug>(nvim-surround-normal)', desc = 'Surround motion (surround)' },
             { 'yss', '<Plug>(nvim-surround-normal-cur)', desc = 'Surround line (surround)' },
             { 'cs', '<Plug>(nvim-surround-change)', desc = 'Change surround (surround)' },
             { 'ds', '<Plug>(nvim-surround-delete)', desc = 'Delete surround (surround)' },
-            { '<leader>S', '<Plug>(nvim-surround-visual)', mode = 'x', desc = 'Surround selection (surround)' },
+            { 'S', '<Plug>(nvim-surround-visual)', mode = 'x', desc = 'Surround selection (surround)' },
         },
-        opts = { move_cursor = 'sticky' },
         init = function() vim.g.nvim_surround_no_mappings = true end,
+        config = function()
+            require('nvim-surround').setup { move_cursor = 'sticky' }
+            require('lazy').load { plugins = { 'nvim-surround-wk' } }
+        end,
+    },
+    {
+        'gregorias/nvim-surround-wk',
+        opts = {},
     },
     {
         'monaqa/dial.nvim',
@@ -49,7 +55,7 @@ return {
             local a = { actions = { S = 'next', s = 'prev' } }
             return {
                 { 's', mode = { 'n', 'x', 'o' }, function() require(m).jump() end, desc = 'Flash' },
-                { 'S', mode = { 'n', 'x', 'o' }, function() require(m).treesitter(a) end, desc = 'Flash Treesitter' },
+                { 'S', mode = { 'n', 'o' }, function() require(m).treesitter(a) end, desc = 'Flash Treesitter' },
                 { 'r', mode = 'o', function() require(m).remote() end, desc = 'Remote Flash' },
             }
         end,

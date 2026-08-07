@@ -69,6 +69,7 @@ if ensure_lazy() then
                 },
             },
         },
+        pkg = { enabled = false },
         profiling = { -- 遅い理由を調べたいときだけ有効にする.
             loader = false,
             require = false,
