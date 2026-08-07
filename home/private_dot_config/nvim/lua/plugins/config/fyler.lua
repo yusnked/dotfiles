@@ -123,7 +123,7 @@ function M.config()
 
         -- fyler 以外のウィンドウが1つで, そのウィンドウで quit が実行された時,
         -- fyler ウィンドウでも quit を実行する.
-        vim.defer_fn(function()
+        do
             -- Finderインスタンスはタブごとに最大1つ.
             -- Finderを閉じて再度開くたびにバッファが再作成され, buf_idも変わる.
             local tab = vim.api.nvim_get_current_tabpage()
@@ -134,10 +134,11 @@ function M.config()
                     { title = 'fyler (<leader>e)' })
                 return
             end
+            local buf = finder.buf_id
 
             vim.api.nvim_create_autocmd('BufEnter', {
-                group = vim.api.nvim_create_augroup('plugins_fyler_quit', {}),
-                buf = finder.buf_id,
+                group = vim.api.nvim_create_augroup('plugins_fyler_quit_buf_' .. buf, {}),
+                buf = buf,
                 callback = function()
                     -- NOTE: EXTRACT get_normal_wins()
                     local normal_wins = vim.iter(vim.api.nvim_tabpage_list_wins(0))
@@ -149,12 +150,12 @@ function M.config()
 
                     local prev_cmd = vim.fn.histget('cmd', -1)
                     if vim.regex([[\v^(q%[uit]!?|wq)$]]):match_str(prev_cmd) then
-                        vim.cmd.quit()
+                        vim.schedule(vim.cmd.quit)
                     end
                 end,
                 desc = 'Quit when Fyler is the last window',
             })
-        end, 0)
+        end
     end)
     map('n', '<leader>E', fyler.close)
 end
