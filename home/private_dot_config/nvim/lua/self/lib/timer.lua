@@ -75,4 +75,78 @@ function M.debounce(fn, wait)
     })
 end
 
+--- @class self.lib.timer.Poller
+--- @field start fun()
+--- @field stop fun()
+--- @field close fun()
+
+--- @param fn function
+--- @param interval integer ms
+--- @return self.lib.timer.Poller
+function M.poll(fn, interval)
+    vim.validate('fn', fn, 'function')
+    vim.validate('interval', interval, 'number')
+
+    local timer = assert(vim.uv.new_timer())
+    local generation = 0
+    local running = false
+    local closed = false
+
+    local function stop()
+        if closed or not running then
+            return
+        end
+
+        generation = generation + 1
+        running = false
+        timer:stop()
+    end
+
+    local function close()
+        if closed then
+            return
+        end
+
+        stop()
+        closed = true
+        timer:close()
+    end
+
+    local function start()
+        assert(not closed, 'poller is closed')
+
+        if running then
+            return
+        end
+
+        generation = generation + 1
+        local current = generation
+        running = true
+
+        vim.schedule(function()
+            if closed or not running or current ~= generation then
+                return
+            end
+
+            fn()
+        end)
+
+        timer:start(interval, interval, function()
+            vim.schedule(function()
+                if closed or not running or current ~= generation then
+                    return
+                end
+
+                fn()
+            end)
+        end)
+    end
+
+    return {
+        start = start,
+        stop = stop,
+        close = close,
+    }
+end
+
 return M

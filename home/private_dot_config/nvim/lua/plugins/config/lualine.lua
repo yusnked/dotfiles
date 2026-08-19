@@ -19,7 +19,7 @@ function M.setup()
     vim.opt.showcmd = false
 
     local lualine = require('lualine')
-    local selcount_var = 'lualine_selcount'
+    local selection_count_var = 'lualine_selection_count'
     local abbrev_cwd_var = 'lualine_abbrev_cwd'
 
     local left_hard_sep = ''
@@ -84,7 +84,7 @@ function M.setup()
         },
         sections = {
             lualine_a = { leftmost_sep_component, { 'mode' } },
-            lualine_b = { 'w:' .. selcount_var, 'searchcount' },
+            lualine_b = { 'g:' .. selection_count_var, 'searchcount' },
             lualine_c = {},
             lualine_x = {},
             lualine_y = { 'branch' },
@@ -119,11 +119,27 @@ function M.setup()
         project_markers = { '.git' },
     }
 
-    -- Selection count
-    require('self.modules.statusline.selcount').setup {
-        wvar = selcount_var,
-        poll_ms = 200,
-        on_update = function() lualine.refresh { place = { 'statusline' } } end,
+    ---@param count self.modules.selection_count.Count
+    local function format_selection_count(count)
+        if count.chars == nil then
+            return string.format('%dL', count.lines)
+        elseif count.chars == count.bytes then
+            return string.format('%dL %dC', count.lines, count.chars)
+        else
+            return string.format('%dL %dC %dB', count.lines, count.chars, count.bytes)
+        end
+    end
+
+    require('self.modules.selection_count').setup {
+        on_update = function(count)
+            if count then
+                vim.g[selection_count_var] = format_selection_count(count)
+            else
+                vim.g[selection_count_var] = nil
+            end
+
+            lualine.refresh { place = { 'statusline' } }
+        end,
     }
 end
 
