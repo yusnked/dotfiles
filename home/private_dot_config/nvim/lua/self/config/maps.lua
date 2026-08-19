@@ -53,6 +53,15 @@ map('x', '#', function() require('self.actions.visual_set_search')('backward') e
 
 map('n', '<Esc><Esc>', '<Cmd>nohlsearch<CR>', { desc = 'Clear search highlight' })
 
+map('n', '<CR>', function()
+    local reg = vim.fn.reg_recorded()
+    return reg == '' and '' or ('@' .. reg)
+end, { desc = 'Replay last recorded macro', expr = true })
+map('x', '<CR>', function()
+    local reg = vim.fn.reg_recorded()
+    return reg == '' and '' or (':normal! @' .. reg .. '<CR>')
+end, { desc = 'Replay last recorded macro for each selected line', expr = true, silent = true })
+
 -- <C-x><C-f>ファイル補完時に/で更にファイル補完.
 map('i', '/', function()
     local info = vim.fn.complete_info { 'mode', 'selected' }
