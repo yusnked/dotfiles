@@ -17,8 +17,10 @@ autocmd('VimEnter', {
     desc = 'Prevent E173 when starting with multiple files',
 })
 
--- FileType plugin が設定した 'formatoptions' から 'r' と 'o' を除き,
--- Enter や o/O によるコメントの自動継続を無効化する.
+-- ftplugin が設定した formatoptions から r と o を除き,
+-- insert <CR> や normal o によるコメントの自動継続を無効化する.
+-- NOTE: blink.cmp がポップアップを表示する度に formatoptions を変更してる為,
+--       OptionSet ではなく FileType で妥協.
 autocmd('FileType', {
     group = augroup('disable_comment_continuation'),
     callback = function(ctx)
@@ -26,12 +28,13 @@ autocmd('FileType', {
             return
         end
 
-        vim.defer_fn(function()
+        -- メインループに積むことで, FileType で同期的に読み込まれる ftplugin の後に実行.
+        vim.schedule(function()
             if not vim.api.nvim_buf_is_valid(ctx.buf) then
                 return
             end
             vim.bo[ctx.buf].formatoptions = vim.bo[ctx.buf].formatoptions:gsub('[ro]', '')
-        end, 500)
+        end)
     end,
     desc = 'Disable automatic comment continuation',
 })

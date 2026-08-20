@@ -15,6 +15,8 @@ local restore_after_scroll
 
 ---@param value boolean
 local function set_relativenumber(value)
+    -- cmdline で relativenumber = ture にセットされうるが,
+    -- Neovim では cmdline を抜けるまで更新が遅延されるのでガードは不要.
     if not vim_o.number or (value and mode() == 'i') then
         return
     end
