@@ -20,6 +20,7 @@ local color_yellow = '#ffda65'
 
 local padding_none = 0
 local padding_left = { left = 1 }
+local padding_right = { right = 1 }
 
 ---@type string
 local abbrev_cwd_var = 'lualine_abbrev_cwd'
@@ -69,6 +70,7 @@ local comp_diff = {
             removed = gitsigns.removed,
         }
     end,
+    padding = padding_right,
 }
 
 local comp_encoding = {
@@ -87,7 +89,6 @@ local comp_filesize = {
         return { fg = vim_bo.modified and color_yellow or color_white, bg = inactive_bg() }
     end,
     separator = '',
-    padding = padding_left,
 }
 
 local comp_ruler = { '%-5.(%l:%v%) %P' }
@@ -111,7 +112,7 @@ local comps_filename_with_icon = {
 }
 
 local winbar = {
-    lualine_b = { comp_filesize, comp_diff, comp_bufnr },
+    lualine_b = { comp_bufnr, comp_filesize, comp_diff },
     lualine_c = { unpack(comps_filename_with_icon) },
     lualine_x = { comp_encoding, comp_fileformat, comp_ruler },
 }
