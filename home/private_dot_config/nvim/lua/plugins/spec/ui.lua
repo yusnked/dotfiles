@@ -4,12 +4,9 @@ return {
         'nvim-lualine/lualine.nvim',
         dependencies = { 'nvim-mini/mini.icons' },
         event = 'VeryLazy',
-        init = function()
-            vim.opt.laststatus = 0
-        end,
-        config = function()
-            require('plugins.config.lualine').setup()
-        end,
+        -- 起動時 Statusline を消してちらつきを抑える.
+        init = function() vim.o.laststatus = 0 end,
+        config = function() require('plugins.config.lualine').config() end,
     },
     {
         'folke/which-key.nvim',

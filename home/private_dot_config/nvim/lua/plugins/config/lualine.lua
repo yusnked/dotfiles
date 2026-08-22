@@ -1,125 +1,134 @@
 local M = {}
 
-local tabpagenr = vim.fn.tabpagenr
+local lualine = require('lualine')
+local is_focused = require('lualine.utils.utils').is_focused
 
-local function cond_encoding()
-    return not (vim.bo.fileencoding == 'utf-8' and not vim.bo.bomb)
+local vim_o = vim.o
+local vim_bo = vim.bo
+
+local fn_tabpagenr = vim.fn.tabpagenr
+
+local sep_left_hard = ''
+local sep_left_soft = ''
+local sep_right_hard = ''
+local sep_right_soft = ''
+
+local color_black = '#16161e'
+local color_red = '#f7768e'
+local color_white = '#c5d0ff'
+local color_yellow = '#ffda65'
+
+local padding_none = 0
+local padding_left = { left = 1 }
+
+---@type string
+local abbrev_cwd_var = 'lualine_abbrev_cwd'
+---@type string
+local selection_count = ''
+
+local function inactive_bg()
+    if not is_focused() then
+        return color_black
+    end
 end
 
-local function separator_factory(fn)
-    return {
-        fn,
+---@param sep string|fun(): string
+---@return table
+local function sep_component(sep)
+    local fn = (type(sep) == 'string') and function() return sep end or sep
+    return { fn, separator = '', padding = padding_none }
+end
+
+local comp_bufnr = {
+    '%n',
+    color = function()
+        local bufhidden = vim_bo.bufhidden
+
+        if bufhidden == 'delete' or bufhidden == 'wipe' then
+            return { fg = color_red, bg = inactive_bg() }
+        elseif bufhidden == 'hide' or bufhidden == 'unload' or not vim_bo.buflisted then
+            return { fg = color_yellow, bg = inactive_bg() }
+        else
+            return { fg = color_white, bg = inactive_bg() }
+        end
+    end,
+}
+
+local comp_diff = {
+    'diff',
+    -- 既に gitsigns.nvim で計算したデータを再利用する.
+    source = function()
+        local gitsigns = vim.b.gitsigns_status_dict
+        if not gitsigns then
+            return
+        end
+
+        return {
+            added = gitsigns.added,
+            modified = gitsigns.changed,
+            removed = gitsigns.removed,
+        }
+    end,
+}
+
+local comp_encoding = {
+    'encoding',
+    show_bomb = true,
+    cond = function()
+        return not (vim_bo.fileencoding == 'utf-8' and not vim_bo.bomb)
+    end,
+}
+
+local comp_fileformat = { 'fileformat', cond = function() return vim_bo.fileformat ~= 'unix' end }
+
+local comp_filesize = {
+    'filesize',
+    color = function()
+        return { fg = vim_bo.modified and color_yellow or color_white, bg = inactive_bg() }
+    end,
+    separator = '',
+    padding = padding_left,
+}
+
+local comp_ruler = { '%-5.(%l:%v%) %P' }
+
+local comp_tabs = {
+    'tabs',
+    mode = 2,
+    use_mode_colors = true,
+    symbols = { modified = '+' },
+    max_length = function() return vim_o.columns end,
+}
+
+local comps_filename_with_icon = {
+    { 'filetype', icon_only = true, separator = '', padding = padding_left },
+    {
+        function() return vim_bo.filetype ~= '' and '' or ' ' end,
         separator = '',
-        padding = 0,
-    }
-end
+        padding = padding_none,
+    },
+    { 'filename', path = 1, padding = padding_none },
+}
 
-function M.setup()
-    vim.opt.showmode = false
-    vim.opt.showcmd = false
+local winbar = {
+    lualine_b = { comp_filesize, comp_diff, comp_bufnr },
+    lualine_c = { unpack(comps_filename_with_icon) },
+    lualine_x = { comp_encoding, comp_fileformat, comp_ruler },
+}
 
-    local lualine = require('lualine')
-    local selection_count_var = 'lualine_selection_count'
-    local abbrev_cwd_var = 'lualine_abbrev_cwd'
-
-    local left_hard_sep = ''
-    local right_hard_sep = ''
-    local left_soft_sep = ''
-    local right_soft_sep = ''
-
-    local leftmost_sep_component = separator_factory(function()
-        return left_hard_sep
-    end)
-    local rightmost_sep_component = separator_factory(function()
-        return right_hard_sep
-    end)
-    local tab_leftmost_sep_component = separator_factory(function()
-        return tabpagenr() == 1 and left_hard_sep or '█'
-    end)
-
-    local winbar = {
-        lualine_b = {
-            {
-                'diff',
-                source = function()
-                    local gitsigns = vim.b.gitsigns_status_dict
-                    if gitsigns then
-                        return {
-                            added = gitsigns.added,
-                            modified = gitsigns.changed,
-                            removed = gitsigns.removed,
-                        }
-                    end
-                    return nil
-                end,
-            },
-        },
-        lualine_c = {
-            { '%n' },
-            { 'filesize', separator = '', padding = { left = 1 } },
-            { 'filetype', icon_only = true, padding = { left = 1, right = 0 }, separator = '' },
-            {
-                function() return vim.bo.filetype ~= '' and '' or ' ' end,
-                separator = '',
-                padding = 0,
-            },
-            { 'filename', path = 1, padding = { left = 0, right = 1 } },
-        },
-        lualine_x = {
-            { 'encoding', show_bomb = true, cond = cond_encoding },
-            { 'fileformat', cond = function() return vim.bo.fileformat ~= 'unix' end },
-            { '%-5.(%l:%v%) %P' },
-        },
-    }
-
-    lualine.setup {
-        options = {
-            globalstatus = true,
-            disabled_filetypes = {
-                statusline = {},
-                winbar = { 'fyler_finder', 'man', 'qf' },
-            },
-            component_separators = { left = left_soft_sep, right = right_soft_sep },
-            section_separators = { left = left_hard_sep, right = right_hard_sep },
-        },
-        sections = {
-            lualine_a = { leftmost_sep_component, { 'mode' } },
-            lualine_b = { 'g:' .. selection_count_var, 'searchcount' },
-            lualine_c = {},
-            lualine_x = {},
-            lualine_y = { 'branch' },
-            lualine_z = {
-                { 'w:' .. abbrev_cwd_var, separator = '' },
-                rightmost_sep_component,
-            },
-        },
-        winbar = winbar,
-        inactive_winbar = winbar,
-        tabline = {
-            lualine_a = {
-                tab_leftmost_sep_component,
-                {
-                    'tabs',
-                    mode = 2,
-                    use_mode_colors = true,
-                    symbols = { modified = '+' },
-                    max_length = function() return vim.o.columns end,
-                },
-            },
-        },
-        extensions = { 'man', 'quickfix' },
-    }
-
-    -- Abbreviated cwd
+local function setup_abbrev_cwd()
     require('self.modules.statusline.abbrev_cwd').setup {
         wvar = abbrev_cwd_var,
         effort_width_fn = function()
-            return math.max(vim.o.columns * 0.5, 40)
+            return math.max(vim_o.columns * 0.5, 40)
         end,
         project_markers = { '.git' },
     }
+end
 
+local function setup_selection_count()
     ---@param count self.modules.selection_count.Count
+    ---@return string
     local function format_selection_count(count)
         if count.chars == nil then
             return string.format('%dL', count.lines)
@@ -132,15 +141,49 @@ function M.setup()
 
     require('self.modules.selection_count').setup {
         on_update = function(count)
-            if count then
-                vim.g[selection_count_var] = format_selection_count(count)
-            else
-                vim.g[selection_count_var] = nil
-            end
+            selection_count = count and format_selection_count(count) or ''
 
             lualine.refresh { place = { 'statusline' } }
         end,
     }
+end
+
+function M.config()
+    vim_o.showmode = false
+    vim_o.showcmd = false
+
+    lualine.setup {
+        options = {
+            globalstatus = true,
+            disabled_filetypes = {
+                statusline = {},
+                winbar = { 'fyler_finder', 'man', 'qf' },
+            },
+            component_separators = { left = sep_left_soft, right = sep_right_soft },
+            section_separators = { left = sep_left_hard, right = sep_right_hard },
+        },
+        sections = {
+            lualine_a = { sep_component(sep_left_hard), 'mode' },
+            lualine_b = { function() return selection_count end, 'searchcount' },
+            lualine_c = {},
+            lualine_x = { 'lsp_status' },
+            lualine_y = { 'branch' },
+            lualine_z = { { 'w:' .. abbrev_cwd_var, separator = '' }, sep_component(sep_right_hard) },
+        },
+        winbar = winbar,
+        inactive_winbar = winbar,
+        tabline = {
+            lualine_a = {
+                sep_component(function() return fn_tabpagenr() == 1 and sep_left_hard or '█' end),
+                comp_tabs,
+            },
+        },
+        -- lazy, mason, oil は使用しない.
+        extensions = { 'man', 'quickfix' },
+    }
+
+    setup_abbrev_cwd()
+    setup_selection_count()
 end
 
 return M
