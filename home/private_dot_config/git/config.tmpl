@@ -1,10 +1,15 @@
+# ~/.git/config: 環境に依存する設定.
+
 [core]
     pager = $XDG_CONFIG_HOME/git/scripts/pager
+
 [interactive]
     diffFilter = $XDG_CONFIG_HOME/git/scripts/diff-filter
+
 [user]
     name  = {{ .name }}
     email = {{ .email }}
+
 [delta]
     features       = calochortus-lyallii
     navigate       = true
@@ -13,5 +18,6 @@
     relative-paths = true
     true-color     = auto
     paging         = auto
+
 [include]
     path = ../delta/themes.gitconfig

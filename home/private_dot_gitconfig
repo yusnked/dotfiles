@@ -1,41 +1,57 @@
+# ~/.gitconfig: 環境に依存しない共通設定.
+
 [branch]
     sort = -committerdate
+
 [color]
     ui = auto
+
 [column]
     ui = auto
+
 [commit]
     gpgsign = false
     verbose = true
+
 [core]
     autocrlf  = false
     safecrlf  = true
     quotepath = false
+
 [diff]
     algorithm      = histogram
     colorMoved     = zebra
     mnemonicPrefix = true
     renames        = true
+
 [fetch]
     prune = true
+
 [init]
     defaultBranch = main
+
 [log]
     date = iso
+
 [merge]
     ff = only
+
 [pull]
     ff     = only
     rebase = false
+
 [push]
     default         = simple
     autoSetupRemote = true
+
 [rebase]
     missingCommitsCheck = error
     updateRefs          = true
+
 [rerere]
     enabled    = true
     autoUpdate = true
+
 [alias]
     a     = add
     aa    = add --all
@@ -115,9 +131,11 @@
     xrb   = rebase --no-gpg-sign
     xrbu  = rebase --no-gpg-sign @{upstream}
     xrbi  = rebase --no-gpg-sign --interactive
+
 [pretty]
     flow         = format:%C(yellow)%h%Creset%C(red)%d%Creset %C(green)[%ad]%Creset %C(bold blue)<%an>%Creset%n %s%n
     fuller-patch = tformat:%C(bold magenta)═══════════════════════ COMMIT INFO ════════════════════════%Creset%n%C(yellow)commit     %H%Creset%C(red)%d%Creset%n%C(blue)parents    %p%Creset%n%C(blue)tree       %T%Creset%nAuthor:     %an <%ae>%nAuthorDate: %aI%nCommit:     %cn <%ce>%nCommitDate: %cI%n%n%C(bold)%s%Creset%+b%n%C(bold magenta)════════════════════════════════════════════════════════════%Creset%n
+
 [alias]
     help-alias = "!git config --get-regexp '^alias\\.' | awk '{ \
         if (index($0, \"__HELP_ALIAS_IGNORE_7z1d__\")) next; \
