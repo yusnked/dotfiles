@@ -14,7 +14,7 @@ return {
                 callback = function(ctx)
                     if package.loaded[plugin.main] then return true end
                     if vim.bo[ctx.buf].buftype ~= '' then return end
-                    if not require('self.lib.path.util').is_absolute_path(ctx.match) then return end
+                    if not require('self.lib.path').is_absolute_path(ctx.match) then return end
 
                     local stat = vim.uv.fs_stat(ctx.match)
                     if stat and stat.type == 'directory' then

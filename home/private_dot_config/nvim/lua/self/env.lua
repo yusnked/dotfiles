@@ -1,6 +1,9 @@
 local M = {}
 
 ---@type boolean
-M.is_root = not vim.uv.os_uname().sysname:match('Windows') and vim.uv.getuid() == 0
+M.is_windows = vim.fn.has('win32') == 1
+
+---@type boolean
+M.is_root = not M.is_windows and vim.uv.getuid() == 0
 
 return M

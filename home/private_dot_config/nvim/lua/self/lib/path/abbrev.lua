@@ -1,100 +1,117 @@
-local strwidth = vim.fn.strwidth
-
-local is_absolute_path = require('self.lib.path.util').is_absolute_path
-
 local M = {}
 
+local fn_strcharpart = vim.fn.strcharpart
+local fn_strwidth = vim.fn.strwidth
+
+local is_windows = require('self.env').is_windows
+
+local is_absolute_path = require('self.lib.path').is_absolute_path
+
+---@param path string
+---@return string
 local function abbrev_home(path)
-    if is_absolute_path(path) then
-        path = vim.fn.fnamemodify(path, ':~')
-    end
-    return path
+    return is_absolute_path(path) and vim.fn.fnamemodify(path, ':~') or path
 end
 
-function M.abbrev(path, effort_width)
-    if type(path) ~= 'string' then
-        return ''
-    end
-    effort_width = type(effort_width) == 'number' and effort_width or 0
+---@param str string
+---@return string
+local function first_char(str)
+    return fn_strcharpart(str, 0, 1)
+end
 
-    path = abbrev_home(path)
-    if path == '~' or path == '/' then
+---@param component string
+---@return string
+local function abbrev_component(component)
+    if component:sub(1, 1) == '.' then
+        return '.' .. first_char(component:sub(2))
+    end
+    return first_char(component)
+end
+
+---@alias self.lib.path.Abbrev fun(path: string, effort_width: integer): string
+
+---@type self.lib.path.Abbrev
+function M.abbrev(path, effort_width)
+    if is_windows then
         return path
     end
 
-    local width = strwidth(path)
-    local prev_path = path
-    while width > effort_width do
-        -- /dir/ -> /d/ に変換
-        path = vim.fn.substitute(path, [[\v/([^.]|\..)[^/]+/]], '/\\1/', '')
-        if path == prev_path then
-            break
-        end
-        width = strwidth(path)
-        prev_path = path
+    path = abbrev_home(path)
+    if path == '~' or path == '/' or path:find('/', 1, true) == nil then
+        return path
     end
-    return path
+
+    local width = fn_strwidth(path)
+    if width <= effort_width then
+        return path
+    end
+
+    local parts = vim.split(path, '/', { plain = true })
+
+    for i = 1, #parts - 1 do
+        local part = parts[i]
+
+        if part ~= '' and part ~= '~' then
+            local abbreviated = abbrev_component(part)
+
+            width = width - fn_strwidth(part) + fn_strwidth(abbreviated)
+            parts[i] = abbreviated
+
+            if width <= effort_width then
+                break
+            end
+        end
+    end
+
+    return table.concat(parts, '/')
 end
 
-local function escape_lua_pattern(s)
-    s = tostring(s)
-    -- Luaパターンの特殊文字: ( ) . % + - * ? [ ] ^ $
-    return (s:gsub('([%(%)%.%%%+%-%*%?%[%]%^%$])', '%%%1'))
+---@param abs_path string
+---@param markers string[]
+---@return string? project_name
+---@return string? relpath
+local function get_project_path(abs_path, markers)
+    local root = vim.fs.root(abs_path, markers)
+    if not root then
+        return
+    end
+
+    return vim.fs.basename(root), abs_path:sub(#root + 1)
 end
 
-local function first_char(s)
-    return vim.fn.strcharpart(s, 0, 1)
-end
-
+--- '_', '-', 数字で区切られた文字を先頭の 1 文字だけ残して省略する.
+---@param name string
+---@return string
 local function abbrev_project_name(name)
-    -- 先頭文字は必ず残す.
-    local abbr = first_char(name)
-
-    -- '_' or '-' 区切りごとにトークンを見る.
-    for sep, token in name:gmatch('([_-])([^_-]+)') do
-        -- token が数字で始まるなら、区別のため “全部” 残す (例: -2, -12)
-        if token:match('^%d') then
-            abbr = abbr .. sep .. token
-        else
-            -- それ以外は頭文字だけ (例: _root -> _r, -feature -> -f)
-            abbr = abbr .. sep .. first_char(token)
-        end
-    end
-
-    return abbr
+    return (name:gsub('[^_%d-]+', first_char))
 end
 
--- opts: { markers = {'.git', ...} }
-function M.abbrev_with_projects(abs_path, effort_width, opts)
-    opts = opts or {}
+---@class self.lib.path.AbbrevWithProject.Opts
+---@field markers string[]
 
-    if not is_absolute_path(abs_path) then
-        return ''
+---@alias self.lib.path.AbbrevWithProject fun(abs_path: string, effort_width: integer, opts: self.lib.path.AbbrevWithProject.Opts): string
+
+---@type self.lib.path.AbbrevWithProject
+function M.abbrev_with_project(abs_path, effort_width, opts)
+    if is_windows or not is_absolute_path(abs_path) then
+        return abs_path
     end
 
-    -- markers のどれかがあればOK (同優先度) にしたいのでネストする.
-    local project_root_dir = vim.fs.root(abs_path, { opts.markers })
-    if project_root_dir then
-        -- project_name/relative/path
-        local project_name = project_root_dir:gsub('^.*/([^/]+)$', '%1')
-
-        local project_root_pattern = '^' .. escape_lua_pattern(project_root_dir)
-        local project_relative_path = abs_path:gsub(project_root_pattern, '')
-
-        -- まずは /relative/path 部分を省略. width の-1は先頭の ~ の分.
-        local abbrev_relative_path = M.abbrev(project_relative_path, effort_width - strwidth(project_name) - 1)
-
-        local path = '~' .. project_name .. abbrev_relative_path
-        if strwidth(path) <= effort_width then
-            return path
-        end
-
-        -- まだ長ければ ~project_name/ 部分も省略.
-        local abbrev_project_name_str = abbrev_project_name(project_name)
-        return '~' .. abbrev_project_name_str .. abbrev_relative_path
-    else
+    local project_name, relpath = get_project_path(abs_path, opts.markers)
+    if not project_name or not relpath then
         return M.abbrev(abs_path, effort_width)
     end
+
+    local relpath_width = effort_width - fn_strwidth(project_name) - 1
+    -- project からの相対パス (ただし / から始まる) を絶対パスに見立てて M.abbrev に渡す.
+    local abbreviated_relpath = M.abbrev(relpath, relpath_width)
+
+    local path = '~' .. project_name .. abbreviated_relpath
+    if fn_strwidth(path) <= effort_width then
+        return path
+    end
+
+    return '~' .. abbrev_project_name(project_name) .. abbreviated_relpath
 end
 
 return M
