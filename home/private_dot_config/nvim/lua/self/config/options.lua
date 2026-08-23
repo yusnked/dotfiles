@@ -8,6 +8,9 @@ opt.confirm = true
 opt.mouse = 'a'
 opt.shortmess:append('aI')
 
+opt.title = true
+opt.titlestring = '%t%( %M%)'
+
 opt.number = true
 opt.relativenumber = true
 opt.cursorline = true
@@ -38,6 +41,16 @@ opt.softtabstop = -1 -- 負の数指定でshiftwidthの値を使用.
 
 opt.splitbelow = true
 opt.splitright = true
+
+opt.diffopt = {
+    'internal',
+    'filler',
+    'closeoff',
+    'indent-heuristic',
+    'algorithm:histogram',
+    'inline:word',
+    'linematch:60',
+}
 
 opt.ignorecase = true
 opt.smartcase = true

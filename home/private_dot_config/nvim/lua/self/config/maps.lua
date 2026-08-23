@@ -7,6 +7,9 @@ map('n', ' ', '<Nop>')
 map({ 'n', 'x' }, 'gf', 'gF', { desc = 'Go to file and line' })
 map({ 'n', 'x' }, 'gF', 'gf', { desc = 'Go to file' })
 
+map('x', 'p', 'P', { desc = 'Put' })
+map('x', 'P', 'p', { desc = 'Put and replace register' })
+
 map('c', '<C-a>', '<Home>', { desc = 'Move cursor to start' })
 map('c', '<C-b>', '<Left>', { desc = 'Move cursor left' })
 map('c', '<C-f>', '<Right>', { desc = 'Move cursor right' })
@@ -68,3 +71,7 @@ map('n', '[T', function() require('self.actions.tab_jump')('first', vim.v.count)
     { desc = 'First tab' })
 map('n', ']T', function() require('self.actions.tab_jump')('last', vim.v.count) end,
     { desc = 'Last tab' })
+
+map('n', '<leader>td', function()
+    vim.diagnostic.enable(not vim.diagnostic.is_enabled { bufnr = 0 }, { bufnr = 0 })
+end, { desc = 'Toggle buffer diagnostics' })
