@@ -36,6 +36,9 @@
 [merge]
     ff = only
 
+[mergetool]
+    keepBackup = false
+
 [pull]
     ff     = only
     rebase = false
@@ -68,6 +71,7 @@
     dh    = diff HEAD
     ds    = diff --staged
     dm    = diff main...HEAD
+    dt    = difftool --dir-diff
     du    = diff @{upstream}...HEAD
     f     = fetch
     ha    = help-alias
@@ -83,6 +87,7 @@
     mn    = merge --no-ff
     mnu   = merge --no-ff @{upstream}
     ms    = merge --squash
+    mt    = mergetool
     mu    = merge @{upstream}
     pl    = pull --ff-only --no-rebase
     ps    = push
