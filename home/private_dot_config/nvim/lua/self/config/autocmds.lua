@@ -39,6 +39,26 @@ autocmd('FileType', {
     desc = 'Disable automatic comment continuation',
 })
 
+-- Git の一時編集ファイルを開いて起動した場合は jumplist を ShaDa に保存しない.
+-- そのセッションで生成された全ての jumplist も ShaDa に保存されないことに注意.
+-- Related: https://github.com/neovim/neovim/issues/12298
+autocmd('VimEnter', {
+    group = augroup('disable_git_jumplist_persistence'),
+    pattern = {
+        '*/.git/COMMIT_EDITMSG',
+        '*/.git/MERGE_MSG',
+        '*/.git/SQUASH_MSG',
+        '*/.git/TAG_EDITMSG',
+        '*/.git/rebase-merge/git-rebase-todo',
+    },
+    callback = function()
+        -- jumplist は window 毎に最大 100 件で, 'N の値が非 0 の場合のみ ShaDa に保存される.
+        -- '0 を指定しても既に ShaDa に保存されている履歴は削除されない.
+        vim.o.shada = vim.o.shada:gsub("'%d+", "'0", 1)
+    end,
+    desc = 'Disable jumplist persistence for Git editor buffers',
+})
+
 autocmd('FocusLost', {
     group = augroup('clipboard_to_unnamed.setup'),
     once = true,
