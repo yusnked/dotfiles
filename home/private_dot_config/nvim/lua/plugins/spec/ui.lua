@@ -22,14 +22,4 @@ return {
             end,
         },
     },
-    {
-        'sphamba/smear-cursor.nvim',
-        event = 'VeryLazy',
-        main = 'smear_cursor',
-        opts = {
-            smear_insert_mode = false,
-            min_vertical_distance_smear = 2,
-            min_horizontal_distance_smear = 6,
-        },
-    },
 }
