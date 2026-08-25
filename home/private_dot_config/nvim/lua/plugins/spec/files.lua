@@ -5,29 +5,32 @@ return {
     {
         'stevearc/oil.nvim',
         dependencies = { 'nvim-mini/mini.icons' },
-        keys = { { '-', function() require('oil').open() end, desc = 'Open parent dir' } },
+        keys = { { '-', function() require('oil').open() end, desc = 'Open parent dir (oil)' } },
         cmd = 'Oil',
+        main = 'oil',
         opts = { win_options = { signcolumn = 'yes:2' } },
         init = function(plugin)
             vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-                group = vim.api.nvim_create_augroup('plugins_oil_lazyload_bufenter_dir', {}),
+                group = vim.api.nvim_create_augroup('plugins.oil.lazy_load', {}),
+                pattern = '/*',
                 callback = function(ctx)
                     if package.loaded[plugin.main] then return true end
                     if vim.bo[ctx.buf].buftype ~= '' then return end
-                    if not require('self.lib.path').is_absolute_path(ctx.match) then return end
 
-                    local stat = vim.uv.fs_stat(ctx.match)
-                    if stat and stat.type == 'directory' then
-                        local load = require('plugins.util.autocmd_capture').load_and_capture_events
-                        load { plugins = { plugin.name } }:fire { 'BufReadCmd', 'BufEnter' }
+                    local path = ctx.match
+
+                    -- PERF: vim.uv.fs_stat(path).type == 'directory' より 約 2.5 倍速い. (v0.12.5)
+                    if vim.fn.isdirectory(path) == 1 then
+                        vim.schedule(function()
+                            require('oil').open(path)
+                            -- oil.nvim がロードされた後にロードする必要がある.
+                            require('lazy').load { plugins = { 'oil-git-status.nvim' } }
+                        end)
                         return true
                     end
                 end,
+                desc = 'Lazy-load Oil when opening a directory',
             })
-        end,
-        config = function(_, opts)
-            require('oil').setup(opts)
-            require('lazy').load { plugins = { 'oil-git-status.nvim' } }
         end,
     },
     {
