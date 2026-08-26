@@ -43,6 +43,19 @@ function M.abbrev_with_project(...)
     return require('self.lib.path.abbrev').abbrev_with_project(...)
 end
 
+---@alias self.lib.path.CwdScope 'global'|'tab'|'win'
+
+-- TODO: bcd (v0.13)
+---@return self.lib.path.CwdScope cwd_scope
+function M.get_cwd_scope()
+    if vim.fn.haslocaldir() ~= 0 then
+        return 'win'
+    elseif vim.fn.haslocaldir(-1, 0) ~= 0 then
+        return 'tab'
+    end
+    return 'global'
+end
+
 ---@param path string
 ---@return boolean
 function M.is_absolute_path(path)

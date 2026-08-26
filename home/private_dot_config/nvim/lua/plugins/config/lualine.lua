@@ -23,7 +23,7 @@ local padding_left = { left = 1 }
 local padding_right = { right = 1 }
 
 ---@type string
-local abbrev_cwd_var = 'lualine_abbrev_cwd'
+local statusline_abbrev_cwd = ''
 ---@type string
 local selection_count = ''
 
@@ -117,10 +117,14 @@ local winbar = {
     lualine_x = { comp_encoding, comp_fileformat, comp_ruler },
 }
 
-local function setup_abbrev_cwd()
-    require('self.modules.statusline.abbrev_cwd').setup {
-        wvar = abbrev_cwd_var,
-        effort_width_fn = function()
+local function setup_statusline_abbrev_cwd()
+    require('self.modules.statusline_abbrev_cwd').setup {
+        on_update = function(content)
+            statusline_abbrev_cwd = content
+
+            lualine.refresh { place = { 'statusline' } }
+        end,
+        effort_width = function()
             return math.max(vim_o.columns * 0.5, 40)
         end,
         project_markers = { '.git' },
@@ -169,7 +173,10 @@ function M.config()
             lualine_c = {},
             lualine_x = { 'lsp_status' },
             lualine_y = { 'branch' },
-            lualine_z = { { 'w:' .. abbrev_cwd_var, separator = '' }, sep_component(sep_right_hard) },
+            lualine_z = {
+                { function() return statusline_abbrev_cwd end, separator = '' },
+                sep_component(sep_right_hard),
+            },
         },
         winbar = winbar,
         inactive_winbar = winbar,
@@ -183,7 +190,7 @@ function M.config()
         extensions = { 'man', 'quickfix' },
     }
 
-    setup_abbrev_cwd()
+    setup_statusline_abbrev_cwd()
     setup_selection_count()
 end
 
