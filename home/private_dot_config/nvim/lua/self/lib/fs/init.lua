@@ -13,9 +13,9 @@ local env = require('self.env')
 --- 例) 最大限省略された場合:
 --- /home/user/path/to/dir -> ~/p/t/dir
 --- /etc/.hidden/file.conf -> /e/.h/file.conf
----@type self.lib.path.Abbrev
+---@type self.lib.fs.Abbrev
 function M.abbrev(...)
-    return require('self.lib.path.abbrev').abbrev(...)
+    return require('self.lib.fs.abbrev').abbrev(...)
 end
 
 --- project root を考慮して abs_path を effort_width 以下になるよう可能な範囲で省略する.
@@ -38,15 +38,15 @@ end
 --- /home/user/project_hoge-fuga/src/init.lua
 ---   -> ~project_hoge-fuga/s/init.lua
 ---   -> ~p_h-f/s/init.lua     (さらに省略が必要な場合)
----@type self.lib.path.AbbrevWithProject
+---@type self.lib.fs.AbbrevWithProject
 function M.abbrev_with_project(...)
-    return require('self.lib.path.abbrev').abbrev_with_project(...)
+    return require('self.lib.fs.abbrev').abbrev_with_project(...)
 end
 
----@alias self.lib.path.CwdScope 'global'|'tab'|'win'
+---@alias self.lib.fs.CwdScope 'global'|'tab'|'win'
 
 -- TODO: bcd (v0.13)
----@return self.lib.path.CwdScope cwd_scope
+---@return self.lib.fs.CwdScope cwd_scope
 function M.get_cwd_scope()
     if vim.fn.haslocaldir() ~= 0 then
         return 'win'

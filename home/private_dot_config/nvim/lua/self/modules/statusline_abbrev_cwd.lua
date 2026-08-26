@@ -4,8 +4,8 @@ local M = {}
 
 local augroup_name = 'self.modules.statusline_abbrev_cwd'
 
-local abbrev_with_project = require('self.lib.path').abbrev_with_project
-local get_cwd_scope = require('self.lib.path').get_cwd_scope
+local abbrev_with_project = require('self.lib.fs').abbrev_with_project
+local get_cwd_scope = require('self.lib.fs').get_cwd_scope
 
 ---@class self.modules.statusline_abbrev_cwd.Opts
 ---@field on_update fun(content: string)
@@ -17,7 +17,7 @@ local current_opts
 
 ---@type string?
 local last_path
----@type self.lib.path.CwdScope?
+---@type self.lib.fs.CwdScope?
 local last_cwd_scope
 ---@type number?
 local last_effort_width
@@ -27,7 +27,7 @@ local last_content
 local in_on_update = false
 
 -- TODO: bcd (v0.13)
----@param cwd_scope self.lib.path.CwdScope
+---@param cwd_scope self.lib.fs.CwdScope
 ---@return string scope_label
 local function get_scope_label(cwd_scope)
     if cwd_scope == 'win' then

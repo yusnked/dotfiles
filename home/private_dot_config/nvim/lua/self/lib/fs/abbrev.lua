@@ -5,7 +5,7 @@ local fn_strwidth = vim.fn.strwidth
 
 local is_windows = require('self.env').is_windows
 
-local is_absolute_path = require('self.lib.path').is_absolute_path
+local is_absolute_path = require('self.lib.fs').is_absolute_path
 
 ---@param path string
 ---@return string
@@ -28,9 +28,9 @@ local function abbrev_component(component)
     return first_char(component)
 end
 
----@alias self.lib.path.Abbrev fun(path: string, effort_width: integer): string
+---@alias self.lib.fs.Abbrev fun(path: string, effort_width: integer): string
 
----@type self.lib.path.Abbrev
+---@type self.lib.fs.Abbrev
 function M.abbrev(path, effort_width)
     if is_windows then
         return path
@@ -86,12 +86,12 @@ local function abbrev_project_name(name)
     return (name:gsub('[^_%d-]+', first_char))
 end
 
----@class self.lib.path.AbbrevWithProject.Opts
+---@class self.lib.fs.AbbrevWithProject.Opts
 ---@field markers string[]
 
----@alias self.lib.path.AbbrevWithProject fun(abs_path: string, effort_width: integer, opts: self.lib.path.AbbrevWithProject.Opts): string
+---@alias self.lib.fs.AbbrevWithProject fun(abs_path: string, effort_width: integer, opts: self.lib.fs.AbbrevWithProject.Opts): string
 
----@type self.lib.path.AbbrevWithProject
+---@type self.lib.fs.AbbrevWithProject
 function M.abbrev_with_project(abs_path, effort_width, opts)
     if is_windows or not is_absolute_path(abs_path) then
         return abs_path
