@@ -3,6 +3,9 @@ local M = {}
 
 local augroup_name = 'self.modules.selection_count'
 
+--- getregion() による巨大選択の走査を避けるため, この行数を超えた場合は lines のみ計算する.
+local max_detailed_lines = 10000
+
 ---@class self.modules.selection_count.Opts
 --- Selection count が変化したときに呼ばれる関数.
 ---
@@ -32,6 +35,8 @@ local poller
 ---@type string?
 local last_key
 
+local in_on_update = false
+
 ---@class self.modules.selection_count.Count
 ---@field lines integer
 ---@field chars integer?
@@ -46,8 +51,8 @@ local last_key
 local function calc_selection_count(mode, selection, pos1, pos2)
     local lines = math.abs(pos2[2] - pos1[2]) + 1
 
-    -- Visual-block では文字数の意味が曖昧になるため lines のみ返す.
-    if mode == '\22' then
+    -- Visual-block または巨大な選択範囲では, chars / bytes の計算を省略する.
+    if mode == '\22' or lines > max_detailed_lines then
         return { lines = lines }
     end
 
@@ -110,7 +115,19 @@ local function get_region_positions()
 end
 
 ---@param opts self.modules.selection_count.Opts
-local function update(opts)
+---@param count self.modules.selection_count.Count?
+local function call_on_update(opts, count)
+    in_on_update = true
+    local ok, err = pcall(opts.on_update, count)
+    in_on_update = false
+
+    if not ok then
+        error(err, 0)
+    end
+end
+
+---@param opts self.modules.selection_count.Opts
+local function update_count(opts)
     local mode = fn_mode()
     local selection = vim.o.selection
     local bufnr = nvim_get_current_buf()
@@ -122,29 +139,25 @@ local function update(opts)
     end
 
     local count = calc_selection_count(mode, selection, pos1, pos2)
+
+    call_on_update(opts, count)
+
     last_key = key
-
-    opts.on_update(count)
-end
-
----@param opts self.modules.selection_count.Opts
-local function clear(opts)
-    if poller then
-        poller.stop()
-    end
-    last_key = nil
-    opts.on_update(nil)
 end
 
 ---@param opts self.modules.selection_count.Opts
 function M.setup(opts)
+    if in_on_update then
+        return
+    end
+
     vim.validate('opts', opts, 'table')
     vim.validate('opts.on_update', opts.on_update, 'function')
 
     M.cleanup()
     current_opts = opts
 
-    poller = poll(function() update(opts) end, 200)
+    poller = poll(function() update_count(opts) end, 200)
 
     local group = vim.api.nvim_create_augroup(augroup_name, {})
 
@@ -153,17 +166,21 @@ function M.setup(opts)
         pattern = '*:[vV\22]*', -- VisualEnter (Visual 内のモードチェンジでも発火)
         callback = function()
             -- Visual の種別変更は次の poll を待たず即時反映する.
-            update(opts)
+            update_count(opts)
             poller.start()
         end,
+        desc = 'Start selection count updates in Visual mode',
     })
 
     vim.api.nvim_create_autocmd('ModeChanged', {
         group = group,
         pattern = '[vV\22]*:[^vV\22]*', -- VisualLeave
         callback = function()
-            clear(opts)
+            poller.stop()
+            last_key = nil
+            call_on_update(opts, nil)
         end,
+        desc = 'Clear selection count outside Visual mode',
     })
 
     -- フォーカスを失ったらポーリングを止め, 再びフォーカスされたら再開する.
@@ -175,6 +192,7 @@ function M.setup(opts)
         callback = function()
             poller.stop()
         end,
+        desc = 'Pause selection count polling when focus is lost',
     })
 
     vim.api.nvim_create_autocmd('FocusGained', {
@@ -184,10 +202,15 @@ function M.setup(opts)
                 poller.start()
             end
         end,
+        desc = 'Resume selection count polling in Visual mode',
     })
 end
 
 function M.cleanup()
+    if in_on_update then
+        return
+    end
+
     pcall(vim.api.nvim_del_augroup_by_name, augroup_name)
 
     if poller then
@@ -197,12 +220,9 @@ function M.cleanup()
 
     last_key = nil
 
-    -- 先に current_opts を nil にしておき on_update で cleanup が呼ばれて再帰するのを防ぐ.
-    local opts = current_opts
-    current_opts = nil
-
-    if opts then
-        opts.on_update(nil)
+    if current_opts then
+        call_on_update(current_opts, nil)
+        current_opts = nil
     end
 end
 
