@@ -1,0 +1,19 @@
+local dir
+
+if [[ $DOTS_OS == Darwin ]]; then
+    dir="$(
+        osascript -e '
+            tell application "Finder"
+                if (count of Finder windows) = 0 then
+                    return ""
+                end if
+                return POSIX path of (target of front Finder window as alias)
+            end tell
+        '
+    )" || return
+fi
+
+[[ -n $dir ]] || return 1
+builtin cd -- "$dir"
+
+# vi: set ft=zsh:

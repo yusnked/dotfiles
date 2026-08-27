@@ -26,6 +26,9 @@
     export LANG=en_US.UTF-8
     export LC_TIME=C
 
+    # zsh のビルド対象で良ければ OSTYPE シェル変数も使える. (例 darwin25.0)
+    export DOTS_OS="${DOTS_OS:-$(uname -s)}"
+
     export DOTS_ZPROFILE_LOADED=1
 }
 

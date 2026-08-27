@@ -2,6 +2,7 @@ alias \
     alz='autoload -Uz'
 
 autoload -Uz \
+    cdf \
     cdr \
     mkcd
 
