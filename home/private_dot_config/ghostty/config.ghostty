@@ -1,0 +1,57 @@
+font-family = HackGen Console NF
+font-size = 16
+theme = tokyonight
+minimum-contrast = 1.1
+
+window-padding-x = 6
+window-padding-y = 6
+window-padding-balance = true
+unfocused-split-opacity = 0.8
+
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+undo-timeout = 10s
+
+notify-on-command-finish = unfocused
+notify-on-command-finish-after = 30s
+notify-on-command-finish-action = no-bell,notify
+
+quick-terminal-size = 40%
+quick-terminal-screen = mouse
+quick-terminal-animation-duration = 0.1
+
+macos-titlebar-style = native
+macos-option-as-alt = true
+
+keybind = global:ctrl+shift+space=toggle_quick_terminal
+
+keybind = window/
+
+keybind = window/h=goto_split:left
+keybind = window/j=goto_split:down
+keybind = window/k=goto_split:up
+keybind = window/l=goto_split:right
+keybind = window/alt+h=goto_split:left
+keybind = window/alt+j=goto_split:down
+keybind = window/alt+k=goto_split:up
+keybind = window/alt+l=goto_split:right
+
+keybind = window/w=goto_split:next
+keybind = window/alt+w=goto_split:next
+
+keybind = window/s=new_split:down
+keybind = window/v=new_split:right
+keybind = window/alt+s=new_split:down
+keybind = window/alt+v=new_split:right
+
+keybind = window/c=close_surface
+keybind = window/z=toggle_split_zoom
+keybind = window/equal=equalize_splits
+keybind = window/alt+c=close_surface
+keybind = window/alt+z=toggle_split_zoom
+keybind = window/alt+equal=equalize_splits
+
+keybind = window/escape=deactivate_key_table
+keybind = window/catch_all=deactivate_key_table
+
+keybind = alt+w=activate_key_table_once:window
