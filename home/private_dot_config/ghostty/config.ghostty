@@ -55,3 +55,5 @@ keybind = window/escape=deactivate_key_table
 keybind = window/catch_all=deactivate_key_table
 
 keybind = alt+w=activate_key_table_once:window
+
+custom-shader = shaders/cursor_neovide.glsl
