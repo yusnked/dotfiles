@@ -26,4 +26,7 @@ require('self.lsp')
 
 local lazy = require('plugins.lazy')
 lazy.add_specs { { import = 'plugins.spec' } }
+
+require('profiles')
+
 lazy.setup()
