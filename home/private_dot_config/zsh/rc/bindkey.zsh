@@ -20,6 +20,14 @@ __bindkey_setup() {
             '^Q^Q' push-line \
             '^X*'  expand-word
 
+        if [[ $TERM_PROGRAM == ghostty ]]; then
+            autoload -Uz ghostty-screen-edit
+            zle -N ghostty-screen-edit
+            bindkey -M $keymap \
+                '^Qe' ghostty-screen-edit \
+                '^Q^E' ghostty-screen-edit
+        fi
+
         zsh-defer -a __bindkey_copy_emacs_esc_bindings_to_viins_ctrl_q
     elif [[ "$keymap" == emacs ]]; then
         bindkey -e

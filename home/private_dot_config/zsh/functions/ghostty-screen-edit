@@ -1,0 +1,18 @@
+emulate -L zsh
+
+if [[ $DOTS_OS != Darwin ]]; then
+    return
+fi
+
+# EDITOR が nvim で始まる場合のみ normal! G で末尾へ移動する.
+osascript >/dev/null <<'EOF'
+tell application "Ghostty"
+    set term to focused terminal of selected tab of front window
+
+    input text "$EDITOR ${${EDITOR#nvim*}++'normal! G'} " to term
+    perform action "write_screen_file:paste" on term
+    send key "enter" to term
+end tell
+EOF
+
+# vi: set ft=zsh:
