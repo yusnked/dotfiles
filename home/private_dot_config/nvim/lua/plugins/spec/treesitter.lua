@@ -1,5 +1,4 @@
 local keydesc = require('plugins.util.keydesc')
-local treesitter = require('plugins.config.treesitter')
 
 ---@type LazySpec
 return {
@@ -7,8 +6,24 @@ return {
         'nvim-treesitter/nvim-treesitter',
         cmd = { 'TSUpdate' },
         build = ':TSUpdate',
-        init = treesitter.init,
-        config = treesitter.config,
+        init = function()
+            vim.api.nvim_create_autocmd('User', {
+                group = vim.api.nvim_create_augroup('plugins.nvim-treesitter.enable_indent', {}),
+                pattern = 'TreesitterAttach',
+                callback = function(ctx)
+                    ---@type self.treesitter.TreesitterAttachData
+                    local data = ctx.data
+                    if data.spec.indent then
+                        vim.bo[data.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                    end
+                end,
+                desc = 'Enable Tree-sitter indentation',
+            })
+        end,
+        config = function()
+            -- setup 呼び出し不要. install_dir のデフォルトは stdpath('data') .. '/site'.
+            require('nvim-treesitter').install(vim.tbl_keys(require('self.treesitter.languages')))
+        end,
     },
     {
         'nvim-treesitter/nvim-treesitter-textobjects',

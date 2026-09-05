@@ -22,6 +22,8 @@ if is_neovide or is_vscode then
     return
 end
 
+require('self.treesitter')
+
 require('self.lsp')
 
 local lazy = require('plugins.lazy')
