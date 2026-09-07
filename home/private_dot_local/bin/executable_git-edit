@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: git edit [--staged | --unstaged]
+
+Open changed files in the editor specified by $VISUAL or $EDITOR.
+Falls back to vi if neither is set.
+
+Options:
+  --staged     Open only staged files.
+  --unstaged   Open unstaged and untracked files.
+  -h, --help   Show this help.
+
+With no option, staged, unstaged, and untracked files are opened.
+Ignored and deleted files are excluded.
+EOF
+}
+
+mode=all
+
+while (($# > 0)); do
+    case "$1" in
+        --staged)
+            if [[ $mode != all ]]; then
+                printf 'git edit: --staged and --unstaged are mutually exclusive\n' >&2
+                exit 2
+            fi
+            mode=staged
+            ;;
+        --unstaged)
+            if [[ $mode != all ]]; then
+                printf 'git edit: --staged and --unstaged are mutually exclusive\n' >&2
+                exit 2
+            fi
+            mode=unstaged
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            printf 'git edit: unknown option: %s\n' "$1" >&2
+            printf 'Try "git edit --help" for more information.\n' >&2
+            exit 2
+            ;;
+        *)
+            printf 'git edit: unexpected argument: %s\n' "$1" >&2
+            printf 'Try "git edit --help" for more information.\n' >&2
+            exit 2
+            ;;
+    esac
+
+    shift
+done
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+    printf 'git edit: not inside a Git work tree\n' >&2
+    exit 1
+}
+
+files=()
+
+add_files() {
+    while IFS= read -r -d '' file; do
+        local path="$root/$file"
+        local duplicate=false
+        local existing
+
+        # Multiple Git queries can report the same file, especially before
+        # the repository has its first commit.
+        for existing in "${files[@]}"; do
+            if [[ $existing == "$path" ]]; then
+                duplicate=true
+                break
+            fi
+        done
+
+        if [[ $duplicate == false ]]; then
+            files+=("$path")
+        fi
+    done
+}
+
+case "$mode" in
+    all)
+        if git -C "$root" rev-parse --verify HEAD >/dev/null 2>&1; then
+            # Changes to tracked files relative to HEAD.
+            # This includes both staged and unstaged changes.
+            add_files < <(
+                git -C "$root" diff \
+                    --name-only \
+                    --diff-filter=ACMRTUXB \
+                    -z \
+                    HEAD
+            )
+        else
+            # There is no HEAD before the first commit, so staged and
+            # unstaged changes need to be collected separately.
+            add_files < <(
+                git -C "$root" diff \
+                    --cached \
+                    --name-only \
+                    --diff-filter=ACMRTUXB \
+                    -z
+            )
+
+            add_files < <(
+                git -C "$root" diff \
+                    --name-only \
+                    --diff-filter=ACMRTUXB \
+                    -z
+            )
+        fi
+
+        # Untracked files, excluding ignored files.
+        add_files < <(
+            git -C "$root" ls-files \
+                --others \
+                --exclude-standard \
+                -z
+        )
+        ;;
+
+    unstaged)
+        # Changes between the index and working tree.
+        add_files < <(
+            git -C "$root" diff \
+                --name-only \
+                --diff-filter=ACMRTUXB \
+                -z
+        )
+
+        # Untracked files are also unstaged in the practical sense.
+        add_files < <(
+            git -C "$root" ls-files \
+                --others \
+                --exclude-standard \
+                -z
+        )
+        ;;
+
+    staged)
+        # Changes between HEAD and the index.
+        add_files < <(
+            git -C "$root" diff \
+                --cached \
+                --name-only \
+                --diff-filter=ACMRTUXB \
+                -z
+        )
+        ;;
+esac
+
+((${#files[@]} > 0)) || exit 0
+
+${VISUAL:-${EDITOR:-vi}} -- "${files[@]}"

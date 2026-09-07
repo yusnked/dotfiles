@@ -114,10 +114,13 @@
     st    = stash
     sta   = stash apply
     stl   = stash list
+    stp   = stash push
+    stps  = stash push --staged
+    stpu  = stash push --include-untracked
     stpo  = stash pop
+    str   = stash store
     sts   = stash show --include-untracked
     stsp  = stash show --include-untracked --patch
-    stu   = stash push --include-untracked
     sw    = switch
     swc   = switch --create
     swd   = switch --detach
