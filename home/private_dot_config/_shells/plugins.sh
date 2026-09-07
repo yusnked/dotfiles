@@ -9,6 +9,6 @@ export FZF_DEFAULT_OPTS="--ansi --cycle --exact --multi
     --bind='ctrl-o:transform([[ -e {} ]] && echo \"execute-silent(xdg-open {} 2>/dev/null)\")'
     --bind='ctrl-t:toggle-preview'
     --bind='ctrl-u:preview-half-page-up'
-    --bind='ctrl-v:transform(testall -f {+} && testall -r {+} && echo \"become($EDITOR {+})\")'
+    --bind='ctrl-v:transform(while IFS= read -r f; do [[ -f \$f && -r \$f ]] || exit; done < {+f}; echo \"become($EDITOR {+})\")'
     --bind='ctrl-y:execute-silent(\"$DOTS_CONFIG_HOME/fzf/pbcopy.sh\" \"{+}\")'
 "
