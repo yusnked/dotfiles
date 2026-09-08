@@ -5,15 +5,31 @@ local ts_max_buf_size = 2 * 1024 * 1024 -- 2MiB
 
 local install_dir = vim.fn.stdpath('data') .. '/site'
 
-local ts_langs_registered = false
----@param ts_lang_specs table<string, self.treesitter.LanguageSpec>
-local function register_ts_langs(ts_lang_specs)
-    for ts_lang, spec in pairs(ts_lang_specs) do
+---@param ts_specs table<string, self.treesitter.Spec>
+---@return table<string, string> ft_to_ts_name
+local function index_by_filetype(ts_specs)
+    local ft_to_ts_name = {}
+    for ts_name, spec in pairs(ts_specs) do
         if spec.filetypes then
-            vim.treesitter.language.register(ts_lang, spec.filetypes)
+            for _, filetype in ipairs(spec.filetypes) do
+                ft_to_ts_name[filetype] = ts_name
+            end
+        else
+            ft_to_ts_name[ts_name] = ts_name
         end
     end
-    ts_langs_registered = true
+    return ft_to_ts_name
+end
+
+local ts_filetypes_registered = false
+---@param ts_specs table<string, self.treesitter.Spec>
+local function register_ts_filetypes(ts_specs)
+    for ts_name, spec in pairs(ts_specs) do
+        if spec.filetypes then
+            vim.treesitter.language.register(ts_name, spec.filetypes)
+        end
+    end
+    ts_filetypes_registered = true
 end
 
 ---@param buf integer
@@ -25,18 +41,18 @@ end
 ---@class self.treesitter.TreesitterAttachData
 ---@field buf integer
 ---@field filetype string
----@field ts_lang string
----@field spec self.treesitter.LanguageSpec
+---@field ts_name string
+---@field spec self.treesitter.Spec
 
 ---@param ctx vim.api.keyset.create_autocmd.callback_args
----@param ts_lang_specs table<string, self.treesitter.LanguageSpec>
----@param ft_to_lang table<string, string>
-local function start_ts_highlight(ctx, ts_lang_specs, ft_to_lang)
+---@param ts_specs table<string, self.treesitter.Spec>
+---@param ft_to_ts_name table<string, string>
+local function start_ts_highlight(ctx, ts_specs, ft_to_ts_name)
     local buf = ctx.buf
     local filetype = ctx.match
-    local ts_lang = ft_to_lang[filetype]
+    local ts_name = ft_to_ts_name[filetype]
 
-    if not ts_lang then
+    if not ts_name then
         if vim.b[buf].ts_highlight then
             -- Tree-sitter ハイライト対象は start() が適切に処理するため stop() する必要は無い.
             vim.treesitter.stop(buf)
@@ -62,7 +78,7 @@ local function start_ts_highlight(ctx, ts_lang_specs, ft_to_lang)
         if not vim.api.nvim_buf_is_loaded(buf)
             or vim.b[buf].ts_generation ~= generation
             or vim.bo[buf].filetype ~= filetype then
-            -- filetype が異なる場合下手に復元せず後続 FileType イベントに任せる.
+            -- filetype が異なる場合, 下手に復元せず後続 FileType イベントに任せる.
             return
         end
 
@@ -74,7 +90,7 @@ local function start_ts_highlight(ctx, ts_lang_specs, ft_to_lang)
             return
         end
 
-        local ok = pcall(vim.treesitter.start, buf, ts_lang)
+        local ok = pcall(vim.treesitter.start, buf, ts_name)
         if not ok then
             fallback_highlight(buf)
             return
@@ -83,17 +99,17 @@ local function start_ts_highlight(ctx, ts_lang_specs, ft_to_lang)
         -- vim.treesitter のモジュールロードだけで 1ms 程度かかるので,
         -- Tree-sitter の起動でロードコストを払った後に標準の language mapping へ登録する.
         -- 当然それより前に get_lang しても標準フォールバックの値が返ることに注意.
-        if not ts_langs_registered then
-            register_ts_langs(ts_lang_specs)
+        if not ts_filetypes_registered then
+            register_ts_filetypes(ts_specs)
         end
 
-        local spec = ts_lang_specs[ts_lang]
+        local spec = ts_specs[ts_name]
 
         vim.api.nvim_exec_autocmds('User', {
             pattern = 'TreesitterAttach',
             modeline = false,
             ---@type self.treesitter.TreesitterAttachData
-            data = { buf = buf, filetype = filetype, ts_lang = ts_lang, spec = spec },
+            data = { buf = buf, filetype = filetype, ts_name = ts_name, spec = spec },
         })
     end)
 end
@@ -104,25 +120,16 @@ local group = vim.api.nvim_create_augroup('self.treesitter.start', {})
 vim.api.nvim_create_autocmd('FileType', {
     group = group,
     once = true,
-    callback = function(outer_ctx)
-        local ts_lang_specs = require('self.treesitter.languages')
-        local ft_to_lang = {}
-        for lang, spec in pairs(ts_lang_specs) do
-            if spec.filetypes then
-                for _, filetype in ipairs(spec.filetypes) do
-                    ft_to_lang[filetype] = lang
-                end
-            else
-                ft_to_lang[lang] = lang
-            end
-        end
+    callback = function(initial_ctx)
+        local ts_specs = require('self.treesitter.specs')
+        local ft_to_ts_name = index_by_filetype(ts_specs)
 
-        start_ts_highlight(outer_ctx, ts_lang_specs, ft_to_lang)
+        start_ts_highlight(initial_ctx, ts_specs, ft_to_ts_name)
 
         vim.api.nvim_create_autocmd('FileType', {
             group = group,
             callback = function(ctx)
-                start_ts_highlight(ctx, ts_lang_specs, ft_to_lang)
+                start_ts_highlight(ctx, ts_specs, ft_to_ts_name)
             end,
             desc = 'Enable Tree-sitter highlighting',
         })

@@ -1,8 +1,8 @@
----@class self.treesitter.LanguageSpec
+---@class self.treesitter.Spec
 ---@field filetypes? string[]
 ---@field indent? boolean
 
----@type table<string, self.treesitter.LanguageSpec>
+---@type table<string, self.treesitter.Spec>
 return {
     awk = {},
     bash = { filetypes = { 'bash', 'sh' }, indent = true },

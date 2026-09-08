@@ -22,7 +22,7 @@ return {
         end,
         config = function()
             -- setup 呼び出し不要. install_dir のデフォルトは stdpath('data') .. '/site'.
-            require('nvim-treesitter').install(vim.tbl_keys(require('self.treesitter.languages')))
+            require('nvim-treesitter').install(vim.tbl_keys(require('self.treesitter.specs')))
         end,
     },
     {
