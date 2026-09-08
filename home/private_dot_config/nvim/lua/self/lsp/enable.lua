@@ -1,28 +1,24 @@
 local M = {}
 
-local registry = require('self.lsp.registry')
+local helpers = require('self.lsp.helpers')
 
----@param ft string
----@return string[]
-local function get_config_names(ft)
-    local config_names = registry.ft_to_config_names[ft]
-    if not config_names then return {} end
-    return config_names
-end
-
----@param config_names string[]
-local function enable_lsp(config_names)
+---@param lsp_names string[]
+local function enable(lsp_names)
     ---@type string[]
-    local to_enable = vim.iter(config_names)
-        :filter(function(config_name) return not vim.lsp.is_enabled(config_name) end)
+    local to_enable = vim.iter(lsp_names)
+        :filter(function(name) return not vim.lsp.is_enabled(name) end)
         :totable()
 
     if #to_enable > 0 then
+        ---@class self.lsp.LspEnablePreData
+        ---@field lsp_names string[]
+
         vim.api.nvim_exec_autocmds('User', {
             pattern = 'LspEnablePre',
             modeline = false,
+            ---@type self.lsp.LspEnablePreData
             data = {
-                config_names = to_enable,
+                lsp_names = to_enable,
             },
         })
 
@@ -30,20 +26,72 @@ local function enable_lsp(config_names)
     end
 end
 
----@param ctx vim.api.keyset.create_autocmd.callback_args
-function M.run(ctx)
-    local bufnr = ctx.buf
-    local ft = ctx.match
+---@type table<string, boolean>
+local checked_lsp_names = {}
 
-    local config_names = get_config_names(ft)
-    if #config_names == 0 then return end
+--- インストールが必要か lsp_name 毎に一度だけ確認する.
+---@param lsp_name string
+---@param spec self.lsp.Spec
+---@return boolean
+local function needs_install(lsp_name, spec)
+    if checked_lsp_names[lsp_name] then
+        return false
+    end
 
-    vim.defer_fn(function()
-        if not vim.api.nvim_buf_is_valid(bufnr) then return end
-        if vim.bo[bufnr].filetype ~= ft then return end
+    local cmd = vim.lsp.config[lsp_name].cmd
+    local executable
 
-        enable_lsp(config_names)
-    end, 50)
+    if type(cmd) == 'table' then
+        executable = cmd[1]
+    elseif spec.cmd then
+        executable = spec.cmd
+    else
+        local msg = (
+            'LSP: %s\n\nCannot determine the executable from lspconfig.\nSet self.lsp.Spec.cmd'
+        ):format(lsp_name)
+        helpers.notify(msg, 'WARN')
+
+        checked_lsp_names[lsp_name] = true
+        return false
+    end
+    ---@cast executable string
+
+    checked_lsp_names[lsp_name] = true
+    return vim.fn.executable(executable) ~= 1
+end
+
+---@param lsp_names string[]
+---@param lsp_specs table<string, self.lsp.Spec>
+local function request_install(lsp_names, lsp_specs)
+    ---@type string[]
+    local to_install = vim.iter(lsp_names)
+        :filter(function(name) return needs_install(name, lsp_specs[name]) end)
+        :totable()
+
+    if #to_install > 0 then
+        ---@class self.lsp.LspRequestInstallData
+        ---@field lsp_names string[]
+
+        vim.api.nvim_exec_autocmds('User', {
+            pattern = 'LspRequestInstall',
+            modeline = false,
+            ---@type self.lsp.LspRequestInstallData
+            data = {
+                lsp_names = to_install,
+            },
+        })
+    end
+end
+
+---@param filetype string
+---@param lsp_specs table<string, self.lsp.Spec>
+---@param ft_to_lsp_names table<string, string[]>
+function M.for_filetype(filetype, lsp_specs, ft_to_lsp_names)
+    local lsp_names = ft_to_lsp_names[filetype]
+
+    enable(lsp_names)
+
+    request_install(lsp_names, lsp_specs)
 end
 
 return M

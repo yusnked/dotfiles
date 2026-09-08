@@ -1,27 +1,38 @@
----@type LazySpec
+---@type LazySpec[]
 return {
     {
         'neovim/nvim-lspconfig',
-        -- TODO: v0.12で LspStart -> lsp enable のように変更されるので設定を更新する.
-        cmd = { 'LspInfo', 'LspStart', 'LspStop', 'LspRestart' },
         init = function(plugin)
             vim.opt.runtimepath:append(plugin.dir)
         end,
     },
     {
         'mason-org/mason.nvim',
-        cmd = { 'Mason', 'MasonInstallRegistered' },
+        cmd = { 'Mason' },
         init = function()
             vim.env.PATH = vim.fn.stdpath('data') .. '/mason/bin:' .. vim.env.PATH
+
+            vim.api.nvim_create_autocmd('User', {
+                group = vim.api.nvim_create_augroup('plugins.mason.install', {}),
+                pattern = 'LspRequestInstall',
+                callback = function(ctx)
+                    ---@type self.lsp.LspRequestInstallData
+                    local data = ctx.data
+
+                    require('plugins.config.mason').install_packages(data.lsp_names)
+                end,
+                desc = 'Install requested LSP packages with Mason',
+            })
         end,
         ---@module 'mason'
         ---@type MasonSettings
         opts = { PATH = 'skip' },
-        config = function(...) require('plugins.config.mason').config(...) end,
     },
     {
         'folke/lazydev.nvim',
         ft = 'lua',
+        ---@module 'lazydev'
+        ---@type lazydev.Config
         opts = {
             library = {
                 'lazy.nvim',

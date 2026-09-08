@@ -1,96 +1,77 @@
 local M = {}
 
-local config_registry = require('self.lsp.registry')
-local mason_registry = require('mason-registry')
+local lsp_specs = require('self.lsp.specs')
+local registry = require('mason-registry')
 
----@param message string
----@param level 'INFO' | 'ERROR' | 'WARN'
-local function notify(message, level)
-    vim.notify(message, vim.log.levels[level], {
-        title = 'mason.nvim',
-    })
+---@param msg string
+---@param level 'INFO' | 'WARN' | 'ERROR'
+local function notify(msg, level)
+    vim.notify(msg, vim.log.levels[level], { title = 'plugins.mason' })
 end
 
----@type table<string, string>
-local lspconfig_to_package = {}
+---@type table<string, string>?
+local lsp_name_to_mason_name
 
----@return table<string, string>
-function M.get_lspconfig_to_package()
-    if next(lspconfig_to_package) ~= nil then return lspconfig_to_package end
+local function build_lsp_name_to_mason_name()
+    lsp_name_to_mason_name = {}
 
-    for _, pkg_spec in ipairs(mason_registry.get_all_package_specs()) do
-        local lspconfig_name = vim.tbl_get(pkg_spec, 'neovim', 'lspconfig')
-        if lspconfig_name ~= nil then
-            lspconfig_to_package[lspconfig_name] = pkg_spec.name or lspconfig_name
+    for _, package_spec in ipairs(registry.get_all_package_specs()) do
+        local lsp_name = vim.tbl_get(package_spec, 'neovim', 'lspconfig')
+
+        if lsp_name then
+            lsp_name_to_mason_name[lsp_name] = package_spec.name or lsp_name
         end
     end
-    return lspconfig_to_package
 end
 
----@param lspconfig_name string
----@return PackageInstallOpts
-local function build_install_opts(lspconfig_name)
-    local spec = config_registry.specs_by_name[lspconfig_name]
-    local opts = {}
-
-    if spec and spec.version then
-        opts.version = spec.version
-    end
-
-    return opts
-end
-
----@param lspconfig_name string
-local function install_package(lspconfig_name)
-    local map = M.get_lspconfig_to_package()
-    local pkg_name = map[lspconfig_name] or lspconfig_name
-
-    local ok, pkg = pcall(mason_registry.get_package, pkg_name)
+---@param lsp_name string
+---@param mason_name string
+local function install_package(lsp_name, mason_name)
+    local ok, pkg = pcall(registry.get_package, mason_name)
     if not ok then
-        notify(('Unknown package: %s (for %s)'):format(pkg_name, lspconfig_name), 'ERROR')
+        notify(('Unknown package: %s (lspconfig: %s)'):format(mason_name, lsp_name), 'ERROR')
         return
     end
 
-    if pkg:is_installed() or pkg:is_installing() then return end
+    if pkg:is_installed() or pkg:is_installing() then
+        return
+    end
 
-    notify(('Installing: %s (for %s)'):format(pkg_name, lspconfig_name), 'INFO')
+    local version = vim.tbl_get(lsp_specs[lsp_name] or {}, 'version')
 
-    local opts = build_install_opts(lspconfig_name)
-    pkg:install(opts, function(success, result)
+    -- 非同期でインストールする.
+    notify(('Installing: %s (lspconfig: %s)'):format(mason_name, lsp_name), 'INFO')
+    pkg:install({ version = version }, vim.schedule_wrap(function(success, result)
         if not success then
-            notify(('Install failed: %s (%s)')
-                :format(pkg_name, tostring(result)), 'ERROR')
-        end
-    end)
-end
-
----@param lspconfig_names string[]
-function M.install_packages(lspconfig_names)
-    mason_registry.refresh(vim.schedule_wrap(function(success)
-        if not success then
-            notify('Refresh failed.', 'ERROR')
+            notify(('Failed to install: %s (lspconfig: %s)\n\n%s'):format(mason_name, lsp_name, tostring(result)),
+                'ERROR')
             return
         end
 
-        for _, lspconfig_name in ipairs(lspconfig_names) do
-            install_package(lspconfig_name)
-        end
+        notify(('Installed: %s (lspconfig: %s)'):format(mason_name, lsp_name), 'INFO')
+        vim.lsp.enable(lsp_name)
     end))
 end
 
----@param _ LazyPlugin
----@param opts MasonSettings
-function M.config(_, opts)
-    require('mason').setup(opts)
+---@param lsp_names string[]
+function M.install_packages(lsp_names)
+    -- 非同期でレジストリを更新する. 成功したらインストールに進む.
+    registry.refresh(vim.schedule_wrap(function(success)
+        if not success then
+            notify('Failed to refresh Mason registry.', 'ERROR')
+            return
+        end
 
-    -- self.lsp.registry にのってるやつを一括インストールするコマンド.
-    vim.api.nvim_create_user_command('MasonInstallRegistered', function()
-        local names = vim.tbl_keys(config_registry.specs_by_name)
-        table.sort(names)
-        M.install_packages(names)
-    end, {
-        desc = 'Install all Mason packages registered in self.lsp.registry',
-    })
+        if lsp_name_to_mason_name == nil then
+            build_lsp_name_to_mason_name()
+        end
+        ---@cast lsp_name_to_mason_name table<string, string>
+
+        for _, lsp_name in ipairs(lsp_names) do
+            local mason_name = lsp_name_to_mason_name[lsp_name] or lsp_name
+            install_package(lsp_name, mason_name)
+        end
+    end))
 end
 
 return M
