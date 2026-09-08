@@ -4,8 +4,13 @@ return {
         'nvim-lualine/lualine.nvim',
         dependencies = { 'nvim-mini/mini.icons' },
         event = 'VeryLazy',
-        -- 起動時 Statusline を消してちらつきを抑える.
-        init = function() vim.o.laststatus = 0 end,
+        init = function()
+            -- 起動時のちらつきを抑える.
+            vim.o.laststatus = 0
+            vim.o.showtabline = 2
+            vim.o.tabline = ' '
+            vim.o.winbar = ' '
+        end,
         config = function() require('plugins.config.lualine').config() end,
     },
     {
