@@ -1,4 +1,5 @@
----@type LazySpec
+---@module 'lazy'
+---@type LazySpec[]
 return {
     {
         'folke/todo-comments.nvim',

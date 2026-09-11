@@ -1,6 +1,7 @@
 local keydesc = require('plugins.util.keydesc')
 
----@type LazySpec
+---@module 'lazy'
+---@type LazySpec[]
 return {
     {
         'kylechui/nvim-surround',
@@ -60,6 +61,8 @@ return {
             }
         end,
         main = 'flash',
+        ---@module 'flash'
+        ---@type Flash.Config
         opts = {
             modes = { char = { enabled = false } },
             prompt = { prefix = { { '󱐋', 'FlashPromptIcon' } } },

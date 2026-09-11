@@ -1,9 +1,12 @@
----@type LazySpec
+---@module 'lazy'
+---@type LazySpec[]
 return {
     {
         'folke/tokyonight.nvim',
         lazy = false,
         priority = 1000,
+        ---@module 'tokyonight'
+        ---@type tokyonight.Config
         opts = {
             style = 'night',
             on_highlights = function(hl, c)

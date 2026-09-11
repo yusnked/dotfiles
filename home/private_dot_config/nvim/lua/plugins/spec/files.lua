@@ -1,6 +1,7 @@
 local keydesc = require('plugins.util.keydesc')
 
----@type LazySpec
+---@module 'lazy'
+---@type LazySpec[]
 return {
     {
         'stevearc/oil.nvim',
@@ -8,6 +9,7 @@ return {
         keys = { { '-', function() require('oil').open() end, desc = 'Open parent dir (oil)' } },
         cmd = 'Oil',
         main = 'oil',
+        ---@type oil.setupOpts
         opts = { win_options = { signcolumn = 'yes:2' } },
         init = function(plugin)
             vim.api.nvim_create_autocmd({ 'BufEnter' }, {

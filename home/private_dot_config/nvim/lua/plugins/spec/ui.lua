@@ -1,4 +1,5 @@
----@type LazySpec
+---@module 'lazy'
+---@type LazySpec[]
 return {
     {
         'nvim-lualine/lualine.nvim',
@@ -21,6 +22,7 @@ return {
             { '<leader>?', function() require('which-key').show() end, mode = { 'n', 'x' }, desc = 'Show keymaps' },
         },
         main = 'which-key',
+        ---@type wk.Opts
         opts = {
             delay = function(ctx)
                 return ctx.plugin and 0 or 500

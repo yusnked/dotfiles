@@ -1,6 +1,7 @@
 local pack_dir = vim.env.VIMRUNTIME .. '/pack/dist/opt/'
 
----@type LazySpec
+---@module 'lazy'
+---@type LazySpec[]
 return {
     {
         dir = pack_dir .. 'cfilter',
