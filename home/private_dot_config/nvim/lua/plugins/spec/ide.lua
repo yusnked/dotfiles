@@ -30,16 +30,30 @@ return {
     },
     {
         'folke/lazydev.nvim',
-        ft = 'lua',
+        main = 'lazydev',
         ---@module 'lazydev'
         ---@type lazydev.Config
         opts = {
             library = {
-                'lazy.nvim',
-                { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
                 { path = 'snacks.nvim', words = { 'Snacks' } },
             },
         },
+        init = function(plugin)
+            vim.api.nvim_create_autocmd('User', {
+                group = vim.api.nvim_create_augroup('plugins.lazydev.load', {}),
+                pattern = 'LspEnablePre',
+                callback = function(ctx)
+                    ---@type self.lsp.LspEnablePreData
+                    local data = ctx.data
+
+                    if vim.tbl_contains(data.lsp_names, 'lua_ls') then
+                        require('lazy').load { plugins = { plugin.name } }
+                        return true
+                    end
+                end,
+                desc = 'Load lazydev.nvim',
+            })
+        end,
     },
     {
         'saghen/blink.cmp',
@@ -47,9 +61,11 @@ return {
         version = '1.*',
         -- LSP Capabilities を設定するので vim.lsp.enable の前に読み込む必要あり.
         event = { 'InsertEnter', 'CmdlineEnter', 'User LspEnablePre' },
-        opts = function() return require('plugins.config.blink').opts end,
-        opts_extend = { 'sources.default' },
-        config = function(...) require('plugins.config.blink').config(...) end,
+        main = 'blink.cmp',
+        opts = function()
+            vim.o.wildmenu = false
+            return require('plugins.config.blink').opts
+        end,
     },
     {
         'rafamadriz/friendly-snippets',

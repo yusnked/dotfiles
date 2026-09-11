@@ -2,26 +2,26 @@
 
 local M = {}
 
----@return number[]
-local function get_bufnrs_normal_listed()
+---@return integer[]
+local function get_listed_normal_bufs()
     return vim.iter(vim.api.nvim_list_bufs())
-        :filter(function(bufnr)
-            return vim.api.nvim_buf_is_loaded(bufnr)
-                and vim.bo[bufnr].buftype == ''
-                and vim.bo[bufnr].buflisted
+        :filter(function(buf)
+            return vim.api.nvim_buf_is_loaded(buf)
+                and vim.bo[buf].buftype == ''
+                and vim.bo[buf].buflisted
         end)
         :totable()
 end
 
 ---@param cmp blink.cmp.API
----@return boolean|nil
-local function cmdline_cr(cmp)
+---@return boolean?
+local function cmdline_enter(cmp)
     if not cmp.is_menu_visible() then return false end
 
     local item = cmp.get_selected_item()
     if item == nil then return false end
 
-    -- 選択項目が Dir なら accept() それ以外なら accept_and_enter()
+    -- 選択項目がディレクトリなら確定するだけで, コマンドの実行はしない.
     local text = item.textEdit and item.textEdit.newText or item.label or ''
     if text:sub(-1) == '/' then
         return cmp.accept()
@@ -36,8 +36,8 @@ M.opts = {
         preset = 'enter',
         ['<C-n>'] = { 'show', 'select_next', 'fallback_to_mappings' },
         ['<C-p>'] = { 'show', 'select_prev', 'fallback_to_mappings' },
-        ['<C-u>'] = { 'scroll_signature_up', 'fallback' },
-        ['<C-d>'] = { 'scroll_signature_down', 'fallback' },
+        ['<C-b>'] = { 'scroll_signature_up', 'scroll_documentation_up', 'fallback' },
+        ['<C-f>'] = { 'scroll_signature_down', 'scroll_documentation_down', 'fallback' },
     },
 
     sources = {
@@ -48,8 +48,8 @@ M.opts = {
         providers = {
             buffer = {
                 opts = {
-                    get_bufnrs = get_bufnrs_normal_listed,
-                    max_total_buffer_size = 1024 * 1024,
+                    get_bufnrs = get_listed_normal_bufs,
+                    max_total_buffer_size = 1024 * 1024, -- 1MiB
                 },
             },
             lazydev = {
@@ -61,14 +61,6 @@ M.opts = {
     },
 
     completion = {
-        menu = {
-            auto_show = true,
-        },
-        trigger = {
-            show_on_keyword = true,
-            show_on_trigger_character = true,
-            show_in_snippet = false,
-        },
         list = {
             selection = {
                 preselect = false,
@@ -83,8 +75,11 @@ M.opts = {
 
     cmdline = {
         keymap = {
-            preset = 'cmdline',
-            ['<CR>'] = { cmdline_cr, 'fallback' },
+            ['<CR>'] = { cmdline_enter, 'fallback' },
+            -- auto_show と相性が悪くコマンドライン履歴が使いにくくなるため無効化.
+            -- 項目の選択は <Tab> / <S-Tab> に一本化する.
+            ['<C-n>'] = { 'fallback_to_mappings' },
+            ['<C-p>'] = { 'fallback_to_mappings' },
         },
         completion = {
             menu = {
@@ -93,7 +88,6 @@ M.opts = {
             list = {
                 selection = {
                     preselect = false,
-                    auto_insert = true,
                 },
             },
         },
@@ -103,14 +97,5 @@ M.opts = {
         enabled = true,
     },
 }
-
----@param _ LazyPlugin
----@param opts blink.cmp.Config
-function M.config(_, opts)
-    -- blink.cmp の cmdline completion と競合する為.
-    vim.opt.wildmenu = false
-
-    require('blink.cmp').setup(opts)
-end
 
 return M
