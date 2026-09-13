@@ -62,6 +62,12 @@ autocmd('VimEnter', {
 autocmd('FocusLost', {
     group = augroup('clipboard_to_unnamed.setup'),
     once = true,
-    callback = function() require('self.modules.clipboard_to_unnamed').setup() end,
+    callback = function()
+        if vim.fn['provider#clipboard#Executable']() == 'OSC 52' then
+            return
+        end
+
+        require('self.modules.clipboard_to_unnamed').setup()
+    end,
     desc = 'Setup clipboard_to_unnamed module',
 })
