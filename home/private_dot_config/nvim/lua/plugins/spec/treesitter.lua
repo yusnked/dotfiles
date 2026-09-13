@@ -5,6 +5,7 @@ local keydesc = require('plugins.util.keydesc')
 return {
     {
         'nvim-treesitter/nvim-treesitter',
+        enabled = vim.fn.executable('tree-sitter') == 1,
         cmd = { 'TSUpdate' },
         build = ':TSUpdate',
         init = function()
