@@ -1,0 +1,125 @@
+emulate -L zsh
+
+local started ret
+
+if ! docker info &> /dev/null; then
+    docker desktop start
+    ret=$?
+
+    # docker がカーソルを非表示のまま戻さないためエスケープシーケンスを送って戻す.
+    print -n $'\033[?25h'
+
+    (( ret == 0 )) || return $ret
+    started=1
+fi
+
+{
+    docker build \
+        --pull \
+        --no-cache \
+        --tag nvim-nightly \
+        - <<'DOCKERFILE'
+FROM debian:bookworm-slim
+
+ARG TARGETARCH
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        curl \
+        fd-find \
+        git \
+        gosu \
+        passwd \
+        ripgrep \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/bin/fdfind /usr/local/bin/fd
+
+RUN case "$TARGETARCH" in \
+        amd64) arch='x86_64' ;; \
+        arm64) arch='arm64' ;; \
+        *) echo "Unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl -fL \
+        "https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-${arch}.tar.gz" \
+        -o /tmp/nvim.tar.gz \
+    && mkdir /opt/nvim \
+    && tar -xzf /tmp/nvim.tar.gz \
+        --strip-components=1 \
+        -C /opt/nvim \
+    && rm /tmp/nvim.tar.gz
+
+RUN cat > /usr/local/bin/nvim-entrypoint <<'ENTRYPOINT'
+#!/bin/sh
+set -eu
+
+uid="${NVIM_UID:-1000}"
+gid="${NVIM_GID:-1000}"
+
+case "$uid:$gid" in
+    *[!0-9:]*)
+        echo "Invalid UID/GID: $uid:$gid" >&2
+        exit 1
+        ;;
+esac
+
+if ! getent group "$gid" >/dev/null 2>&1; then
+    groupadd --gid "$gid" nvim
+fi
+
+if ! getent passwd "$uid" >/dev/null 2>&1; then
+    useradd \
+        --uid "$uid" \
+        --gid "$gid" \
+        --home-dir /home/nvim \
+        --create-home \
+        --shell /bin/sh \
+        -K UID_MIN=501 \
+        nvim
+fi
+
+mkdir -p \
+    /nvim-persist/data \
+    /nvim-persist/state \
+    /nvim-persist/cache \
+    /nvim-runtime/config/nvim
+
+chown "$uid:$gid" \
+    /nvim-persist \
+    /nvim-persist/data \
+    /nvim-persist/state \
+    /nvim-persist/cache \
+    /nvim-runtime \
+    /nvim-runtime/config \
+    /nvim-runtime/config/nvim
+
+gosu "$uid:$gid" cp -a /nvim-config/. /nvim-runtime/config/nvim/
+
+export XDG_CONFIG_HOME=/nvim-runtime/config
+export XDG_DATA_HOME=/nvim-persist/data
+export XDG_STATE_HOME=/nvim-persist/state
+export XDG_CACHE_HOME=/nvim-persist/cache
+
+exec gosu "$uid:$gid" nvim "$@"
+ENTRYPOINT
+
+RUN chmod +x /usr/local/bin/nvim-entrypoint
+
+ENV PATH="/opt/nvim/bin:${PATH}"
+ENV HOME=/home/nvim
+
+WORKDIR /work
+
+ENTRYPOINT ["/usr/local/bin/nvim-entrypoint"]
+DOCKERFILE
+    ret=$?
+} always {
+    if [[ -n $started ]]; then
+        docker desktop stop
+    fi
+}
+
+return $ret
+
+# vi: set ft=zsh:

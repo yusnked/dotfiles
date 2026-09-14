@@ -1,0 +1,40 @@
+emulate -L zsh
+
+local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+local started ret
+
+if ! docker info &> /dev/null; then
+    docker desktop start
+    ret=$?
+
+    # docker がカーソルを非表示のまま戻さないためエスケープシーケンスを送って戻す.
+    print -n $'\033[?25h'
+
+    (( ret == 0 )) || return $ret
+    started=1
+fi
+
+{
+    docker run \
+        --rm \
+        -it \
+        --name nvim-nightly \
+        --mount "type=bind,src=$PWD,dst=/work" \
+        --mount "type=bind,src=$config_dir,dst=/nvim-config,readonly" \
+        --mount 'type=volume,src=nvim-nightly-data,dst=/nvim-persist' \
+        -e NVIM_UID="$(id -u)" \
+        -e NVIM_GID="$(id -g)" \
+        -e TERM="$TERM" \
+        -e COLORTERM="$COLORTERM" \
+        nvim-nightly \
+        "$@"
+    ret=$?
+} always {
+    if [[ -n $started ]]; then
+        docker desktop stop
+    fi
+}
+
+return $ret
+
+# vi: set ft=zsh:

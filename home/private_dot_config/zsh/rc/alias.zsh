@@ -15,6 +15,12 @@ if (( $+commands[chezmoi] )); then
     autoload -Uz chezmoi-toggle
 fi
 
+if (( $+commands[docker] )); then
+    autoload -Uz \
+        nvim-nightly \
+        nvim-nightly-build
+fi
+
 if (( $+commands[eza] )); then
     alias ls='eza --color --icons --hyperlink --group-directories-first --group --git --time-style="+%y/%m/%d %H:%M"'
 elif command ls --version &>/dev/null; then
