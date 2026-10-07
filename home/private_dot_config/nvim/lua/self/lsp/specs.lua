@@ -12,7 +12,13 @@ return {
             format_on_write = true,
         },
     },
-    pyright = {
+    basedpyright = {
         filetypes = { 'python' },
+    },
+    ruff = {
+        filetypes = { 'python' },
+        features = {
+            format_on_write = true,
+        },
     },
 }
