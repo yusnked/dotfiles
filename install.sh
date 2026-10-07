@@ -54,9 +54,6 @@ echo "[$SCRIPT_NAME/INFO] Run 'home-manager switch'."
 source "$SHELLS_ENV"
 "$CHEZMOI_BIN" apply
 
-# Install terminfo
-bash "$DOTFILES_DIR/install_scripts/terminfo-install.sh"
-
 cat <<-EOF
 [$SCRIPT_NAME/INFO] dotfiles installation is complete!
 
