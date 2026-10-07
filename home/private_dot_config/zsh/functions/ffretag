@@ -1,0 +1,23 @@
+emulate -L zsh
+
+(( $# >= 2 )) || {
+    print -u2 "usage: ${0:t} TAG FILE..."
+    return 2
+}
+
+tag="$1"
+shift
+
+for file in "$@"; do
+    [[ -f "$file" ]] || continue
+
+    out="${file:r}.$$.$RANDOM.${file:e}"
+
+    if ffmpeg -y -i "$file" -c copy -tag:v "$tag" "$out"; then
+        mv -- "$out" "$file"
+    else
+        rm -f -- "$out"
+    fi
+done
+
+# vi: set ft=zsh:

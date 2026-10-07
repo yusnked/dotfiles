@@ -37,6 +37,11 @@ alias \
     lla='ll -A' \
     lai='lla -i'
 
+if (( $+commands[ffmpeg] )); then
+    autoload -Uz \
+        ffretag
+fi
+
 if (( $+commands[ghq] )); then
     autoload -Uz ghq-cd
 fi
