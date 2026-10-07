@@ -1,0 +1,88 @@
+# Formula
+brew "bash"
+brew "bat"
+brew "chezmoi"
+brew "cmake"
+brew "cmigemo"
+brew "coreutils"
+brew "curl"
+brew "diffutils"
+brew "eza"
+brew "fd"
+brew "ffmpeg-full"
+brew "ffmpegthumbnailer"
+brew "findutils"
+brew "fzf"
+brew "gawk"
+brew "ghq"
+brew "git"
+brew "git-delta"
+brew "gnu-sed"
+brew "gnu-tar"
+brew "gnupg"
+brew "grep"
+brew "gzip"
+brew "hexyl"
+brew "imagemagick"
+brew "jq"
+brew "make"
+brew "mise"
+brew "ripgrep"
+brew "sevenzip"
+brew "sheldon"
+brew "tmux"
+brew "tree-sitter-cli"
+brew "vivid"
+brew "wget"
+brew "zoxide"
+brew "zsh"
+brew "zsh-patina"
+
+# Fonts
+cask "font-hackgen-nerd"
+
+# macOS only
+if OS.mac?
+    brew "container"
+    brew "mas"
+
+    cask "adguard"
+    cask "alfred"
+    cask "anki"
+    cask "appcleaner"
+    cask "bettertouchtool"
+    cask "brave-browser"
+    cask "chatgpt-classic"
+    cask "cleanshot"
+    cask "cryptomator"
+    cask "deepl"
+    cask "discord"
+    cask "firefox"
+    cask "fuse-t"
+    cask "ghostty"
+    cask "hhkb"
+    cask "iina"
+    cask "karabiner-elements"
+    cask "lm-studio"
+    cask "logi-options+"
+    cask "losslesscut"
+    cask "obsidian"
+    cask "open-video-downloader"
+    cask "popclip"
+    cask "quicklook-video"
+    cask "shichizip"
+    cask "thaw"
+    cask "tiny-shield"
+    # 1.26.29 の次のバージョンが出るまで待つ.
+    # see: https://github.com/veracrypt/VeraCrypt/pull/1866
+    # cask "veracrypt-fuse-t"
+    cask "visual-studio-code"
+
+    mas "Actions", id: 1586435171
+    mas "DaisyDisk", id: 411643860
+    mas "FirstSeed Calendar", id: 1348617240
+    mas "Keynote", id: 409183694
+    mas "Kindle", id: 302584613
+    mas "Numbers", id: 409203825
+    mas "Pages", id: 409201541
+end
