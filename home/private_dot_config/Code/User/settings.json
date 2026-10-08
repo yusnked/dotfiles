@@ -1,34 +1,47 @@
-// This file is JSONC(JSON with comments)
 {
-    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
-    "editor.detectIndentation": false,
+    // Editor
     "editor.fontFamily": "HackGen Console NF",
     "editor.fontSize": 14,
-    "editor.formatOnSave": true,
-    "editor.guides.bracketPairs": true,
-    "editor.guides.bracketPairsHorizontal": true,
     "editor.lineNumbers": "relative",
     "editor.minimap.enabled": false,
     "editor.renderControlCharacters": true,
     "editor.renderWhitespace": "all",
     "editor.roundedSelection": false,
     "editor.rulers": [80],
-    "editor.tabSize": 4,
-    "editor.tokenColorCustomizations": {
-        "comments": "#999"
-    },
-    "editor.unicodeHighlight.includeComments": false,
+
+    // 括弧の種類ごとに独立した色を使用
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+
+    // 対応する括弧をガイド線で表示
+    "editor.guides.bracketPairs": true,
+    "editor.guides.bracketPairsHorizontal": "active",
+
+    // スクロール時に関数やクラス名を上部に固定しない
+    "editor.stickyScroll.enabled": false,
+
+    // ファイル末尾より下へのスクロールを禁止
+    "editor.scrollBeyondLastLine": false,
+
+    // Diff
+    // 空白だけの変更も差分として表示
+    "diffEditor.ignoreTrimWhitespace": false,
+
+    // Explorer
     "explorer.compactFolders": false,
     "explorer.confirmDelete": false,
+
+    // Extensions
+    "extensions.ignoreRecommendations": true,
+
+    // VSCode-Neovimを独立したExtension Hostで実行
     "extensions.experimental.affinity": {
         "asvetliakov.vscode-neovim": 1
     },
-    "extensions.ignoreRecommendations": true,
-    "files.autoGuessEncoding": true,
-    "files.insertFinalNewline": true,
-    "files.trimFinalNewlines": true,
-    "files.trimTrailingWhitespace": true,
+
+    // Search
     "search.smartCase": true,
+
+    // Terminal
     "terminal.integrated.env.linux": {
         "DOTS_TERMINAL": "vscode"
     },
@@ -36,45 +49,25 @@
         "DOTS_TERMINAL": "vscode"
     },
     "terminal.integrated.fontSize": 14,
+
+    // Workbench
     "workbench.colorTheme": "Default Dark+",
     "workbench.editor.empty.hint": "hidden",
+    "workbench.iconTheme": "material-icon-theme",
+    "workbench.reduceMotion": "on",
+    "workbench.tree.renderIndentGuides": "always",
 
-    // Upper limit for displaying tabs.
+    // 開いているエディタを最大8個に制限
     "workbench.editor.limit.enabled": true,
     "workbench.editor.limit.excludeDirty": true,
     "workbench.editor.limit.perEditorGroup": false,
     "workbench.editor.limit.value": 8,
 
-    "workbench.iconTheme": "material-icon-theme",
-    "workbench.reduceMotion": "on",
-    "workbench.tree.renderIndentGuides": "always",
+    // Updates
+    // VS Code本体の自動更新・更新確認を無効化
+    "update.mode": "none",
 
-    "[javascript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[javascriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[json]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[jsonc]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[shellscript]": {
-        "editor.defaultFormatter": "foxundermoon.shell-format"
-    },
-    "[typescript]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[yaml]": {
-        "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-
-    ///// Extensions /////
-    // Prettier
-    "prettier.singleQuote": true
+    // 拡張機能の自動更新・更新確認を無効化
+    "extensions.autoUpdate": "off",
+    "extensions.autoCheckUpdates": false
 }
