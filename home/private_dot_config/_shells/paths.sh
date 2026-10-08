@@ -1,6 +1,3 @@
-# Nix
-path-add /nix/var/nix/profiles/default/bin "$HOME/.nix-profile/bin"
-
 if [[ ${DOTS_OS:=$(uname -s)} == Darwin ]]; then
     # Homebrew
     path-add /usr/local/{sbin,bin} /opt/homebrew/{sbin,bin}

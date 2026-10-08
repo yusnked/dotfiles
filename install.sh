@@ -1,61 +1,99 @@
-#!/usr/bin/env bash
+#!/bin/sh
 set -eu
 
-SCRIPT_NAME="${0##*/}"
-GITHUB_USERNAME='yusnked'
-DOTFILES_DIR="${XDG_DATA_HOME:=${HOME}/.local/share}/chezmoi"
-SHELLS_ENV="${XDG_CONFIG_HOME:-${HOME}/.config}/_shells/env.sh"
+readonly SCRIPT_NAME='dotfiles/install.sh'
+readonly REPO_URL='https://github.com/yusnked/dotfiles.git'
+readonly CHEZMOI_INSTALL_URL='https://get.chezmoi.io'
+readonly CHEZMOI_BIN="$HOME/.local/bin/chezmoi"
+readonly DOTFILES_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi"
 
-# Install chezmoi
-CHEZMOI_BIN="$HOME/.local/bin/chezmoi"
-if [[ ! -e $CHEZMOI_BIN ]]; then
-    BINDIR="$HOME/.local/bin" sh -c "$(curl -fsLS chezmoi.io/getlb)"
-    sleep 1
-fi
+info() { printf '\n%s: INFO: %s\n' "$SCRIPT_NAME" "$*"; }
+error() { printf '\n%s: ERROR: %s\n' "$SCRIPT_NAME" "$*" >&2; }
 
-if grep -q 'url = https://github.com/yusnked/dotfiles.git' "$DOTFILES_DIR/.git/config" 2>/dev/null; then
-    "$CHEZMOI_BIN" update
-    echo "[$SCRIPT_NAME/INFO] Run 'chezmoi update'."
+download() {
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$1"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -qO - "$1"
+    else
+        error 'curl or wget is required.'
+        return 1
+    fi
+}
+
+prompt() {
+    printf '\n%s: %s [Y/n]: ' "$SCRIPT_NAME" "$1"
+    IFS= read -r answer || return 1
+    case "$answer" in
+        [nN]|[nN][oO]) return 1 ;;
+        *) return 0 ;;
+    esac
+}
+
+dots_origin_url() {
+    [ -f "$DOTFILES_PATH/.git/config" ] && awk '
+        /^\[remote "origin"\]$/ { found = 1; next }
+        /^\[/ { found = 0 }
+        found && /^[[:space:]]*url[[:space:]]*=/ {
+            sub(/^[^=]*=[[:space:]]*/, "")
+            sub(/[[:space:]]+$/, "")
+            print
+            exit
+        }
+    ' "$DOTFILES_PATH/.git/config"
+}
+
+brew_bin() {
+    # Darwin x86_64 Homebrew は Dotfiles 対象外.
+    if [ -x /opt/homebrew/bin/brew ]; then
+        printf '%s\n' /opt/homebrew/bin/brew
+    elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+        printf '%s\n' /home/linuxbrew/.linuxbrew/bin/brew
+    else
+        return 1
+    fi
+}
+
+# まず ~/.local/bin に chezmoi をインストールする. 既に存在すれば上書きされる.
+installer=$(download "$CHEZMOI_INSTALL_URL") || { error 'Failed to download chezmoi installer.'; exit 1; }
+mkdir -p "$HOME/.local/bin"
+sh -c "$installer" -- -b "$HOME/.local/bin"
+[ -x "$CHEZMOI_BIN" ] || { error 'chezmoi installation failed.'; exit 1; }
+
+# 既に ~/.local/share/chezmoi が存在する場合, 同じ repo なら update する.
+if [ -e "$DOTFILES_PATH" ] || [ -L "$DOTFILES_PATH" ]; then
+    if [ "$(dots_origin_url)" = "$REPO_URL" ]; then
+        info 'Updating existing dotfiles repository.'
+        "$CHEZMOI_BIN" --source "$DOTFILES_PATH" --use-builtin-git=on update
+    else
+        error "Existing source directory does not match $REPO_URL"
+        error 'Installation aborted.'
+        exit 1
+    fi
 else
-    "$CHEZMOI_BIN" init --apply "$GITHUB_USERNAME"
-    echo "[$SCRIPT_NAME/INFO] Chezmoi is installed."
+    "$CHEZMOI_BIN" --source "$DOTFILES_PATH" --use-builtin-git=on init --apply "$REPO_URL"
 fi
 
-sleep 1
-
-# Install Nix by Determinate Nix Installer
-NIX_BIN='/nix/var/nix/profiles/default/bin/nix'
-if [[ ! -e $NIX_BIN ]]; then
-    export NIX_INSTALLER_DIAGNOSTIC_ENDPOINT=''
-    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix |
-        sh -s -- install --no-modify-profile --no-confirm
-
-    echo "[$SCRIPT_NAME/INFO] Nix is installed."
+# Homebrew をインストール.
+if ! brew_bin >/dev/null; then
+    if sh "$DOTFILES_PATH/scripts/install/homebrew.sh"; then
+        info 'Homebrew installation completed.'
+    else
+        error 'Dotfiles were deployed, but Homebrew installation failed. Exiting.'
+        exit 1
+    fi
 fi
 
-sleep 1
+BREW_BIN=$(brew_bin) || { error 'Homebrew was not found.'; exit 1; }
+readonly BREW_BIN
 
-source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+# chezmoi は homebrew で管理する.
+"$BREW_BIN" install -y chezmoi
+rm -f "$CHEZMOI_BIN"
 
-# home-manager install
-"$NIX_BIN" run 'nixpkgs#home-manager' -- switch
-
-# Fonts symlink
-FONTS_DIR="$XDG_DATA_HOME/fonts"
-FONTS_SYMLINK="$FONTS_DIR/HomeManager"
-if [[ ! -L $FONTS_SYMLINK && $(uname -s) == Linux ]]; then
-    mkdir -p "$FONTS_DIR"
-    ln -s "$HOME/.nix-profile/share/fonts" "$FONTS_SYMLINK"
-    fc-cache -f
+if prompt 'Install packages?'; then
+    # ~/.config/homebrew/Brewfile を読み込んでもらうためには XDG_CONFIG_HOME を設定する必要がある.
+    XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}" "$BREW_BIN" bundle --global
 fi
 
-echo "[$SCRIPT_NAME/INFO] Run 'home-manager switch'."
-
-source "$SHELLS_ENV"
-"$CHEZMOI_BIN" apply
-
-cat <<-EOF
-[$SCRIPT_NAME/INFO] dotfiles installation is complete!
-
-Please restart the shell
-EOF
+printf '\n%s: dotfiles installation is complete!\nPlease restart the shell.\n' "$SCRIPT_NAME"

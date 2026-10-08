@@ -21,24 +21,9 @@
 {{   $xdgState = joinPath .chezmoi.homeDir ".local/state" -}}
 {{ end -}}
 
-{{- /* Nix */ -}}
-{{- /* nix:     https://github.com/NixOS/nixpkgs/blob/master/lib/systems/doubles.nix */ -}}
-{{- /* chezmoi: https://pkg.go.dev/internal/goarch#GOARCH */ -}}
-{{ $nixSystem := "" -}}
-{{ if eq .chezmoi.arch "arm64" -}}
-{{   $nixSystem = (print "aarch64-" .chezmoi.os) -}}
-{{ else if eq .chezmoi.arch "amd64" -}}
-{{   $nixSystem = (print "x86_64-" .chezmoi.os) -}}
-{{ end -}}
-
 [data]
 name  = {{ promptString "name" "yusnked" | quote }}
 email = {{ promptString "email" "yusnked@gmail.com" | quote }}
-
-# Nix
-nix.system       = {{ $nixSystem | quote }}
-nix.mypkgsDir    = {{ joinPath $xdgConfig "nix/mypkgs" | quote }}
-nix.mypkgsDirSrc = {{ joinPath $xdgConfigSrc "nix/mypkgs" | quote }}
 
 packages.isDevelopment = {{ promptBoolOnce . "packages.isDevelopment" "Install development tools" }}
 

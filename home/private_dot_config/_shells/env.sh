@@ -22,13 +22,3 @@ export LANG='ja_JP.UTF-8'
 export LC_TIME='C'
 
 export DOTS_OS="${DOTS_OS:-$(uname -s)}"
-
-# Nix multi-user mode
-if [[ -r '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]]; then
-    source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-fi
-
-# Home-manager
-if [[ -r "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]]; then
-    source "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
-fi
