@@ -1,43 +1,276 @@
-source "${DOTS_SHELLS_DIR:-${HOST_XDG_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}}/_shells}/env.sh"
-source "$DOTS_SHELLS_DIR/helpers.sh"
-source "$DOTS_SHELLS_DIR/paths.sh"
+# ====================================================================
+# bashrc (bash v3.2+)
+# ====================================================================
 
-# interactive only
-case "$-" in
-*i*)
-    set -o pipefail
+path-add() {
+    if (( $# == 0 )); then
+        cat <<'EOF'
+Usage: path-add [options] path1 [[options] path2 ...]
 
-    source "$DOTS_SHELLS_DIR/env_interactive.sh"
-    source "$DOTS_SHELLS_DIR/alias/commands-alias.sh"
-    source "$DOTS_SHELLS_DIR/functions.sh"
+Add paths to a colon-separated variable.
 
-    HISTSIZE=10000
-
-    #Prompt
-    source "$DOTS_SHELLS_DIR/prompt.sh"
-    if [[ $COLORTERM == truecolor && ! -e "$DOTS_STATE_HOME/no_starship_prompt" ]] &&
-        type starship &>/dev/null; then
-        # Starship
-        _configure_starship_once
-    else
-        PROMPT_DIRTRIM=3
-        PS1="\[\e[1;33m\]\u@\h\[\e[0m\]:\[\e[32m\]\w\[\e[0m\] <<git-prompt>>
-\[\e[1;38;5;\$([[ \$? -eq 0 ]] && printf '40' || printf '197')m\]${SHLVL#"${SHLVL:$((SHLVL - 1))}"}\$\[\e[0m\] "
-        _configure_gitprompt_once
+Options:
+    -e, --check-exists      Skip nonexistent directories (default).
+    -E, --no-check-exists   Do not check directory existence.
+    -m, --method METHOD     prepend (default) or append.
+    -t, --target VARIABLE   Target variable (default: PATH).
+    --                      End option parsing.
+EOF
+        return 0
     fi
 
-    source "$DOTS_SHELLS_DIR/plugins.sh"
+    # --target との名前衝突を避けるため, ローカル変数に __ を前置.
+    local __check_exists=1 __method=prepend __target=PATH
+    local __path __value __parse_options=1
 
-    # fzf
-    type fzf &>/dev/null && eval "$(fzf --bash)"
+    while (( $# )); do
+        if (( __parse_options )); then
+            case $1 in
+                -e|--check-exists)
+                    __check_exists=1
+                    shift
+                    continue
+                    ;;
+                -E|--no-check-exists)
+                    __check_exists=0
+                    shift
+                    continue
+                    ;;
+                -m|--method)
+                    if (( $# < 2 )) || [[ $2 != prepend && $2 != append ]]; then
+                        printf 'path-add: invalid method: %s\n' "${2:-}" >&2
+                        return 1
+                    fi
+                    __method=$2
+                    shift 2
+                    continue
+                    ;;
+                -t|--target)
+                    if (( $# < 2 )) || [[ ! $2 =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+                        printf 'path-add: invalid target: %s\n' "${2:-}" >&2
+                        return 1
+                    fi
+                    __target=$2
+                    shift 2
+                    continue
+                    ;;
+                --)
+                    __parse_options=0
+                    shift
+                    continue
+                    ;;
+                -*)
+                    printf 'path-add: unknown option: %s\n' "$1" >&2
+                    return 1
+                    ;;
+            esac
+        fi
 
-    # zoxide
-    type zoxide &>/dev/null && eval "$(zoxide init bash --hook pwd)"
+        __path=$1
+        shift
 
-    # mise
-    type mise &>/dev/null && eval "$(mise activate bash)"
+        [[ -z $__path || $__path == *:* ]] && continue
+        (( __check_exists )) && [[ ! -d $__path ]] && continue
 
-    # Bash-Preexec
-    source "$DOTS_DATA_HOME/repositories/bash-preexec/bash-preexec.sh"
-    ;;
-esac
+        # 追加対象のパスが既に登録されていれば, すべて削除してから追加.
+        __value=":${!__target-}:"
+        while [[ $__value == *":$__path:"* ]]; do
+            __value=${__value//":$__path:"/:}
+        done
+        __value=${__value#:}
+        __value=${__value%:}
+
+        case $__method in
+            prepend) __value="$__path${__value:+:$__value}" ;;
+            append)  __value="${__value:+$__value:}$__path" ;;
+        esac
+
+        printf -v "$__target" '%s' "$__value"
+    done
+}
+
+# ====================================================================
+# Environment
+# ====================================================================
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+
+export LANG=en_US.UTF-8
+export LC_TIME=C
+
+# Homebrew
+if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+    export HOMEBREW_PREFIX="/home/linuxbrew/.linuxbrew"
+elif [[ -x /opt/homebrew/bin/brew ]]; then
+    export HOMEBREW_PREFIX="/opt/homebrew"
+fi
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+    path-add "$HOMEBREW_PREFIX/sbin" "$HOMEBREW_PREFIX/bin"
+
+    path-add --target INFOPATH "$HOMEBREW_PREFIX/share/info"
+    export INFOPATH="${INFOPATH%:}:"
+fi
+
+path-add "$HOME/.local/bin"
+
+# mise shims
+path-add "$XDG_DATA_HOME/mise/shims"
+
+# これより下は対話シェルのみ読み込む.
+case $- in *i*) ;; *) return ;; esac
+
+# ====================================================================
+# Interactive Environment
+# ====================================================================
+if command -v nvim >/dev/null; then
+    export EDITOR=nvim
+    export MANPAGER='nvim +Man!'
+    export MANWIDTH=999
+else
+    if command -v vim >/dev/null ; then
+        export EDITOR=vim
+    else
+        export EDITOR=vi
+    fi
+    export MANPAGER="${MANPAGER:-less}"
+fi
+export VISUAL="$EDITOR"
+
+export LESS='-FRX'
+# less の履歴ファイルをホームディレクトリに作らない.
+export LESSHISTFILE='-'
+
+[[ -t 0 ]] && export GPG_TTY=$(tty)
+
+# go-runewidth 系ツールで曖昧幅文字を半角として扱う.
+export RUNEWIDTH_EASTASIAN=0
+
+export DOTS_OS="${DOTS_OS:-$(uname -s)}"
+export DOTS_ISHELL="$BASH"
+
+# ====================================================================
+# Shell Behavior
+# ====================================================================
+shopt -s \
+    checkwinsize \
+    histappend \
+    histverify \
+    lithist
+# Bash v4 以降のオプション
+shopt -s \
+    autocd \
+    globstar \
+    progcomp_alias \
+    2>/dev/null || true
+
+set -o pipefail
+
+# History
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth # 直前重複履歴と空白始まりのコマンドを除外.
+
+# ====================================================================
+# Readline
+# ====================================================================
+# 利用可能な Bash バージョンは目安であり厳密には Readline のバージョンに依存.
+
+# Ctrl-R の履歴検索で大文字・小文字を区別しない (v5.3+)
+bind 'set search-ignore-case on' 2>/dev/null
+bind 'set completion-ignore-case on'
+
+# 補完候補に ls -F のような記号をつける.
+bind 'set visible-stats on'
+# LS_COLORS を参照して補完候補に色をつける (4.3+)
+bind 'set colored-stats on' 2>/dev/null
+# ディレクトリの symlink の補完候補に / をつける.
+bind 'set mark-symlinked-directories on'
+# Bracketed Paste を有効にする (4.4+)
+bind 'set enable-bracketed-paste on' 2>/dev/null
+
+# メニュー補完
+bind 'TAB: menu-complete'
+bind '"\e[Z": menu-complete-backward' 2>/dev/null # Shift-Tab (v4.1+)
+# Ctrl-D でカーソルが末尾にあるとき補完候補を表示する.
+bind '"\C-d": delete-char-or-list'
+# Tab 1回で共通部分の補完と候補一覧の表示.
+bind 'set show-all-if-ambiguous on'
+# Tab 1回目でまずは共通部分まで補完 (4.2+)
+bind 'set menu-complete-display-prefix on' 2>/dev/null
+# 単語途中の補完で右側が重複するのを防ぐ (4.1+)
+bind 'set skip-completed-text on' 2>/dev/null
+
+# Ctrl-S / Ctrl-Q の端末フロー制御を無効化.
+[[ -t 0 ]] && stty -ixon
+
+# ====================================================================
+# Prompt
+# ====================================================================
+__prompt_branch() {
+    local ret=$?
+    git rev-parse --git-dir >/dev/null 2>&1 || return $ret
+
+    local branch
+    branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) ||
+        branch=$(git rev-parse --short HEAD 2>/dev/null) || return $ret
+
+    printf ' [%s]' "$branch"
+    return $ret
+}
+
+PROMPT_DIRTRIM=3 # (4.0+)
+PS1='\[\e[1;33m\]\u@\h\[\e[0m\]:\[\e[32m\]\w\[\e[0m\]'
+command -v git >/dev/null && PS1="$PS1\[\e[34m\]\$(__prompt_branch)\[\e[0m\]"
+PS1="$PS1
+\[\e[1;\$([[ \$? -eq 0 ]] && printf '32' || printf '31')m\]${SHLVL#"${SHLVL:$((SHLVL - 1))}"}\$\[\e[0m\] "
+
+# ====================================================================
+# Integrations
+# ====================================================================
+command -v fzf  >/dev/null && eval "$(fzf --bash)"
+command -v mise >/dev/null && eval "$(mise activate bash)"
+
+# ====================================================================
+# Aliases & Functions
+# ====================================================================
+if command -v eza >/dev/null; then
+    alias ls='eza --color --icons --hyperlink --group-directories-first --group --git --time-style="+%y/%m/%d %H:%M"'
+elif command ls --version &>/dev/null; then
+    # GNU ls
+    alias ls="ls -hF --color=auto --time-style='+%Y-%m-%d %H:%M'"
+else
+    # BSD ls
+    alias ls="ls -hF -G -D '%Y-%m-%d %H:%M'"
+fi
+alias \
+    la='ls -A' \
+    ll='ls -l' \
+    li='ll -i' \
+    lla='ll -A' \
+    lai='lla -i'
+
+mkcd() { mkdir -p -- "$1" && builtin cd -- "$1"; }
+
+cdr() {
+    local root
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$HOME
+    builtin cd -- "$root${1:+/$1}"
+}
+
+chezmoi-toggle () {
+    local dir
+    dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/dev/null)"
+
+    if [[ -d "$dir" && -x "$dir" ]]; then
+        builtin cd -- "$dir"
+    elif [[ "$PWD" == "$HOME" ]]; then
+        builtin cd -- "$(chezmoi source-path)" || return
+    else
+        printf 'chezmoi-toggle: not in a chezmoi-managed directory.\n' >&2
+        return 1
+    fi
+}
+
+# vim: set ft=bash:
