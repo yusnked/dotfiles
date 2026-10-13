@@ -1,1 +1,0 @@
-alias imgcat='wezterm imgcat'
