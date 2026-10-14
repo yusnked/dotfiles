@@ -1,18 +1,9 @@
-if (( ! $# )); then
-    print -u2 'mkcd: missing operand.'
-    return 1
-fi
+emulate -L zsh
 
-command mkdir -p "$@" || return
+[[ -z "$1" ]] && printf 'mkcd: missing operand.\n' >&2 && return 1
+command mkdir -p -- "$1"
 
-local target
-target="${@[-1]}"
-
-if [[ -d "$target" && -x "$target" ]]; then
-    builtin cd -- "$target"
-else
-    print -u2 -- "mkcd: cannot change directory: $target"
-    return 1
-fi
+[[ ! -d "$1" || ! -x "$1" ]] && printf 'mkcd: cannot change directory: %s\n' "$1" >&2 && return 1
+builtin cd -- "$1"
 
 # vi: set ft=zsh:

@@ -1,6 +1,4 @@
-# Chezmoi toggle source-path <-> target-path
-
-(( $+commands[chezmoi] )) || return 127
+emulate -L zsh
 
 local dir
 dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/dev/null)"
@@ -8,9 +6,9 @@ dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/d
 if [[ -d "$dir" && -x "$dir" ]]; then
     builtin cd -- "$dir"
 elif [[ "$PWD" == "$HOME" ]]; then
-    builtin cd -- "$(chezmoi source-path)" || return
+    builtin cd -- "$(chezmoi source-path)"
 else
-    print -u2 'chezmoi-toggle: not in a chezmoi-managed directory.'
+    printf 'chezmoi-toggle: not in a chezmoi-managed directory.\n' >&2
     return 1
 fi
 

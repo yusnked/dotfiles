@@ -1,17 +1,13 @@
-local root_dir target_dir
+emulate -L zsh
 
-if (( $+commands[git] )); then
-    root_dir="${$(git rev-parse --show-toplevel 2>/dev/null):-"$HOME"}"
+local root dir
+root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$HOME
+dir="${root}${1:+/$1}"
+
+if [[ -d "$dir" && -x "$dir" ]]; then
+    builtin cd -- "$dir"
 else
-    root_dir=$HOME
-fi
-
-target_dir="${root_dir}${1:+/$1}"
-
-if [[ -d $target_dir ]]; then
-    builtin cd -- "$target_dir"
-else
-    print -u2 -- "cdr: no such directory: $target_dir"
+    printf 'cdr: cannot change directory: %s\n' "$dir" >&2
     return 1
 fi
 

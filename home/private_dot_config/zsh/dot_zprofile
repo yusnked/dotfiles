@@ -21,6 +21,12 @@ if [[ -x /opt/homebrew/bin/brew ]]; then
 elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
 fi
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+    path=(
+        "$HOMEBREW_PREFIX/opt/ffmpeg-full/bin"(N-/)
+        $path
+    )
+fi
 
 path=(
     "$XDG_DATA_HOME/mise/shims"(N-/)

@@ -108,15 +108,19 @@ elif [[ -x /opt/homebrew/bin/brew ]]; then
 fi
 if [[ -n "$HOMEBREW_PREFIX" ]]; then
     path-add "$HOMEBREW_PREFIX/sbin" "$HOMEBREW_PREFIX/bin"
+    path-add "$HOMEBREW_PREFIX/opt/ffmpeg-full/bin"
 
     path-add --target INFOPATH "$HOMEBREW_PREFIX/share/info"
-    export INFOPATH="${INFOPATH%:}:"
 fi
 
 path-add "$HOME/.local/bin"
 
 # mise shims
 path-add "$XDG_DATA_HOME/mise/shims"
+
+export INFOPATH="${INFOPATH%:}:"
+
+export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 
 # これより下は対話シェルのみ読み込む.
 case $- in *i*) ;; *) return ;; esac
@@ -147,7 +151,6 @@ export LESSHISTFILE='-'
 # go-runewidth 系ツールで曖昧幅文字を半角として扱う.
 export RUNEWIDTH_EASTASIAN=0
 
-export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 export DOTS_ISHELL="$BASH"
 
 # ====================================================================
@@ -165,6 +168,7 @@ shopt -s \
     progcomp_alias \
     2>/dev/null || true
 
+set -o ignoreeof
 set -o pipefail
 
 # History
@@ -189,6 +193,8 @@ bind 'set colored-stats on' 2>/dev/null
 bind 'set mark-symlinked-directories on'
 # Bracketed Paste を有効にする (4.4+)
 bind 'set enable-bracketed-paste on' 2>/dev/null
+# Readline の BEL 無効.
+bind 'set bell-style none'
 
 # メニュー補完
 bind 'TAB: menu-complete'
@@ -235,6 +241,47 @@ command -v mise >/dev/null && eval "$(mise activate bash)"
 # ====================================================================
 # Aliases & Functions
 # ====================================================================
+mkcd() {
+    [[ -z "$1" ]] && printf 'mkcd: missing operand.\n' >&2 && return 1
+    command mkdir -p -- "$1"
+
+    [[ ! -d "$1" || ! -x "$1" ]] && printf 'mkcd: cannot change directory: %s\n' "$1" >&2 && return 1
+    builtin cd -- "$1"
+}
+
+cdr() {
+    local root dir
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$HOME
+    dir="${root}${1:+/$1}"
+
+    if [[ -d "$dir" && -x "$dir" ]]; then
+        builtin cd -- "$dir"
+    else
+        printf 'cdr: cannot change directory: %s\n' "$dir" >&2
+        return 1
+    fi
+}
+
+# chezmoi
+if command -v chezmoi >/dev/null; then
+    alias chezmoi-reset-once='chezmoi state delete-bucket --bucket=scriptState'
+
+    chezmoi-toggle () {
+        local dir
+        dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/dev/null)"
+
+        if [[ -d "$dir" && -x "$dir" ]]; then
+            builtin cd -- "$dir"
+        elif [[ "$PWD" == "$HOME" ]]; then
+            builtin cd -- "$(chezmoi source-path)"
+        else
+            printf 'chezmoi-toggle: not in a chezmoi-managed directory.\n' >&2
+            return 1
+        fi
+    }
+fi
+
+# eza
 if command -v eza >/dev/null; then
     alias ls='eza --color --icons --hyperlink --group-directories-first --group --git --time-style="+%y/%m/%d %H:%M"'
 elif command ls --version &>/dev/null; then
@@ -251,26 +298,11 @@ alias \
     lla='ll -A' \
     lai='lla -i'
 
-mkcd() { mkdir -p -- "$1" && builtin cd -- "$1"; }
+# nvim
+if command -v nvim >/dev/null; then
+    alias \
+        vi='nvim' \
+        view='nvim -R'
+fi
 
-cdr() {
-    local root
-    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$HOME
-    builtin cd -- "$root${1:+/$1}"
-}
-
-chezmoi-toggle () {
-    local dir
-    dir="$(chezmoi target-path "$PWD" 2>/dev/null || chezmoi source-path "$PWD" 2>/dev/null)"
-
-    if [[ -d "$dir" && -x "$dir" ]]; then
-        builtin cd -- "$dir"
-    elif [[ "$PWD" == "$HOME" ]]; then
-        builtin cd -- "$(chezmoi source-path)" || return
-    else
-        printf 'chezmoi-toggle: not in a chezmoi-managed directory.\n' >&2
-        return 1
-    fi
-}
-
-# vim: set ft=bash:
+# vi: set ft=bash:
