@@ -1,27 +1,18 @@
 [[ -o interactive ]] || return
 [[ -v DOTS_ZPROFILE_LOADED ]] || source "$ZDOTDIR/.zprofile"
 
-# 端末ドライバ側で ^S/^Q による出力停止・再開を無効にする.
-[[ -t 0 ]] && stty -ixon
+# 変数属性は継承されないため、.zprofile だけでなくシェル起動ごとに設定する.
+typeset -U PATH path FPATH fpath
+typeset -TU INFOPATH infopath
 
-typeset -gU path fpath
-
-fpath[1,0]=("$ZDOTDIR/"{functions,completions})
-autoload -Uz __source_generated_cache __zcompile_sourced
-
-typeset -gaU __dots_sourced_paths=("$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc")
+typeset -aU __dots_sourced_paths=("$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc")
 source() {
     __dots_sourced_paths+="$1"
     builtin source "$@"
 }
 
-zsh-defer() {
-    autoload -Uz __zsh_defer_dummy
-    __zsh_defer_dummy "$@"
-}
-
 # メッセージをまとめて zle -I によるプロンプト再描画を(できるだけ)1回に抑える.
-typeset -ga __dots_rc_messages
+typeset -a __dots_rc_messages
 __rc_print() {
     if (( $+__dots_rc_messages )); then
         __dots_rc_messages+=("$1")
@@ -38,27 +29,40 @@ __rc_print_flush() {
     unset __dots_rc_messages
 }
 
+source "$ZDOTDIR/rc/env.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/completion.zsh"
 
+# plugins.zsh で zsh-defer が読み込まれるので遅延ロードはこれより下に書く.
+zsh-defer() { autoload -Uz __zsh_defer_dummy; __zsh_defer_dummy "$@"; }
 source "$ZDOTDIR/rc/plugins.zsh"
 
 source "$ZDOTDIR/rc/prompt.zsh"
-source "$ZDOTDIR/rc/bindkey.zsh"
-source "$ZDOTDIR/rc/env.zsh"
 
+# 端末側の ^S/^Q によるフロー制御を無効化.
+[[ -t 0 ]] && stty -ixon
+source "$ZDOTDIR/rc/bindkey.zsh"
+
+# mise
 zsh-defer -a -c '(( $+commands[mise] )) && eval "$(mise activate zsh)"'
 
 # zsh-patina activate は daemon 起動や socket path 生成を伴うためキャッシュ不可.
 zsh-defer -c '(( $+commands[zsh-patina] )) && eval "$(zsh-patina activate)"'
 
+# FPATH 設定は compinit より前, compdef を直接呼ぶ処理は compinit の後にする.
 autoload -Uz compinit
 zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
 zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"
 
-zsh-defer -a __zcompile_sourced
+zsh-defer -a -c '
+    if [[ -x /proc/$$/exe ]]; then
+        export DOTS_ISHELL=$(readlink /proc/$$/exe)
+    else
+        export DOTS_ISHELL=$(lsof -ap$$ -dtxt -Fn | sed "3!d;s/.//;q")
+    fi
+'
 
-zsh-defer -a __rc_print_flush
+zsh-defer -a -c 'autoload -Uz __zcompile_sourced; __zcompile_sourced; __rc_print_flush'
 
 # vi: set ft=zsh:

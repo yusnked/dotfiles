@@ -9,8 +9,12 @@ zvm_config() {
         git clone --depth=1 https://github.com/mattmc3/antidote "$antidote_git" || return 1
     fi
 
-    fpath[1,0]="$XDG_DATA_HOME/zsh/antidote/functions"
-    autoload -Uz antidote
+    # Antidote の関数ディレクトリを自前の関数の直後に追加 (なければ先頭).
+    local fpath_idx=${fpath[(i)$ZDOTDIR/completions]}
+    (( fpath_idx <= $#fpath )) || fpath_idx=0
+    fpath[fpath_idx+1,fpath_idx]=("$XDG_DATA_HOME/zsh/antidote/functions")
+
+    autoload -Uz antidote __source_generated_cache
 
     local antidote_cnf="$ZDOTDIR/antidote.txt"
     __source_generated_cache "$antidote_cnf" antidote.zsh "antidote bundle < ${(q)antidote_cnf}"
