@@ -3,6 +3,12 @@
 " ====================================================================
 scriptencoding utf-8
 
+" Ubuntu では vi は vim.tiny へのリンクで /etc/vim/vimrc.tiny を読み込み,
+" そこに set compatible の設定が含まれる.
+" そもそも vi 互換というなら vimrc を読むべきではないが, 勝手に読み込んで
+" 継続行でエラーを出してくるので改めて nocompatible をセットする.
+set nocompatible
+
 if v:version < 800
     echohl WarningMsg
     echomsg 'WARNING: This vimrc targets Vim 8.0+.' .
@@ -10,58 +16,76 @@ if v:version < 800
     echohl None
 endif
 
-if has('win32') || has('win64')
-    let s:is_root = 0
-elseif executable('id')
-    let s:is_root = trim(system('id -u')) ==# '0'
-else
-    let s:is_root = exists('$USER') && $USER ==# 'root'
-endif
-
-if s:is_root
-    set nomodeline
-    set secure
-endif
-set noexrc
-
 " ====================================================================
-" Options
+" Core
 " ====================================================================
+" 機能フラグによって利用できない一部のオプションは隠しオプションとなり,
+" 設定してもエラーにならず無視される (値の取得はエラー).
+
+" -eval (vim.tiny など) では式を使えないが, 先頭の if と endif のみ認識し
+" そのブロックをスキップする. ネストレベルも管理されるのでそれを逆手に取り
+" 1行で if 文を書くことでそれ以降の設定をスキップ出来る.
+
+" modeline は root 起動時に自動的に無効化される.
+
+" --- Options --------------------------------------------------------
 set encoding=utf-8
 set fileencoding=utf-8
 set fileencodings=ucs-bom,utf-8,cp932,default,latin1
 
+set confirm
+set hidden " 未保存でバッファ切替できるようにする.
 set mouse=a
 set belloff=all
 set shortmess=aoOtTCFI
 
+if has('title') && has('statusline')
+    set title
+    set titlestring=%t%(\ %M%)
+endif
+
 set number
-set numberwidth=4
+set numberwidth=4 " -linebreak な vim.tiny では無視される.
 set relativenumber
 set cursorline
 if exists('+cursorlineopt')
     set cursorlineopt=number
 endif
-set signcolumn=yes
 
 set list " 不可視文字を表示.
 set listchars=eol:↴,extends:…,nbsp:+,precedes:…,space:⋅,tab:>\ ,trail:-
 set ambiwidth=single
+
 set scrolloff=3
 set sidescrolloff=3
+set nowrap
+set virtualedit=block
 
 set expandtab
-set tabstop=8 " Tab文字の表示幅. 互換性の為8固定推奨(らしい)
+set tabstop=8 " Tab 文字の表示幅. 互換性の為 8 固定推奨 (らしい).
 set shiftwidth=4
 set softtabstop=-1 " 負の数指定でshiftwidthの値を使用.
 
-set hidden " バッファの切替で未保存で止められない.
-set virtualedit=block " Visual blockで仮想空白を許可.
-set nowrap
-set formatoptions-=ro  " コメント継続を禁止. r:挿入モード o:o/Oコマンド.
-
 set splitbelow
 set splitright
+
+" inline 未指定時は inline:simple として動作する.
+set diffopt=filler,closeoff
+if has('patch-8.1.0360') " (2018-09-11)
+    " macOS 標準搭載の Vim では 内部 diff エンジンが利用できない.
+    if !(has('mac') && $VIM ==# '/usr/share/vim')
+        set diffopt+=internal,indent-heuristic,algorithm:histogram
+    endif
+endif
+if has('patch-9.1.1009') " (2025-01-12)
+    set diffopt+=linematch:60
+endif
+if has('patch-9.1.1243') " (2025-03-27)
+    set diffopt+=inline:char
+endif
+
+" コメント継続を禁止. r: 挿入モード o: o/O コマンド.
+set formatoptions-=r formatoptions-=o
 
 set ignorecase
 set smartcase
@@ -73,38 +97,122 @@ if executable('rg')
     set grepformat=%f:%l:%c:%m
 endif
 
+if exists('+jumpoptions') " patch-9.0.1921 (2023-09-21)
+    set jumpoptions=stack
+endif
+
 set wildmenu
 set wildmode=longest:full,full
 set wildignorecase
 set wildignore+=*/.git/*,*/node_modules/*,*/__pycache__/*
 set wildignore+=*.swp,*.swo,*.tmp,*.bak,*.orig
-if has('patch-8.2.4463') " Vim: since 2022-02-24.
+if has('patch-8.2.4463') " (2022-02-24)
     set wildoptions=pum,tagfile,fuzzy
 endif
 
 set complete=.,w,b,u,t,i
 set completeopt=menuone,noselect
-" popup自体は8.1.1880 関連オプションのcompletepopupが導入されたのがこのパッチ.
-if has('patch-8.1.1882') " Vim: since 2019-08-18.
+if has('patch-8.1.1882') " (2019-08-18)
     set completeopt+=popup
 else
     set completeopt+=preview
 endif
-if has('patch-9.1.0463') " Vim: since 2024-06-03.
+if has('patch-9.1.0463') " (2024-06-03)
     set completeopt+=fuzzy
 endif
 
 set pumheight=15
-if exists('&pumwidth') | set pumwidth=20 | endif " Vim 8.0.1491+
-if exists('&pummaxwidth') | set pummaxwidth=60 | endif " Vim 9.1.1250+
+if exists('+pumwidth') " patch-8.0.1491 (2018-02-10)
+    set pumwidth=20
+endif
+if exists('+pummaxwidth') " patch-9.1.1250 (2025-03-28)
+    set pummaxwidth=60
+endif
 
 set timeoutlen=800 " マッピングの待ち時間.
 set ttimeoutlen=50 " 端末から来るキーコードの待ち時間.
 set updatetime=1000
 
+set noexrc
+
+" --- Maps -----------------------------------------------------------
+nnoremap gf gF
+nnoremap gF gf
+xnoremap gf gF
+xnoremap gF gf
+
+xnoremap p P
+xnoremap P p
+
+cnoremap <C-b> <Left>
+cnoremap <C-f> <Right>
+cnoremap <C-a> <Home>
+
+cnoremap <C-x>f <C-f>
+cnoremap <C-x>a <C-a>
+
+cnoremap <C-n>  <Down>
+cnoremap <C-p>  <Up>
+cnoremap <Down> <C-n>
+cnoremap <Up>   <C-p>
+
+nnoremap x "_x
+xnoremap x "_x
+
+nnoremap + "+
+xnoremap + "+
+
+" マッチ箇所を画面中央にしてfoldがあれば開く.
+nnoremap <silent> n nzzzv
+nnoremap <silent> N Nzzzv
+
+" * と # が次のマッチに移動しないようにする (妥協).
+nnoremap <silent> * :<C-u>keepjumps silent! normal! *N<CR>
+nnoremap <silent> # :<C-u>keepjumps silent! normal! #N<CR>
+
+nnoremap <silent> <Esc><Esc> :<C-u>nohlsearch<CR>
+
+nnoremap g= '[=']
+
+nnoremap <silent> [a :previous<CR>
+nnoremap <silent> ]a :next<CR>
+nnoremap <silent> [A :<C-u>first<CR>
+nnoremap <silent> ]A :<C-u>last<CR>
+nnoremap <silent> [b :bprevious<CR>
+nnoremap <silent> ]b :bnext<CR>
+nnoremap <silent> [B :<C-u>bfirst<CR>
+nnoremap <silent> ]B :<C-u>blast<CR>
+nnoremap <silent> [l :<C-u>lprevious<CR>
+nnoremap <silent> ]l :<C-u>lnext<CR>
+nnoremap <silent> [L :<C-u>lfirst<CR>
+nnoremap <silent> ]L :<C-u>llast<CR>
+nnoremap <silent> [<C-l> :lpfile<CR>
+nnoremap <silent> ]<C-l> :lnfile<CR>
+nnoremap <silent> [q :<C-u>cprevious<CR>
+nnoremap <silent> ]q :<C-u>cnext<CR>
+nnoremap <silent> [Q :<C-u>cfirst<CR>
+nnoremap <silent> ]Q :<C-u>clast<CR>
+nnoremap <silent> [<C-q> :cpfile<CR>
+nnoremap <silent> ]<C-q> :cnfile<CR>
+nnoremap <silent> [t :<C-u>tabprevious<CR>
+nnoremap <silent> ]t :<C-u>tabnext<CR>
+nnoremap <silent> [T :<C-u>tabfirst<CR>
+nnoremap <silent> ]T :<C-u>tablast<CR>
+
+" -eval でこれ以降の設定をスキップ.
+if 0 | endif
+
 " ====================================================================
 " Features
 " ====================================================================
+if has('win32') || has('win64')
+    let s:is_root = 0
+elseif executable('id')
+    let s:is_root = trim(system('id -u')) ==# '0'
+else
+    let s:is_root = exists('$USER') && $USER ==# 'root'
+endif
+
 " --- XDG paths ------------------------------------------------------
 if !s:is_root
     let s:cache_home = empty($XDG_CACHE_HOME) ?
@@ -299,39 +407,8 @@ let g:mapleader = "\<Space>"
 let g:maplocalleader = "\\"
 nnoremap <Space> <Nop>
 
-nnoremap gf gF
-nnoremap gF gf
-xnoremap gf gF
-xnoremap gF gf
-
-cnoremap <C-b> <Left>
-cnoremap <C-f> <Right>
-cnoremap <C-a> <Home>
-
-cnoremap <C-x>f <C-f>
-cnoremap <C-x>a <C-a>
-
-cnoremap <C-n>  <Down>
-cnoremap <C-p>  <Up>
-cnoremap <Down> <C-n>
-cnoremap <Up>   <C-p>
-
-nnoremap x "_x
-xnoremap x "_x
-
-" +は<CR>と同機能なので+レジスタ用にする.
-nnoremap + "+
-xnoremap + "+
 nnoremap <silent> ++ :<C-u>let @+=@"<Bar>echo 'Copied @" to clipboard.'<CR>
 nnoremap <silent> +% :<C-u>call <SID>YankBufnameOrFullPath()<CR>
-
-" マッチ箇所を画面中央にしてfoldがあれば開く.
-nnoremap <silent> n nzzzv
-nnoremap <silent> N Nzzzv
-
-" *と#が次のマッチに移動しないようにする. (妥協)
-nnoremap <silent> * :<C-u>keepjumps silent! normal! *N<CR>
-nnoremap <silent> # :<C-u>keepjumps silent! normal! #N<CR>
 
 xnoremap * :<C-u>call <SID>VisualSetSearch()<Bar>let v:hlsearch=1
             \ <Bar>let v:searchforward=1<CR>
@@ -343,8 +420,6 @@ nnoremap <silent> g* :<C-u>call <SID>CWORDSetSearch()<Bar>let v:hlsearch=1
 nnoremap <silent> g# :<C-u>call <SID>CWORDSetSearch()<Bar>let v:hlsearch=1
             \ <Bar>let v:searchforward=0<CR>
 
-nnoremap <silent> <Esc><Esc> :<C-u>nohlsearch<CR>
-
 " <C-x><C-f>ファイル補完時に/で更にファイル補完.
 if exists('*complete_info') " *complete_info: 8.1.1068+
     inoremap <expr> / complete_info(['mode']).mode == 'files'
@@ -352,8 +427,6 @@ if exists('*complete_info') " *complete_info: 8.1.1068+
                 \ ? '<c-x><c-f>'
                 \ : '/'
 endif
-
-nnoremap g= '[=']
 
 xnoremap <expr> A  call(function('<SID>NeoVisualLine'), ['A'])
 xnoremap <expr> I  call(function('<SID>NeoVisualLine'), ['I'])
@@ -364,26 +437,6 @@ nnoremap <silent> gco :<C-u>call <SID>CommentInsertAoO('o')<CR>
 nnoremap <silent> gcO :<C-u>call <SID>CommentInsertAoO('O')<CR>
 
 " vim-unimpaired-like mappings
-nnoremap <silent> [a :previous<CR>
-nnoremap <silent> ]a :next<CR>
-nnoremap <silent> [A :rewind<CR>
-nnoremap <silent> ]A :last<CR>
-nnoremap <silent> [b :bprevious<CR>
-nnoremap <silent> ]b :bnext<CR>
-nnoremap <silent> [B :brewind<CR>
-nnoremap <silent> ]B :blast<CR>
-nnoremap <silent> [l :lprevious<CR>
-nnoremap <silent> ]l :lnext<CR>
-nnoremap <silent> [L :lrewind<CR>
-nnoremap <silent> ]L :llast<CR>
-nnoremap <silent> [<C-l> :lpfile<CR>
-nnoremap <silent> ]<C-l> :lnfile<CR>
-nnoremap <silent> [q :cprevious<CR>
-nnoremap <silent> ]q :cnext<CR>
-nnoremap <silent> [Q :crewind<CR>
-nnoremap <silent> ]Q :clast<CR>
-nnoremap <silent> [<C-q> :cpfile<CR>
-nnoremap <silent> ]<C-q> :cnfile<CR>
 nnoremap <silent> [t :<C-u>call TabJump('prev')<CR>
 nnoremap <silent> ]t :<C-u>call TabJump('next')<CR>
 nnoremap <silent> [T :<C-u>call TabJump('first')<CR>
@@ -437,9 +490,9 @@ function! s:PackAdd(name, ...) abort
 endfunction
 
 if exists(':packadd')
-    call s:PackAdd('comment', 'patch-9.1.0375') " 2024-04-26 ~
-    call s:PackAdd('editorconfig', 'patch-9.0.1799') " 2023-08-29 ~
-    call s:PackAdd('hlyank', 'patch-9.1.1228') " 2025-03-22 ~
+    call s:PackAdd('comment', 'patch-9.1.0375') " (2024-04-26)
+    call s:PackAdd('editorconfig', 'patch-9.0.1799') " (2023-08-29)
+    call s:PackAdd('hlyank', 'patch-9.1.1228') " (2025-03-22)
     call s:PackAdd('matchit')
 else
     runtime! macros/matchit.vim
@@ -459,7 +512,7 @@ function! s:GetVisualText() abort
     endtry
 endfunction
 
-" 同IDはデバウンスし、最後のタイマーだけ実行する.
+" 同 ID はデバウンスし, 最後のタイマーだけ実行する.
 let s:defer_latest_tbl = {}
 function! s:DeferLatest__Fire(id, _timer) abort
     if !has_key(s:defer_latest_tbl, a:id) | return | endif
@@ -488,7 +541,7 @@ endfunction
 " ====================================================================
 " Functions: Map
 " ====================================================================
-" Visual選択を検索レジスタ(@/)へセット(search_cmd: '/' or '?')
+" Visual 選択を検索レジスタ (@/) へセット (search_cmd: '/' or '?').
 function! s:VisualSetSearch() abort
     let pat = escape(s:GetVisualText(), '\\/')
     if empty(pat) | return | endif
@@ -497,7 +550,7 @@ function! s:VisualSetSearch() abort
     keepjumps normal! `<
 endfunction
 
-" <cWORD>を@/にセットして最初の位置にカーソル移動. (*の<cWORD>版)
+" <cWORD> を @/ にセットして最初の位置にカーソル移動 (*の<cWORD>版).
 function! s:CWORDSetSearch() abort
     let pat = escape(expand('<cWORD>'), '\\/')
     if empty(pat) | return | endif
@@ -514,7 +567,7 @@ function! s:CWORDSetSearch() abort
     execute 'keepjumps normal! ' . motion
 endfunction
 
-" <C-v>での一括挿入をVの行モードにも追加.
+" <C-v> での一括挿入を V の行モードにも追加.
 let s:neo_visual_line_tbl =
             \ {'A': "\<C-v>0o$A", 'I': "\<C-v>^o^I", 'gI': "\<C-v>0o$I"}
 function! s:NeoVisualLine(rhs) abort
@@ -528,7 +581,7 @@ function! s:YankBufnameOrFullPath() abort
     echo 'Copied ' . (!empty(path) ? 'full path' : 'buffer name') . ' to @+.'
 endfunction
 
-" タブ移動. Countは[t系は繰り返し. [T系はそのIDのタブへ.
+" タブ移動. Count は [t 系は繰り返し. [T 系はその ID のタブへ.
 function! TabJump(kind) abort
     let last = tabpagenr('$')
     if last <= 1 | return | endif
@@ -547,7 +600,7 @@ function! TabJump(kind) abort
     execute 'tabnext' tabnr
 endfunction
 
-" 空行を[count]行だけ挿入してカーソル位置/画面位置を完全に元に戻す.
+" 空行を count 行だけ挿入してカーソル位置 / 画面位置を完全に元に戻す.
 function! s:PutBlankLines(below, count) abort
     let view = winsaveview()
     let c = a:count > 0 ? a:count : 1
@@ -593,7 +646,7 @@ function! s:SubwordRange() abort
     if c < 0 | let c = 0 | endif
     if c >= n | let c = n - 1 | endif
 
-    " delimiter上なら隣へ寄せる.
+    " delimiter 上なら隣へ寄せる.
     if l[c] =~# '[_-]'
         if c+1 < n && l[c+1] =~# '\k' | let c += 1
         elseif c > 0 && l[c-1] =~# '\k' | let c -= 1
@@ -647,7 +700,7 @@ function! s:RelNumOnScroll() abort
     if !&number | return | endif
     if &relativenumber | set norelativenumber | endif
 
-    " 700msスクロールが止まったら相対行に戻す(Insert mode以外)
+    " 700ms スクロールが止まったら相対行に戻す (Insert mode以外).
     call s:DeferLatest('s:RelNumOnScroll', 700, function('s:RelNumRestore'))
 endfunction
 
@@ -684,7 +737,7 @@ endfunction
 
 " --- Autoread checktime ---------------------------------------------
 function! s:AutoReadChecktime() abort
-    " cmdline-windowでchecktimeすると事故ることがあるので回避.
+    " cmdline-window で checktime すると事故ることがあるので回避.
     if !empty(getcmdwintype()) | return | endif
 
     if mode() ==# 'c' | return | endif
