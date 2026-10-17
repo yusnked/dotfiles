@@ -1,13 +1,9 @@
-# chezmoi:template:missing-key=invalid
-{{ if and (ne .xdg.configR nil) (ne .xdg.dataR nil) -}}
-
 ['.config/delta/themes.gitconfig']
     type = 'file'
     url = 'https://raw.githubusercontent.com/dandavison/delta/main/themes.gitconfig'
     refreshPeriod = '720h'
 
-['{{ .xdg.configR }}/tmux/plugins/tpm']
+['.config/tmux/plugins/tpm']
     type = 'git-repo'
     url = 'https://github.com/tmux-plugins/tpm.git'
-
-{{ end -}}
+    refreshPeriod = '720h'

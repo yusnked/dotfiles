@@ -2,37 +2,8 @@
 {{- /* https://www.chezmoi.io/user-guide/templating/ */ -}}
 {{- /* https://www.chezmoi.io/reference/templates/ */ -}}
 
-{{- /* XDG Base Directory */ -}}
-{{ $xdgCache := env "XDG_CACHE_HOME" -}}
-{{ if not $xdgCache -}}
-{{   $xdgCache = joinPath .chezmoi.homeDir ".cache" -}}
-{{ end -}}
-{{ $xdgConfig := env "XDG_CONFIG_HOME" -}}
-{{ if not $xdgConfig -}}
-{{   $xdgConfig = joinPath .chezmoi.homeDir ".config" -}}
-{{ end -}}
-{{ $xdgConfigSrc := output .chezmoi.executable "source-path" $xdgConfig | trim -}}
-{{ $xdgData := env "XDG_DATA_HOME" -}}
-{{ if not $xdgData -}}
-{{   $xdgData = joinPath .chezmoi.homeDir ".local/share" -}}
-{{ end -}}
-{{ $xdgState := env "XDG_STATE_HOME" -}}
-{{ if not $xdgState -}}
-{{   $xdgState = joinPath .chezmoi.homeDir ".local/state" -}}
-{{ end -}}
-
 [data]
 name  = {{ promptString "name" "yusnked" | quote }}
 email = {{ promptString "email" "yusnked@gmail.com" | quote }}
 
 packages.isDevelopment = {{ promptBoolOnce . "packages.isDevelopment" "Install development tools" }}
-
-# XDG Base Directory
-{{ $trimHomeDir := print .chezmoi.homeDir "/" -}}
-xdg.cache     = {{ $xdgCache | quote }}
-xdg.config    = {{ $xdgConfig | quote }}
-xdg.configR   = {{ $xdgConfig | trimPrefix $trimHomeDir | quote }}
-xdg.configSrc = {{ $xdgConfigSrc | quote }}
-xdg.data      = {{ $xdgData | quote }}
-xdg.dataR     = {{ $xdgData | trimPrefix $trimHomeDir | quote }}
-xdg.state     = {{ $xdgState | quote }}
