@@ -29,6 +29,8 @@ __rc_print_flush() {
     unset __dots_rc_messages
 }
 
+autoload -Uz __cache_source
+
 source "$ZDOTDIR/rc/env.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/completion.zsh"
@@ -54,7 +56,7 @@ autoload -Uz compinit
 zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
 
 # zoxide (after compinit)
-zsh-defer -a __source_generated_cache "${commands[zoxide]}" zoxide.zsh 'zoxide init zsh'
+zsh-defer -a __cache_source "$commands[zoxide]" 'zoxide init zsh'
 
 zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"
 

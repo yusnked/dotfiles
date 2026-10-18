@@ -1,4 +1,5 @@
 alias \
+    __cache_source_reset='rm -f "$XDG_CACHE_HOME/zsh/source/"*.{zsh,zwc}(N.)' \
     alz='autoload -Uz'
 
 autoload -Uz \

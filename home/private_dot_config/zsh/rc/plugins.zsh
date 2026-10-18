@@ -14,8 +14,8 @@ zvm_config() {
     (( fpath_idx <= $#fpath )) || fpath_idx=0
     fpath[fpath_idx+1,fpath_idx]=("$XDG_DATA_HOME/zsh/antidote/functions")
 
-    autoload -Uz antidote __source_generated_cache
+    autoload -Uz antidote
 
     local antidote_cnf="$ZDOTDIR/antidote.txt"
-    __source_generated_cache "$antidote_cnf" antidote.zsh "antidote bundle < ${(q)antidote_cnf}"
+    __cache_source "$antidote_cnf" "antidote bundle < ${(q)antidote_cnf}"
 }

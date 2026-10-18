@@ -1,0 +1,105 @@
+local watch="$1" cmdline="$2" env="$3"
+# cmdline + env が長すぎるとファイル名の 255 バイト制限に引っかかる問題がある.
+# 文字を % に置換するためキャッシュの衝突可能性もある (問題になるなら prefix="$4" を追加する).
+local name="${cmdline//[^a-zA-Z0-9_.+=,@:-]/%}"
+local cache="$XDG_CACHE_HOME/zsh/source/${name}${env:+--}${env:-}.zsh"
+
+# キャッシュが有効なホットパスでは1回の判定で読み込めるようにする.
+if [[ ! "$watch" -ot "$cache" ]]; then
+    () {
+        emulate -L zsh
+
+        __dots_sgc_message () {
+            local esc_num=33
+            [[ "$1" == ERROR* ]] && esc_num=31
+            (( $+functions[__rc_print] )) && __rc_print "\e[1;${esc_num}m${1}\e[0m: ${(D)cache}"
+            return 0
+        }
+
+        {
+            if [[ ! -e "$watch" ]]; then
+                __dots_sgc_message "ERROR(watch)"
+                return 1
+            fi
+
+            local pattern='^[A-Z_][A-Z0-9_]*$'
+            if [[ -n "$env" && ! "$env" =~ $pattern ]]; then
+                __dots_sgc_message "ERROR(env)"
+                return 1
+            fi
+
+            local cmd=${${(z)cmdline}[1]}
+
+            # cmd が現在の環境で使える外部コマンド, 実行可能な絶対パス, または関数でなければ
+            # その環境では不要なキャッシュとして, エラーメッセージを出さずに戻る.
+            if ! {
+                (( $+commands[$cmd] )) ||
+                [[ "$cmd" == /* && -x "$cmd" ]] ||
+                (( $+functions[$cmd] ))
+            }; then
+                return 1
+            fi
+
+            if [[ ! -d "${cache:h}" ]] && ! command mkdir -p -- "${cache:h}"; then
+                __dots_sgc_message "ERROR(mkdir)"
+                return 1
+            fi
+
+            local tmp="${cache}.$$"
+
+            if [[ -n "$env" ]]; then
+                local value
+
+                if ! value="$(eval "$cmdline")"; then
+                    __dots_sgc_message "ERROR(cmd)"
+                    return 1
+                fi
+
+                # シングルクォートをエスケープ (${(q)value} より高速).
+                local escaped=${value//\'/\'\\\'\'}
+                if ! print -r -- "export $env='$escaped'" > "$tmp"; then
+                    __dots_sgc_message "ERROR(write)"
+                    return 1
+                fi
+            else
+                if ! eval "$cmdline" > "$tmp"; then
+                    __dots_sgc_message "ERROR(cmd)"
+                    return 1
+                fi
+            fi
+
+            if ! command mv -f -- "$tmp" "$cache"; then
+                __dots_sgc_message "ERROR(mv)"
+                return 1
+            fi
+
+            __dots_sgc_message Cached
+        } always {
+            [[ -n "$tmp" && -e "$tmp" ]] && command rm -f -- "$tmp"
+            unset -f __dots_sgc_message 2>/dev/null
+        }
+    } || return
+fi
+
+source "$cache"
+
+# Benchmark
+#
+# Zsh: 5.9.2
+# Iterations: 300 per method
+#
+# === zoxide (cmdline) ===
+# Command: zoxide init zsh
+# direct eval                                      3149.660 µs/op
+# __cache_source (plain)                            189.614 µs/op
+# __cache_source (.zwc)                             129.470 µs/op
+#
+# === vivid (cmdline + env) ===
+# Command: vivid generate dracula
+# direct eval/export                               5157.820 µs/op
+# __cache_source (plain, ${(q)value})               501.846 µs/op
+# __cache_source (plain, ${value//\'/\'\\\'\'})     343.796 µs/op
+# __cache_source (.zwc,  ${(q)value})               297.776 µs/op
+# __cache_source (.zwc,  ${value//\'/\'\\\'\'})     190.086 µs/op
+
+# vi: set ft=zsh:
