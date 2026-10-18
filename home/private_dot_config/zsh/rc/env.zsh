@@ -23,3 +23,9 @@ export RUNEWIDTH_EASTASIAN=0
 
 # zoxide のデータベースが保存されるディレクトリ. 存在しなくても自動で作成される.
 export _ZO_DATA_DIR="$XDG_DATA_HOME/zoxide"
+
+# vivid (LS_COLORS)
+() {
+    [[ "$COLORTERM" != truecolor ]] && local no_tc='--color-mode 8-bit '
+    __cache_source "$commands[vivid]" "vivid ${no_tc-}generate tokyonight-night" LS_COLORS
+}
