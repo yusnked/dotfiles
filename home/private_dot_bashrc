@@ -125,6 +125,9 @@ export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 # これより下は対話シェルのみ読み込む.
 case $- in *i*) ;; *) return ;; esac
 
+# Ghostty シェル統合 (できるだけ先頭で読み込む).
+[[ -n "$GHOSTTY_RESOURCES_DIR" ]] && source "$GHOSTTY_RESOURCES_DIR/shell-integration/bash/ghostty.bash"
+
 # ====================================================================
 # Interactive Environment
 # ====================================================================

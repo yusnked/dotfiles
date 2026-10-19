@@ -18,6 +18,16 @@ source "$ZDOTDIR/rc/env.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/completion.zsh"
 
+# Ghostty シェル統合 (プラグインの前に読み込む方が良い).
+# 奇妙な書き方はキャッシュパスの短縮・一定化のため.
+if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
+    () {
+        local integration="/shell-integration/zsh/ghostty-integration"
+        __cache_source "$GHOSTTY_RESOURCES_DIR$integration" \
+            'cat "$GHOSTTY_RESOURCES_DIR'$integration'"'
+    }
+fi
+
 # plugins.zsh で zsh-defer が読み込まれるので遅延ロードはこれより下に書く.
 zsh-defer() { autoload -Uz __zsh_defer_dummy; __zsh_defer_dummy "$@"; }
 source "$ZDOTDIR/rc/plugins.zsh"

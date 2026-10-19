@@ -1,3 +1,6 @@
+command = shell:$HOME/.config/ghostty/scripts/command.sh
+shell-integration = none
+
 font-family = HackGen Console NF
 font-size = 16
 theme = tokyonight
