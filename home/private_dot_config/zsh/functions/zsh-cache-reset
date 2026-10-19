@@ -1,0 +1,11 @@
+emulate -L zsh
+
+[[ -n "$XDG_CACHE_HOME" ]] || return 1
+
+command rm -f -- \
+    "$XDG_CACHE_HOME/zsh/source/"*.{zsh,zwc}(N.) \
+    "$XDG_CACHE_HOME/zsh/zcompcache/"*(N.) \
+    "$XDG_CACHE_HOME/zsh/zcompdump/zsh-"*{,.zwc}(N.) \
+    2>/dev/null
+
+# vi: set ft=zsh:

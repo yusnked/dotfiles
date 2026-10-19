@@ -1,0 +1,28 @@
+# 対話シェルで起動時のメッセージをまとめて zle -I によるプロンプト再描画を
+# (できるだけ)1回に抑える. flush 前はメッセージを蓄積し, 以降は即時出力する.
+typeset -ga __dots_rc_messages
+
+__rc_print() {
+    emulate -L zsh
+
+    if (( $+__dots_rc_messages )); then
+        __dots_rc_messages+=("$1")
+    else
+        zle -I
+        print -u2 -- "$1"
+    fi
+}
+
+__rc_print_flush() {
+    emulate -L zsh
+
+    if (( ${#__dots_rc_messages} )); then
+        zle -I
+        print -lu2 -- "${__dots_rc_messages[@]}"
+    fi
+    unset __dots_rc_messages
+}
+
+__rc_print "$@"
+
+# vi: set ft=zsh:

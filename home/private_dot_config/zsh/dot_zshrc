@@ -1,35 +1,18 @@
 [[ -o interactive ]] || return
-[[ -v DOTS_ZPROFILE_LOADED ]] || source "$ZDOTDIR/.zprofile"
 
-# 変数属性は継承されないため、.zprofile だけでなくシェル起動ごとに設定する.
-typeset -U PATH path FPATH fpath
-typeset -TU INFOPATH infopath
+if [[ -v DOTS_ZPROFILE_LOADED ]]; then
+    # 非ログインシェル時に必要な設定を再度書く.
+    typeset -aU __dots_zcompile_paths
+    source() { __dots_zcompile_paths+=("$1"); builtin source "$@"; }
 
-typeset -aU __dots_sourced_paths=("$ZDOTDIR/.zprofile" "$ZDOTDIR/.zshrc")
-source() {
-    __dots_sourced_paths+="$1"
-    builtin source "$@"
-}
+    autoload -Uz __rc_print __cache_source
 
-# メッセージをまとめて zle -I によるプロンプト再描画を(できるだけ)1回に抑える.
-typeset -a __dots_rc_messages
-__rc_print() {
-    if (( $+__dots_rc_messages )); then
-        __dots_rc_messages+=("$1")
-    else
-        zle -I
-        print -u2 -- "$1"
-    fi
-}
-__rc_print_flush() {
-    if (( ${#__dots_rc_messages} )); then
-        zle -I
-        print -lu2 -- "${__dots_rc_messages[@]}"
-    fi
-    unset __dots_rc_messages
-}
-
-autoload -Uz __cache_source
+    typeset -U PATH path FPATH fpath
+    typeset -TU INFOPATH infopath
+else
+    source "$ZDOTDIR/.zprofile"
+fi
+__dots_zcompile_paths+=("$ZDOTDIR/.zshrc")
 
 source "$ZDOTDIR/rc/env.zsh"
 source "$ZDOTDIR/rc/options.zsh"
@@ -51,9 +34,15 @@ zsh-defer -a -c '(( $+commands[mise] )) && eval "$(mise activate zsh)"'
 # zsh-patina activate は daemon 起動や socket path 生成を伴うためキャッシュ不可.
 zsh-defer -c '(( $+commands[zsh-patina] )) && eval "$(zsh-patina activate)"'
 
-# FPATH 設定は compinit より前, compdef を直接呼ぶ処理は compinit の後にする.
-autoload -Uz compinit
-zsh-defer -a +p +r compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
+# compinit
+# FPATH 設定はこれより前, compdef を直接呼ぶ処理は zsh-defer を使ってこれより後に書く.
+() {
+    # 環境によって FPATH が異なり zcompdump の再生成が頻発することがあるので分ける.
+    local dump="$XDG_CACHE_HOME/zsh/zcompdump/zsh-${ZSH_VERSION}-${TERM_PROGRAM:-unknown}"
+    __dots_zcompile_paths+=("$dump")
+    autoload -Uz compinit
+    zsh-defer -a +p +r compinit -d "$dump"
+}
 
 # zoxide (after compinit)
 zsh-defer -a __cache_source "$commands[zoxide]" 'zoxide init zsh'
@@ -68,6 +57,9 @@ zsh-defer -a -c '
     fi
 '
 
-zsh-defer -a -c 'autoload -Uz __zcompile_sourced; __zcompile_sourced; __rc_print_flush'
+zsh-defer -a -c '
+    autoload -Uz __zcompile_paths && __zcompile_paths
+    (( $+functions[__rc_print_flush] )) && __rc_print_flush
+'
 
 # vi: set ft=zsh:

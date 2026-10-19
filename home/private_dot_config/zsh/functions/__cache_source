@@ -40,11 +40,6 @@ if [[ ! "$watch" -ot "$cache" ]]; then
                 return 1
             fi
 
-            if [[ ! -d "${cache:h}" ]] && ! command mkdir -p -- "${cache:h}"; then
-                __dots_sgc_message "ERROR(mkdir)"
-                return 1
-            fi
-
             local tmp="${cache}.$$"
 
             if [[ -n "$env" ]]; then

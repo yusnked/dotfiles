@@ -1,9 +1,9 @@
 emulate -L zsh
 
-(( ${#__dots_sourced_paths[@]} )) || return
+(( ${#__dots_zcompile_paths[@]} )) || return
 
 local src
-for src in "${__dots_sourced_paths[@]}"; do
+for src in "${__dots_zcompile_paths[@]}"; do
     # [[ ! "$src" -ot "${src}.zwc" ]] の比較の仕方はキャッシュが古い場合とない場合を
     # 同時に扱えて便利な一方, mtime が粗いファイルシステムだと同じ時刻に丸められて
     # 毎回コンパイルが走る可能性がある.

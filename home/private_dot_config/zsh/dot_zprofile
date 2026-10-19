@@ -4,23 +4,39 @@ export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 
 () {
-    local xdg dir
-    for xdg in XDG_{DATA,STATE,CACHE}_HOME; do
-        dir="${(P)xdg}/zsh"
-        [[ -d "$dir" ]] || command mkdir -p -- "$dir"
+    local dirs=(
+        "$XDG_CACHE_HOME/zsh/source"
+        "$XDG_CACHE_HOME/zsh/zcompdump"
+        "$XDG_DATA_HOME/zsh"
+        "$XDG_STATE_HOME/zsh"
+        )
+    for dir in "${dirs[@]}"; do
+        [[ -d "$dir" ]] || command mkdir -m 0700 -p -- "$dir"
     done
 }
+
+# 後で zcompile するファイルのパスを記録する.
+typeset -aU __dots_zcompile_paths
+__dots_zcompile_paths+=("$ZDOTDIR/.zprofile")
+source() { __dots_zcompile_paths+=("$1"); builtin source "$@"; }
+
+autoload -Uz "$ZDOTDIR/functions/__cache_source"
+[[ -o interactive ]] && autoload -Uz "$ZDOTDIR/functions/__rc_print"
 
 # -U の重複削除は配列だけでなく,-T で配列と連動したスカラーにも効く.
 typeset -xU PATH path FPATH fpath
 typeset -xTU INFOPATH infopath
 
 # Homebrew
-if [[ -x /opt/homebrew/bin/brew ]]; then
-    eval "$(/opt/homebrew/bin/brew shellenv zsh)"
-elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
-fi
+() {
+    local brew
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        brew=/opt/homebrew/bin/brew
+    elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+        brew=/home/linuxbrew/.linuxbrew/bin/brew
+    fi
+    [[ -n $brew ]] && __cache_source $brew "$brew shellenv zsh"
+}
 if [[ -n "$HOMEBREW_PREFIX" ]]; then
     path=(
         "$HOMEBREW_PREFIX/opt/ffmpeg-full/bin"(N-/)

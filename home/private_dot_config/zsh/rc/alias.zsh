@@ -1,11 +1,11 @@
 alias \
-    __cache_source_reset='rm -f "$XDG_CACHE_HOME/zsh/source/"*.{zsh,zwc}(N.)' \
     alz='autoload -Uz'
 
 autoload -Uz \
     cdf \
     cdr \
-    mkcd
+    mkcd \
+    zsh-cache-reset
 
 if (( $+commands[7zz] )); then
     alias 7za="7zz a -mx=9 -md=64M -xr'!.DS_Store' -xr'!__MACOSX' -xr'!.AppleDouble' -xr'!.Spotlight-V100' -xr'!.fseventsd'"

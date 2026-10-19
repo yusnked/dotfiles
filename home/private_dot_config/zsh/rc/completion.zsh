@@ -40,6 +40,7 @@ setopt LIST_PACKED
 # Completion Styles
 # ==========================================================
 
+# cache-path のディレクトリは存在しなくても自動生成される.
 zstyle ':completion:*' use-cache true
 zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/zcompcache"
 
