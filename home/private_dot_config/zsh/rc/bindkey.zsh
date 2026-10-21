@@ -2,7 +2,7 @@ __bindkey_copy_emacs_esc_bindings_to_viins_ctrl_q() {
     local line
     local -a keylist
     bindkey -pM emacs '^[' | while IFS= read -r line; do
-        # 矢印キー系 (^[[, ^[O) のバインドは除外.
+        # 矢印キーのエスケープシーケンス (^[[, ^[O) に対応するバインドは除外する.
         [[ "$line" == \"\^\[[O[]* ]] && continue
         keylist+=( "^Q${${(Q)${line%% *}}#\^\[}" "${line#* }" )
     done
@@ -49,6 +49,6 @@ __bindkey_setup() {
 if [[ -n "$ZVM_VERSION" ]]; then
     zvm_after_init_commands+=(__bindkey_setup)
 else
-    # zsh-vi-mode がロードされてなければフォールバック.
-    zsh-defer -a -c '__bindkey_setup emacs'
+    # zsh-vi-mode がロードされてなければフォールバックする.
+    zsh-defer -a __bindkey_setup emacs
 fi

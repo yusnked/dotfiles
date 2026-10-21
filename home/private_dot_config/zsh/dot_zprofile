@@ -23,7 +23,7 @@ source() { __dots_zcompile_paths+=("$1"); builtin source "$@"; }
 autoload -Uz "$ZDOTDIR/functions/__cache_source"
 [[ -o interactive ]] && autoload -Uz "$ZDOTDIR/functions/__rc_print"
 
-# -U の重複削除は配列だけでなく,-T で配列と連動したスカラーにも効く.
+# -U の重複削除は配列だけでなく, -T で配列と連動したスカラーにも適用される.
 typeset -xU PATH path FPATH fpath
 typeset -xTU INFOPATH infopath
 
@@ -56,13 +56,13 @@ fpath=(
     $fpath
 )
 
-# GNU Info で INFOPATH の末尾に : (空エントリ) を置くとデフォルトの検索パスも使われる.
+# GNU Info では INFOPATH の末尾に : (空エントリ) を置くとデフォルトの検索パスも使われる.
 INFOPATH="${INFOPATH%:}:"
 
 export LANG=en_US.UTF-8
 export LC_TIME=C
 
-# zsh のビルド対象で良ければ OSTYPE シェル変数も使える. (例 darwin25.0)
+# zsh のビルド対象で良ければ OSTYPE シェル変数も使える (例 darwin25.0).
 export DOTS_OS="${DOTS_OS:-$(uname -s)}"
 
 export DOTS_ZPROFILE_LOADED=1

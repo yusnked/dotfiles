@@ -1,8 +1,8 @@
-# Named directories.
-hash -d dots="$HOME/.local/share/chezmoi"
+# Named directories
+hash -d dots="$XDG_DATA_HOME/chezmoi"
 hash -d dots-config=~dots/home/private_dot_config
 
-# Prompt.
+# Prompt
 autoload -Uz promptinit && promptinit
 
 if [[ "$FPATH" == *powerlevel10k* ]]; then

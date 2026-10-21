@@ -1,7 +1,7 @@
 [[ -o interactive ]] || return
 
 if [[ -v DOTS_ZPROFILE_LOADED ]]; then
-    # 非ログインシェル時に必要な設定を再度書く.
+    # zprofile に含まれる非ログインシェル時にも必要な設定をここで行う.
     typeset -aU __dots_zcompile_paths
     source() { __dots_zcompile_paths+=("$1"); builtin source "$@"; }
 
@@ -18,8 +18,8 @@ source "$ZDOTDIR/rc/env.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/completion.zsh"
 
-# Ghostty シェル統合 (プラグインの前に読み込む方が良い).
-# 奇妙な書き方はキャッシュパスの短縮・一定化のため.
+# Ghostty シェル統合 (プラグインより先に読み込む).
+# キャッシュパスの短縮・一定化の為 GHOSTTY_RESOURCES_DIR を展開せずに渡す.
 if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
     () {
         local integration="/shell-integration/zsh/ghostty-integration"
@@ -34,7 +34,7 @@ source "$ZDOTDIR/rc/plugins.zsh"
 
 source "$ZDOTDIR/rc/prompt.zsh"
 
-# 端末側の ^S/^Q によるフロー制御を無効化.
+# 端末側の ^S / ^Q によるフロー制御を無効化する.
 [[ -t 0 ]] && stty -ixon
 source "$ZDOTDIR/rc/bindkey.zsh"
 
@@ -45,16 +45,17 @@ zsh-defer -a -c '(( $+commands[mise] )) && eval "$(mise activate zsh)"'
 zsh-defer -c '(( $+commands[zsh-patina] )) && eval "$(zsh-patina activate)"'
 
 # compinit
-# FPATH 設定はこれより前, compdef を直接呼ぶ処理は zsh-defer を使ってこれより後に書く.
+# FPATH 設定はこれより前に, compdef を直接呼ぶ処理は zsh-defer を使ってこれより後に書く.
 () {
-    # 環境によって FPATH が異なり zcompdump の再生成が頻発することがあるので分ける.
+    # 環境によって FPATH が異なり zcompdump の再生成が頻発するので分ける.
     local dump="$XDG_CACHE_HOME/zsh/zcompdump/zsh-${ZSH_VERSION}-${TERM_PROGRAM:-unknown}"
     __dots_zcompile_paths+=("$dump")
     autoload -Uz compinit
     zsh-defer -a +p +r compinit -d "$dump"
 }
 
-# zoxide (after compinit)
+# zoxide
+# z の補完を有効にするため compinit の後に読み込む.
 zsh-defer -a __cache_source "$commands[zoxide]" 'zoxide init zsh'
 
 zsh-defer -a source "$ZDOTDIR/rc/alias.zsh"

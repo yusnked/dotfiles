@@ -31,7 +31,7 @@ prompt_dots_fallback_setup() {
 
     zstyle ':vcs_info:*' enable git
 
-    # 重くなる可能性あり.
+    # 重くなる可能性がある.
     zstyle ':vcs_info:git:*' check-for-changes true
 
     zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'

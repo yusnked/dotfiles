@@ -21,7 +21,7 @@ export GPG_TTY="$TTY"
 # go-runewidth 系ツールで曖昧幅文字を半角として扱う.
 export RUNEWIDTH_EASTASIAN=0
 
-# zoxide のデータベースが保存されるディレクトリ. 存在しなくても自動で作成される.
+# zoxide のデータベース保存先. ディレクトリは存在しなければ自動作成される.
 export _ZO_DATA_DIR="$XDG_DATA_HOME/zoxide"
 
 # vivid (LS_COLORS)

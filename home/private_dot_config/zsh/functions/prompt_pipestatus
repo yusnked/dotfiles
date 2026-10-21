@@ -50,8 +50,8 @@ __prompt_pipestatus_enable() {
         esac
     done
 
-    typeset -g _prompt_pipestatus=
-    typeset -g __prompt_pipestatus_executing=
+    typeset -g _prompt_pipestatus=''
+    typeset -g __prompt_pipestatus_executing=''
     typeset -g __prompt_pipestatus_color_mode=$color_mode
     typeset -g __prompt_pipestatus_show_success=$show_success
 
@@ -88,14 +88,14 @@ __prompt_pipestatus_precmd() {
     emulate -L zsh
 
     if [[ $__prompt_pipestatus_executing != 1 ]]; then
-        _prompt_pipestatus=
+        _prompt_pipestatus=''
         return
     fi
 
-    __prompt_pipestatus_executing=
+    __prompt_pipestatus_executing=''
 
     if (( ret == 0 && ${__prompt_pipestatus_show_success:-0} == 0 )); then
-        _prompt_pipestatus=
+        _prompt_pipestatus=''
         return
     fi
 

@@ -7,7 +7,7 @@ if ! docker info &> /dev/null; then
     docker desktop start
     ret=$?
 
-    # docker がカーソルを非表示のまま戻さないためエスケープシーケンスを送って戻す.
+    # Docker がカーソルを非表示のままにするため, エスケープシーケンスで再表示する.
     print -n $'\033[?25h'
 
     (( ret == 0 )) || return $ret

@@ -1,10 +1,10 @@
 local watch="$1" cmdline="$2" env="$3"
-# cmdline + env が長すぎるとファイル名の 255 バイト制限に引っかかる問題がある.
-# 文字を % に置換するためキャッシュの衝突可能性もある (問題になるなら prefix="$4" を追加する).
+# cmdline + env が長すぎると, ファイル名の 255 バイト制限に引っかかる.
+# 文字を % に置換するためキャッシュ名が衝突する可能性がある (必要なら prefix="$4" を追加する).
 local name="${cmdline//[^a-zA-Z0-9_.+=,@:-]/%}"
 local cache="$XDG_CACHE_HOME/zsh/source/${name}${env:+--}${env:-}.zsh"
 
-# キャッシュが有効なホットパスでは1回の判定で読み込めるようにする.
+# キャッシュが有効なホットパスでは 1 回の判定だけで読み込めるようにする.
 if [[ ! "$watch" -ot "$cache" ]]; then
     () {
         emulate -L zsh
@@ -30,8 +30,8 @@ if [[ ! "$watch" -ot "$cache" ]]; then
 
             local cmd=${${(z)cmdline}[1]}
 
-            # cmd が現在の環境で使える外部コマンド, 実行可能な絶対パス, または関数でなければ
-            # その環境では不要なキャッシュとして, エラーメッセージを出さずに戻る.
+            # cmd が利用可能な外部コマンド, 実行可能な絶対パス, 関数のいずれでもなければ
+            # キャッシュは不要と判断し, エラーメッセージを出さずに return する.
             if ! {
                 (( $+commands[$cmd] )) ||
                 [[ "$cmd" == /* && -x "$cmd" ]] ||
@@ -50,7 +50,7 @@ if [[ ! "$watch" -ot "$cache" ]]; then
                     return 1
                 fi
 
-                # シングルクォートをエスケープ (${(q)value} より高速).
+                # シングルクォートをエスケープする (${(q)value} より高速).
                 local escaped=${value//\'/\'\\\'\'}
                 if ! print -r -- "export $env='$escaped'" > "$tmp"; then
                     __dots_sgc_message "ERROR(write)"
