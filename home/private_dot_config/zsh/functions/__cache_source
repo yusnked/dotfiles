@@ -9,22 +9,20 @@ if [[ ! "$watch" -ot "$cache" ]]; then
     () {
         emulate -L zsh
 
-        __dots_sgc_message () {
-            local esc_num=33
-            [[ "$1" == ERROR* ]] && esc_num=31
-            (( $+functions[__rc_print] )) && __rc_print "\e[1;${esc_num}m${1}\e[0m: ${(D)cache}"
+        __cache_source_print () {
+            (( $+functions[__rc_print] )) && __rc_print "$1" "$2${2:+: }${(D)cache}"
             return 0
         }
 
         {
             if [[ ! -e "$watch" ]]; then
-                __dots_sgc_message "ERROR(watch)"
+                __cache_source_print ERROR watch
                 return 1
             fi
 
             local pattern='^[A-Z_][A-Z0-9_]*$'
             if [[ -n "$env" && ! "$env" =~ $pattern ]]; then
-                __dots_sgc_message "ERROR(env)"
+                __cache_source_print ERROR env
                 return 1
             fi
 
@@ -46,32 +44,32 @@ if [[ ! "$watch" -ot "$cache" ]]; then
                 local value
 
                 if ! value="$(eval "$cmdline")"; then
-                    __dots_sgc_message "ERROR(cmd)"
+                    __cache_source_print ERROR cmd
                     return 1
                 fi
 
                 # シングルクォートをエスケープする (${(q)value} より高速).
                 local escaped=${value//\'/\'\\\'\'}
                 if ! print -r -- "export $env='$escaped'" > "$tmp"; then
-                    __dots_sgc_message "ERROR(write)"
+                    __cache_source_print ERROR write
                     return 1
                 fi
             else
                 if ! eval "$cmdline" > "$tmp"; then
-                    __dots_sgc_message "ERROR(cmd)"
+                    __cache_source_print ERROR cmd
                     return 1
                 fi
             fi
 
             if ! command mv -f -- "$tmp" "$cache"; then
-                __dots_sgc_message "ERROR(mv)"
+                __cache_source_print ERROR mv
                 return 1
             fi
 
-            __dots_sgc_message Cached
+            __cache_source_print Cached
         } always {
             [[ -n "$tmp" && -e "$tmp" ]] && command rm -f -- "$tmp"
-            unset -f __dots_sgc_message 2>/dev/null
+            unset -f __cache_source_print 2>/dev/null
         }
     } || return
 fi

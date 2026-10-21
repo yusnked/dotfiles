@@ -1,26 +1,47 @@
 # 対話シェルの起動メッセージをまとめ, zle -I によるプロンプトの再描画を
 # できるだけ 1 回に抑える. flush 前はメッセージを蓄積し, 以降は即時出力する.
-typeset -ga __dots_rc_messages
+typeset -ga __rc_print_messages
 
 __rc_print() {
     emulate -L zsh
 
-    if (( $+__dots_rc_messages )); then
-        __dots_rc_messages+=("$1")
+    local kind text message
+
+    if (( $# > 1 )); then
+        kind="$1"
+        text="$2"
+    else
+        text="$1"
+    fi
+
+    if [[ -n "$kind" ]]; then
+        local color
+        case "${(U)kind}" in
+            ERROR) color=red;;
+            WARN*) color=yellow;;
+            *)     color=cyan;;
+        esac
+        message="%B%F{$color}${kind//\%/%%}%f%b: "
+    fi
+
+    message="$message${text//\%/%%}"
+
+    if (( $+__rc_print_messages )); then
+        __rc_print_messages+=("$message")
     else
         zle -I
-        print -u2 -- "$1"
+        print -Pu2 -- "$message"
     fi
 }
 
 __rc_print_flush() {
     emulate -L zsh
 
-    if (( ${#__dots_rc_messages} )); then
+    if (( ${#__rc_print_messages} )); then
         zle -I
-        print -lu2 -- "${__dots_rc_messages[@]}"
+        print -Plu2 -- "${__rc_print_messages[@]}"
     fi
-    unset __dots_rc_messages
+    unset __rc_print_messages
 }
 
 __rc_print "$@"

@@ -9,7 +9,7 @@ for src in "${__dots_zcompile_paths[@]}"; do
     # 毎回コンパイルされる可能性がある.
     if [[ ! "$src" -ot "${src}.zwc" && -r "$src" ]]; then
         zcompile "$src" && (( $+functions[__rc_print] )) &&
-            __rc_print "\e[1;33mCompiled\e[0m: ${(D)src}"
+            __rc_print Compiled "${(D)src}"
     fi
 done
 
