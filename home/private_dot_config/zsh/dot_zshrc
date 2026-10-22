@@ -18,6 +18,10 @@ source "$ZDOTDIR/rc/env.zsh"
 source "$ZDOTDIR/rc/options.zsh"
 source "$ZDOTDIR/rc/completion.zsh"
 
+# 端末側の ^S / ^Q によるフロー制御を無効化する.
+[[ -t 0 ]] && stty -ixon
+source "$ZDOTDIR/rc/bindkey.zsh" # 関数定義のみ.
+
 # Ghostty シェル統合 (プラグインより先に読み込む).
 # キャッシュパスの短縮・一定化の為 GHOSTTY_RESOURCES_DIR を展開せずに渡す.
 if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
@@ -33,10 +37,6 @@ zsh-defer() { autoload -Uz __zsh_defer_dummy; __zsh_defer_dummy "$@"; }
 source "$ZDOTDIR/rc/plugins.zsh"
 
 source "$ZDOTDIR/rc/prompt.zsh"
-
-# 端末側の ^S / ^Q によるフロー制御を無効化する.
-[[ -t 0 ]] && stty -ixon
-source "$ZDOTDIR/rc/bindkey.zsh"
 
 # mise
 zsh-defer -a -c '(( $+commands[mise] )) && eval "$(mise activate zsh)"'

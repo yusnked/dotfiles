@@ -1,54 +1,61 @@
-__bindkey_copy_emacs_esc_bindings_to_viins_ctrl_q() {
-    local line
+# emacs の ESC で始まるキーバインドを指定したプレフィックスに移植する.
+__bindkey_import_emacs_meta() {
+    emulate -L zsh
+
+    local prefix="$1" keymap="${2:-main}" line
     local -a keylist
-    bindkey -pM emacs '^[' | while IFS= read -r line; do
-        # 矢印キーのエスケープシーケンス (^[[, ^[O) に対応するバインドは除外する.
-        [[ "$line" == \"\^\[[O[]* ]] && continue
-        keylist+=( "^Q${${(Q)${line%% *}}#\^\[}" "${line#* }" )
+
+    [[ -n "$prefix" ]] || return
+
+    # 改行で分割し, ^[[ と ^[O で始まるキーシーケンスを除外する.
+    for line in "${(@)${(f)$(bindkey -pM emacs '^[')}:#\"\^\[[[O]*}"; do
+        # キー表記のクォートを外して ESC を置換し, ウィジェット名と対にする.
+        # 例: '"^[A" accept-and-hold' -> "${prefix}A" "accept-and-hold"
+        keylist+=("$prefix${${(Q)${line%% *}}#\^\[}" "${line#* }")
     done
+
     if (( $#keylist )); then
-        bindkey -M viins "${keylist[@]}"
-        bindkey -M viins -r '^Q'
+        bindkey -M $keymap "${keylist[@]}"
+        bindkey -M $keymap -r $prefix
     fi
 }
 
+__bindkey_register_widgets() {
+    emulate -L zsh
+
+    local widgets=("$ZDOTDIR"/widgets/*(N.:t)) widget
+    (( $#widgets )) || return 0
+
+    autoload -Uz "${widgets[@]}"
+    for widget in "${widgets[@]}"; do
+        zle -N "$widget"
+    done
+}
+
 __bindkey_setup() {
-    local keymap="${1:-viins}"
-    if [[ "$keymap" == viins ]]; then
-        bindkey -M $keymap \
-            '^H'   backward-delete-char \
-            '^Q^Q' push-line \
-            '^X*'  expand-word
+    __bindkey_import_emacs_meta '^Q'
+    __bindkey_register_widgets
 
-        if [[ $TERM_PROGRAM == ghostty ]]; then
-            autoload -Uz ghostty-screen-edit
-            zle -N ghostty-screen-edit
-            bindkey -M $keymap \
-                '^Qe' ghostty-screen-edit \
-                '^Q^E' ghostty-screen-edit
-        fi
+    bindkey \
+        '^H'   backward-delete-char \
+        '^Q^Q' push-line \
+        '^X*'  expand-word
 
-        zsh-defer -a __bindkey_copy_emacs_esc_bindings_to_viins_ctrl_q
-    elif [[ "$keymap" == emacs ]]; then
-        bindkey -e
-    fi
-
+    # ESC でキャンセルできるようにする.
     bindkey -M command '^[' send-break
     bindkey -M isearch '^[' send-break
 
+    # メニュー補完.
     if bindkey -M menuselect &>/dev/null; then
         bindkey -M menuselect \
             '^J' accept-and-infer-next-history \
             '^[' send-break
     fi
-}
 
-# =========================================================
-# zsh-vi-mode
-# =========================================================
-if [[ -n "$ZVM_VERSION" ]]; then
-    zvm_after_init_commands+=(__bindkey_setup)
-else
-    # zsh-vi-mode がロードされてなければフォールバックする.
-    zsh-defer -a __bindkey_setup emacs
-fi
+    # Ghostty
+    if [[ "$TERM_PROGRAM" == ghostty ]]; then
+        bindkey \
+            '^Qe'  ghostty-screen-edit \
+            '^Q^E' ghostty-screen-edit
+    fi
+}

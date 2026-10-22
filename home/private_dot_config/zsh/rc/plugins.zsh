@@ -1,21 +1,32 @@
-# zsh-vi-mode の設定関数. 自動的に呼び出される.
+# zsh-vi-mode
+# 自動的に呼び出される設定関数.
 zvm_config() {
-    ZVM_LINE_INIT_MODE=$ZVM_MODE_INSERT
+    # Insert モードから始める.
+    ZVM_LINE_INIT_MODE="$ZVM_MODE_INSERT"
 }
+# 初期化後にバインドキーの設定を呼び出す.
+zvm_after_init_commands+=(__bindkey_setup)
 
+# Antidote
 () {
-    local antidote_git="$XDG_DATA_HOME/zsh/antidote"
-    if [[ ! -d "$antidote_git" ]]; then
-        git clone --depth=1 https://github.com/mattmc3/antidote "$antidote_git" || return 1
+    local repo_dir="$XDG_DATA_HOME/zsh/antidote"
+    if [[ ! -d "$repo_dir" ]]; then
+        git clone --depth=1 https://github.com/mattmc3/antidote "$repo_dir" || return
     fi
 
     # Antidote の関数ディレクトリを自作関数ディレクトリの直後に追加する (なければ先頭).
-    local fpath_idx=${fpath[(i)$ZDOTDIR/completions]}
-    (( fpath_idx <= $#fpath )) || fpath_idx=0
-    fpath[fpath_idx+1,fpath_idx]=("$XDG_DATA_HOME/zsh/antidote/functions")
+    local idx=${fpath[(i)$ZDOTDIR/widgets]}
+    (( idx <= $#fpath )) || idx=0
+    fpath[idx+1,idx]=("$XDG_DATA_HOME/zsh/antidote/functions")
 
     autoload -Uz antidote
 
-    local antidote_cnf="$ZDOTDIR/antidote.txt"
-    __cache_source "$antidote_cnf" "antidote bundle < ${(q)antidote_cnf}"
+    local config="$ZDOTDIR/antidote.txt"
+    __cache_source "$config" "antidote bundle < ${(q)config}"
 }
+
+# zsh-vi-mode がロードされていなければ emacs キーバインドにフォールバックする.
+if [[ -z "$ZVM_VERSION" ]]; then
+    bindkey -e
+    zsh-defer -a __bindkey_setup
+fi

@@ -50,11 +50,7 @@ path=(
     $path
 )
 
-fpath=(
-    "$ZDOTDIR/functions"
-    "$ZDOTDIR/completions"
-    $fpath
-)
+fpath=("$ZDOTDIR"/{functions,completions,widgets} $fpath)
 
 # GNU Info では INFOPATH の末尾に : (空エントリ) を置くとデフォルトの検索パスも使われる.
 INFOPATH="${INFOPATH%:}:"
