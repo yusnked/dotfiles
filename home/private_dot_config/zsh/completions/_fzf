@@ -1,0 +1,88 @@
+#compdef fzf
+
+# fzf --help からオプション名と説明を awk を使用して取得する.
+
+local -a _fzf_options
+
+if [[ $PREFIX == [-+]* ]]; then
+    # 値は補完せず, オプション名だけを補完する.
+    [[ $PREFIX == *=* ]] && return 1
+
+    # 解析結果は zsh 標準の補完キャッシュに保存する.
+    if ! _retrieve_cache fzf-help-options; then
+        _fzf_options=("${(@f)$(command fzf --help 2>/dev/null | command awk '
+            # 現在処理中のオプションを確定し, 名前と説明を出力する.
+            # 引数リストの余りをローカル変数として使うのは POSIX awk の書き方.
+            function emit(count, names, i, name, opt) {
+                if (!spec) return
+
+                # -e, --exact のように複数の名前がある場合は個別に出力する.
+                count = split(spec, names, /,[[:space:]]*/)
+                for (i = 1; i <= count; ++i) {
+                    name = names[i]
+                    # =VALUE や [=VALUE] は候補名に含めない.
+                    if (match(name, /^--[[:alnum:]-]+/))
+                        opt = substr(name, RSTART, RLENGTH)
+                    else if (match(name, /^[+-][[:alnum:]]/))
+                        opt = substr(name, RSTART, RLENGTH)
+                    else
+                        continue
+
+                    # 同じオプションが複数行にあっても一度だけ表示する.
+                    if (!(opt in seen)) {
+                        seen[opt] = 1
+                        print opt ":" desc
+                    }
+                }
+                spec = desc = ""
+            }
+
+            {
+                line = $0
+                # 元の行はインデント判定用に残し, 作業用の行だけ左詰めする.
+                sub(/^[[:space:]]+/, "", line)
+
+                if (line ~ /^(--[[:alnum:]]|[-+][[:alnum:]])/) {
+                    # 新しいオプションが始まったら直前の項目を確定する.
+                    emit()
+
+                    # 短縮形と長形式の併記, または単独の形式を取得する.
+                    # オプションの直後に説明がない行にも対応する.
+                    if (match(line, /^[-+][^[:space:],]+,[[:space:]]*--[^[:space:]]+/))
+                        pos = RLENGTH
+                    else if (match(line, /^[-+][^[:space:]]+/))
+                        pos = RLENGTH
+                    else
+                        next
+
+                    spec = substr(line, 1, pos)
+                    desc = substr(line, pos + 1)
+                    sub(/^[[:space:]]+/, "", desc)
+
+                    # --walker-root=DIR [...] の [...] は説明の一部ではない.
+                    sub(/^\[\.\.\.\][[:space:]]+/, "", desc)
+                } else if (spec && line != "") {
+                    # 継続説明行は大きくインデントされる.
+                    # セクション見出しや環境変数名は説明として扱わない.
+                    indent = length($0) - length(line)
+                    if (indent >= 20)
+                        desc = desc (desc == "" ? "" : " ") line
+                    else
+                        emit()
+                } else if (line == "") {
+                    # 空行でオプションの説明が終わる.
+                    emit()
+                }
+            }
+
+            # ファイル末尾に空行がなくても最後の項目を出力する.
+            END { emit() }
+        ')}")
+        (( ${#_fzf_options} )) && _store_cache fzf-help-options _fzf_options
+    fi
+    (( ${#_fzf_options} )) || return 1
+    _describe -o 'options' _fzf_options
+    return
+fi
+
+_files
