@@ -1,0 +1,53 @@
+# VCS
+.git/
+.hg/
+.svn/
+
+# Dependencies
+.pnpm-store/
+.venv/
+.yarn/cache/
+Carthage/Build/
+node_modules/
+
+# Cache
+.angular/cache/
+.bun/install/cache/
+.cache/
+.eslintcache
+.mypy_cache/
+.next/
+.nox/
+.npm/
+.nuxt/
+.parcel-cache/
+.pytest_cache/
+.ruff_cache/
+.stylelintcache
+.svelte-kit/
+.tox/
+.turbo/
+__pycache__/
+
+# Build artifacts
+.dart_tool/
+.gradle/
+.zig-cache/
+CMakeFiles/
+DerivedData/
+cmake-build-*/
+zig-cache/
+zig-out/
+
+# OS metadata
+$RECYCLE.BIN/
+.DS_Store
+.Spotlight-V100/
+.Trash-*/
+.Trash/
+.Trashes/
+._*
+.fseventsd/
+System Volume Information/
+Thumbs.db
+desktop.ini
