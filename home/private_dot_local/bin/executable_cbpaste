@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# クリップボードの内容を標準出力へ書き出す.
+# wl-paste, xclip, xsel, pbpaste を使用する.
+# OSC 52 による読み取りは扱わない.
+
+if [ -n "${WAYLAND_DISPLAY:-}" ] && command -v wl-paste >/dev/null 2>&1; then
+    wl-paste --no-newline
+elif [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard -out
+elif [ -n "${DISPLAY:-}" ] && command -v xsel >/dev/null 2>&1; then
+    xsel --clipboard --output
+elif command -v pbpaste >/dev/null 2>&1; then
+    pbpaste
+else
+    printf '%s\n' 'cbpaste: no clipboard method available' >&2
+    exit 1
+fi

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# 標準入力をクリップボードにコピーする.
+# wl-copy, xclip, xsel, pbcopy, OSC 52 を使用する.
+# SSH 経由ではローカル端末への OSC 52 を優先する.
+
+osc_52() {
+    printf '\033]52;c;%s\007' "$(base64 | tr -d '\r\n')" > /dev/tty
+}
+
+if [ -n "${SSH_CONNECTION:-}${SSH_CLIENT:-}${SSH_TTY:-}" ] &&
+   [ -w /dev/tty ] && command -v base64 >/dev/null 2>&1; then
+    osc_52
+elif [ -n "${WAYLAND_DISPLAY:-}" ] && command -v wl-copy >/dev/null 2>&1; then
+    wl-copy
+elif [ -n "${DISPLAY:-}" ] && command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard
+elif [ -n "${DISPLAY:-}" ] && command -v xsel >/dev/null 2>&1; then
+    xsel --clipboard --input
+elif command -v pbcopy >/dev/null 2>&1; then
+    pbcopy
+elif [ -w /dev/tty ] && command -v base64 >/dev/null 2>&1; then
+    osc_52
+else
+    printf '%s\n' 'cbcopy: no clipboard method available' >&2
+    exit 1
+fi

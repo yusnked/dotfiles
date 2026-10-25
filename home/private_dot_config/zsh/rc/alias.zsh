@@ -57,8 +57,8 @@ if (( $+commands[nvim] )); then
         view='nvim -R'
 fi
 
-if (( $+commands[xsel] )); then
+if [[ "$DOTS_OS" == Linux ]]; then
     alias \
-        pbcopy='xsel --clipboard --input' \
-        pbpaste='xsel --clipboard --output'
+        pbcopy='cbcopy' \
+        pbpaste='cbpaste'
 fi

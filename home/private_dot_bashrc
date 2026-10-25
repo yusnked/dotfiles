@@ -308,4 +308,10 @@ if command -v nvim >/dev/null; then
         view='nvim -R'
 fi
 
+if [[ "$DOTS_OS" == Linux ]]; then
+    if [[ -x "$HOME/.local/bin/cbcopy" && -x "$HOME/.local/bin/cbpaste" ]]; then
+        alias pbcopy='cbcopy' pbpaste='cbpaste'
+    fi
+fi
+
 # vi: set ft=bash:
