@@ -160,8 +160,8 @@
     }' # __HELP_ALIAS_IGNORE_7z1d__"
 
     log-oneline = "!f() { \
-        cols=$(stty size 2>/dev/null | cut -d ' ' -f2); \
-        [ -z \"$cols\" -o \"$cols\" -lt 80 ] && cols=80; \
+        cols=$(stty size </dev/tty 2>/dev/null | cut -d ' ' -f2); \
+        [ ${cols:-0} -lt 80 ] && cols=80; \
         pretty=\"tformat:%C(yellow)%h%Creset %C(green)%cd%Creset %<($((cols - 30)),trunc)%s%+(decorate:prefix=↳ %x1b[31m(,suffix=%x29%x1b[0m,separator=%x2C ,pointer= -> ,tag=tag: )\"; \
         git log --graph --date=format:%y/%m/%d --pretty=\"$pretty\" \"$@\"; \
     }; __HELP_ALIAS_IGNORE_7z1d__=1 f"
