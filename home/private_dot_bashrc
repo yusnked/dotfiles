@@ -154,6 +154,19 @@ export LESSHISTFILE='-'
 # go-runewidth 系ツールで曖昧幅文字を半角として扱う.
 export RUNEWIDTH_EASTASIAN=0
 
+# fzf
+export FZF_DEFAULT_OPTS="--cycle --multi
+    --bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
+    --bind='ctrl-n:down-match,ctrl-p:up-match'
+    --bind='ctrl-o:execute-silent(test $DOTS_OS = Darwin && open {} || xdg-open {})'
+    --bind='ctrl-r:toggle-sort'
+    --bind='ctrl-t:toggle-preview'
+    --bind='ctrl-/:toggle-wrap-word,alt-/:toggle-preview-wrap-word'
+    --bind='alt-d:preview-half-page-down,alt-u:preview-half-page-up'
+    --bind='alt-n:next-history,alt-p:prev-history'
+    --bind='alt-r:toggle-raw'
+"
+
 export DOTS_ISHELL="$BASH"
 
 # ====================================================================
