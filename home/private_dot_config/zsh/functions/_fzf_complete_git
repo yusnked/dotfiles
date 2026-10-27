@@ -1,0 +1,22 @@
+# Git のコミットハッシュを補完する.
+
+emulate -L zsh
+
+local preview='[[ {-1} =~ ^[0-9a-f]{40,}$ ]] && git --no-pager show --color=always --stat --patch {-1}'
+(($+commands[delta])) && preview+=' | delta'
+
+_fzf_complete \
+    --ansi \
+    --no-sort \
+    --no-multi \
+    --reverse \
+    --delimiter=$'\t' \
+    --with-nth='1,2..-2' \
+    --accept-nth=-1 \
+    --with-shell='bash -c' \
+    --bind='enter:transform([[ {-1} =~ ^[0-9a-f]{40,}$ ]] && printf accept || printf ignore)' \
+    --preview="$preview" \
+    --preview-window='right,60%,<84(down,50%)' \
+    -- "$@" < <(GIT_FZF_COMPLETION=1 git l --color=always)
+
+# vi: set ft=zsh:

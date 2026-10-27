@@ -48,6 +48,8 @@ __plugin_fzf_setup() {
     _fzf_compgen_path() { ${(z)FZF_CTRL_T_COMMAND} . "$1"; }
     _fzf_compgen_dir() { ${(z)FZF_ALT_C_COMMAND} . "$1"; }
 
+    autoload -Uz _fzf_complete_git
+
     unset -f __plugin_fzf_setup
 }
 zsh-defer -a __plugin_fzf_setup
