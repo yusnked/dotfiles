@@ -13,7 +13,7 @@ _fzf_complete \
     --delimiter=$'\t' \
     --with-nth='1,2..-2' \
     --accept-nth=-1 \
-    --with-shell='bash -c' \
+    --with-shell='zsh -fc' \
     --bind='enter:transform([[ {-1} =~ ^[0-9a-f]{40,}$ ]] && printf accept || printf ignore)' \
     --preview="$preview" \
     --preview-window='right,60%,<84(down,50%)' \

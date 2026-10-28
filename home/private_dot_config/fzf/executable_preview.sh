@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Zsh からも呼び出されるので Bash 独自の構文は使わないこと.
+
 list() {
     if command -v eza >/dev/null 2>&1; then
         eza -la --color=always --icons --group-directories-first \

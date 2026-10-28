@@ -155,7 +155,7 @@ export LESSHISTFILE='-'
 export RUNEWIDTH_EASTASIAN=0
 
 # fzf
-export FZF_DEFAULT_OPTS="--cycle --multi
+export FZF_DEFAULT_OPTS="--cycle --multi --with-shell='bash -c'
     --bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
     --bind='ctrl-n:down-match,ctrl-p:up-match'
     --bind='ctrl-o:execute-silent(test $DOTS_OS = Darwin && open {} || xdg-open {})'

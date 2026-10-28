@@ -23,9 +23,9 @@ export RUNEWIDTH_EASTASIAN=0
 
 # fzf
 # fzf が古いプレビューを中断する性質を利用し, sleep で疑似 debounce する.
-export FZF_DEFAULT_OPTS="--cycle --multi --with-shell='bash -c'
+export FZF_DEFAULT_OPTS="--cycle --multi --with-shell='zsh -fc'
     --history='$XDG_DATA_HOME/fzf/history'
-    --preview='sleep 0.1; \"$XDG_CONFIG_HOME/fzf/preview.sh\" {}'
+    --preview='sleep 0.1; source \"$XDG_CONFIG_HOME/fzf/preview.sh\" {}'
     --preview-window='right,60%,hidden,~3,<84(up,50%,hidden,~3)'
     --bind='ctrl-d:half-page-down,ctrl-u:half-page-up'
     --bind='ctrl-n:down-match,ctrl-p:up-match'
