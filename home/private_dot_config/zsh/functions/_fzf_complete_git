@@ -2,6 +2,11 @@
 
 emulate -L zsh
 
+# Git リポジトリ外では補完しない.
+# 本来はパス補完にフォールバックしたいが, _fzf_path_completion を呼び出すと
+# zle reset-prompt が二重実行され, プロンプトの直前の行が消えるため断念.
+git rev-parse --git-dir &>/dev/null || return
+
 local preview='[[ {-1} =~ ^[0-9a-f]{40,}$ ]] && git --no-pager show --color=always --stat --patch {-1}'
 (($+commands[delta])) && preview+=' | delta'
 
