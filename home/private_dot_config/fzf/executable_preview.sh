@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Zsh からも呼び出されるので Bash 独自の構文は使わないこと.
+# exec するため対話シェルから source で使わないこと.
 
 list() {
     if command -v eza >/dev/null 2>&1; then
@@ -17,10 +18,13 @@ list() {
 
 cat_file() {
     if command -v bat >/dev/null 2>&1; then
-        bat --force-colorization --number --paging=never \
+        exec bat \
+            --force-colorization \
+            --number \
+            --paging=never \
             --file-name="$target"
     else
-        cat
+        exec cat
     fi
 }
 
@@ -35,31 +39,56 @@ convert_encoding() {
 # バイナリの先頭 16 KiB を表示する.
 hex_file() {
     if command -v hexyl >/dev/null 2>&1; then
-        hexyl --border none --length 16KiB -- "$1"
+        exec hexyl --border none --length 16KiB -- "$1"
     elif command -v hexdump >/dev/null 2>&1; then
-        hexdump -C -n 16384 -- "$1"
+        exec hexdump -C -n 16384 -- "$1"
     else
-        od -Ax -tx1 -N 16384 < "$1"
+        exec od -Ax -tx1 -N 16384 < "$1"
     fi
 }
 
 image() {
     if command -v chafa >/dev/null 2>&1; then
         # offset はプレビューヘッダーを固定している分.
-        local max=64 lines_offset=3
-        local cols=$FZF_PREVIEW_COLUMNS
-        local lines=$FZF_PREVIEW_LINES
+        local cols=96 lines=48 lines_offset=3
+        local max_cols=${FZF_PREVIEW_COLUMNS:-$COLUMNS}
+        local max_lines=$((${FZF_PREVIEW_LINES:-$LINES} - lines_offset))
 
-        [[ -n "$cols" && -n "$lines" ]] || return
-
-        ((lines -= lines_offset)) || :
-        ((cols > max)) && cols=$max
-        ((lines > max)) && lines=$max
+        ((cols > max_cols)) && cols=$max_cols
+        ((lines > max_lines)) && lines=$max_lines
         ((cols < 1)) && cols=1
         ((lines < 1)) && lines=1
 
-        # Ghostty で画像が表示された後消えないので, 妥協でユニコード表示にする.
-        chafa --format=symbols --size="${cols}x${lines}" "$1"
+        if [[ "$TERM_PROGRAM" != ghostty ]]; then
+            exec chafa \
+                --format=symbols \
+                --probe=off \
+                --size="${cols}x${lines}" \
+                -- "$1"
+        fi
+
+        # fzf が古いプレビューを中断する性質を利用し, sleep で疑似 debounce する.
+        sleep 0.25
+
+        # Ghostty では Kitty Graphics Protocol を使用して画像をプレビューする.
+        #
+        # Kitty 形式では画像が残留するため, プレビュー更新前と fzf 終了後に
+        # エスケープシーケンスで削除する必要がある.
+        # ただし, 全画像を削除するため他の画像に影響する可能性がある.
+        #
+        # アニメーション画像は表示が乱れて TUI 全体が崩れるため無効化する.
+        #
+        # Unicode プレースホルダー形式なら画像の残留を回避できるが,
+        # chafa には直接指定する方法がない (2026/10/29 時点).
+        # --passthrough=tmux を指定し, sed で tmux 用のエスケープシーケンスを
+        # 除去するハックが必要になる.
+        # また, 画像を表示する度にメモリ使用量が増え続ける問題もある.
+        exec chafa \
+            --format=kitty \
+            --probe=off \
+            --animate=off \
+            --size="${cols}x${lines}" \
+            -- "$1"
     else
         hex_file "$1"
     fi
@@ -74,6 +103,9 @@ header() {
     list -d -- "${target##*/}" 2>/dev/null || :
     printf '\033[38;5;240m%s\033[0m\n\033[38;5;240m%s\033[0m\n' "$mime" "$line"
 }
+
+# Ghostty なら画像削除用エスケープシーケンスをまず送る.
+[[ "$TERM_PROGRAM" == ghostty ]] && printf '\033_Ga=d,d=A\033\\'
 
 target="${1:-}"
 # 誤爆の可能性から / は除外する.

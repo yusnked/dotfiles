@@ -50,6 +50,16 @@ __plugin_fzf_setup() {
 
     autoload -Uz _fzf_complete_git
 
+    # Ghostty 利用時に画像プレビューで Kitty Graphics Protocol を使用する.
+    # see: ~/.config/fzf/preview.sh
+    if [[ "$TERM_PROGRAM" == ghostty ]]; then
+        autoload -Uz hook-widget-post
+        __delete_kitty_images() { printf '\033_Ga=d,d=A\033\\'; }
+
+        hook-widget-post fzf-completion __delete_kitty_images
+        hook-widget-post fzf-file-widget __delete_kitty_images
+    fi
+
     unset -f __plugin_fzf_setup
 }
 zsh-defer -a __plugin_fzf_setup

@@ -1,0 +1,27 @@
+# 1 つのウィジェットにつき, 最初の 1 つの hook しか登録できない制限あり.
+
+emulate -L zsh
+
+[[ "$1" =~ ^[a-z-]+$ ]] || return
+[[ "$2" =~ ^[a-z_-]+$ ]] || return
+
+local widget="$1" orig_widget="${1}-orig" hook="$2"
+local wrapper="__hook_widget_post_wrapper_${1//-/_}"
+
+# 多重登録を防止.
+(($+widgets[$orig_widget])) && return 0
+
+zle -A "$widget" "$orig_widget" || return
+
+eval "
+    $wrapper() {
+        zle '$orig_widget'
+        local ret=\$?
+        "$hook"
+        return \$ret
+    }
+"
+
+zle -N "$widget" "$wrapper"
+
+# vi: set ft=zsh:
