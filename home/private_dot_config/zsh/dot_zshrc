@@ -54,6 +54,9 @@ zsh-defer -c '(( $+commands[zsh-patina] )) && eval "$(zsh-patina activate)"'
     zsh-defer -a +p +r compinit -d "$dump"
 }
 
+# fzf-tab (after compinit)
+zsh-defer -a +p +r __plugin_fzf_tab_setup
+
 # zoxide
 # z の補完を有効にするため compinit の後に読み込む.
 zsh-defer -a __cache_source "$commands[zoxide]" 'zoxide init zsh'

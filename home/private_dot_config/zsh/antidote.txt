@@ -6,3 +6,5 @@ yusnked/powerlevel10k kind:fpath
 
 # zsh-vi-mode 自身の遅延ロジックがあるため遅延ロードしない.
 jeffreytse/zsh-vi-mode
+
+Aloxaf/fzf-tab kind:clone
