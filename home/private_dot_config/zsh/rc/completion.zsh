@@ -78,7 +78,11 @@ zstyle ':completion:*:options' complete-options true
 
 # LS_COLORS を使う. なければ GNU ls 風のデフォルト色を使う.
 if [[ -n "${LS_COLORS-}" ]]; then
-    zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+    # LS_COLORS の no による文字色が, メニュー補完の選択色にも影響する.
+    # ma (選択候補の色) は未指定時に 7 (前景色と背景色の反転) が使われるが,
+    # 再描画時に直前の色属性が残り, 上下の移動方向で背景色が変わることがある.
+    # ma=0;7 で色属性をリセットしてから反転することで, この問題を回避する.
+    zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS} 'ma=0;7'
 else
     zstyle ':completion:*:default' list-colors ''
 fi
