@@ -1,0 +1,21 @@
+# 本家の prompt_powerlevel10k_setup は cleanup を登録しないので適切に設定する.
+
+local dir="${fpath[(r)*/romkatv/powerlevel10k]}"
+
+if [[ ! -r "$dir/powerlevel10k.zsh-theme" ]]; then
+    __rc_print WARN "powerlevel10k: theme not found"
+    return 1
+fi
+
+# 本家の setup はこのファイルを source するだけなので直接 source する.
+# powerlevel10k は主要ファイルを zcompile する仕組みを持っているので任せる.
+builtin source "$dir/powerlevel10k.zsh-theme" || return
+
+# テーマ切り替え時の cleanup を登録する.
+if (( $+functions[powerlevel10k_plugin_unload] )); then
+    prompt_cleanup powerlevel10k_plugin_unload
+elif (( $+functions[prompt_powerlevel9k_teardown] )); then
+    prompt_cleanup prompt_powerlevel9k_teardown
+fi
+
+# vi: set ft=zsh:

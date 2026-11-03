@@ -2,7 +2,7 @@ romkatv/zsh-defer path:zsh-defer.plugin.zsh
 
 zsh-users/zsh-completions kind:fpath path:src
 
-yusnked/powerlevel10k kind:fpath
+romkatv/powerlevel10k kind:fpath
 
 # zsh-vi-mode 自身の遅延ロジックがあるため遅延ロードしない.
 jeffreytse/zsh-vi-mode
