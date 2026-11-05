@@ -5,6 +5,9 @@
 # 補完で完全な候補を挿入した後, カーソルを単語末尾へ移動する.
 # setopt ALWAYS_TO_END
 
+# 曖昧補完時, 補完候補一覧を自動的に表示しない.
+unsetopt AUTO_LIST
+
 # 絶対パスを値に持つパラメータを, 自動的に named directory として扱う.
 # setopt AUTO_NAME_DIRS
 
@@ -65,10 +68,10 @@ zstyle ':completion:*' file-sort modification
 zstyle ':completion:*' group-name ''
 
 # 補完候補の説明を表示する.
-zstyle ':completion:*:descriptions' format '%F{yellow}-- %d --%f'
+zstyle ':completion:*:descriptions' format '%F{cyan}-- %d --%f'
 
 # 補完候補がない場合に表示するメッセージ.
-zstyle ':completion:*:warnings' format '%F{red}-- no matches found --%f'
+zstyle ':completion:*:warnings' format '%F{yellow}-- no matches found --%f'
 
 # 補完候補の詳細情報を表示する.
 zstyle ':completion:*' verbose true
@@ -90,4 +93,4 @@ fi
 # メニュー補完を有効にする.
 # zsh/complist は compinit より前にロードする必要がある.
 zmodload zsh/complist
-zstyle ':completion:*' menu select
+zstyle ':completion:*' menu auto select
