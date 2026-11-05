@@ -1,0 +1,11 @@
+# 次のキー入力に ESC を付加し, Meta キーとの組み合わせとして処理する.
+# 通常キーのみ対象であり, 矢印キーなど特殊キーは非対応.
+
+emulate -L zsh
+
+local key
+read -rk 1 key || return 1
+
+zle -U $'\e'"$key"
+
+# vi: set ft=zsh:

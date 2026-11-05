@@ -5,7 +5,16 @@ __bindkey_import_emacs_meta() {
     local prefix="$1" keymap="${2:-main}" line
     local -a keylist
 
-    [[ -n "$prefix" ]] || return
+    # ${1:-^[} にしないのはエディタのハイライトが壊れるため.
+    [[ -z "$prefix" ]] && prefix='^['
+
+    # main のエイリアスを解決し, 実際のキーマップ名を取得する.
+    if [[ "$keymap" == main ]]; then
+        # bindkey -lL main の出力例: bindkey -A viins main
+        keymap=${$(bindkey -lL main)[3]}
+    fi
+
+    [[ "$keymap" == emacs && "$prefix" == '^[' ]] && return
 
     # 改行で分割し, ^[[ と ^[O で始まるキーシーケンスを除外する.
     for line in "${(@)${(f)$(bindkey -pM emacs '^[')}:#\"\^\[[[O]*}"; do
@@ -14,10 +23,9 @@ __bindkey_import_emacs_meta() {
         keylist+=("$prefix${${(Q)${line%% *}}#\^\[}" "${line#* }")
     done
 
-    if (( $#keylist )); then
-        bindkey -M $keymap "${keylist[@]}"
-        bindkey -M $keymap -r $prefix
-    fi
+    (( $#keylist )) || return 0
+
+    bindkey -M "$keymap" "${keylist[@]}"
 }
 
 __bindkey_register_widgets() {
@@ -33,20 +41,33 @@ __bindkey_register_widgets() {
 }
 
 __bindkey_setup() {
-    local meta='^Q'
-    __bindkey_import_emacs_meta "$meta"
+    __bindkey_import_emacs_meta
     __bindkey_register_widgets
 
-    bindkey \
-        '^H'        backward-delete-char \
-        '^V'        vi-quoted-insert \
-        '^X*'       expand-word \
-        "${meta}Q"  push-line-or-edit \
-        "${meta}q"  push-line-or-edit \
-        "${meta}^Q" push-line-or-edit \
-        "${meta}^V" quoted-insert
+    autoload -Uz \
+        edit-command-line \
+        expand-absolute-path \
+        select-word-style
 
-    bindkey -s '^J' "${meta}^V^J"
+    zle -N edit-command-line
+    zle -N expand-absolute-path
+
+    # シェル構文を考慮して単語削除・移動する.
+    select-word-style shell
+
+    bindkey \
+        '^H'   backward-delete-char \
+        '^Q'   meta-prefix \
+        '^V'   vi-quoted-insert \
+        '^X^A' expand-absolute-path \
+        '^X^E' edit-command-line \
+        '^X*'  expand-word \
+        '^[Q'  push-line-or-edit \
+        '^[q'  push-line-or-edit \
+        '^[^Q' push-line-or-edit \
+        '^[^V' quoted-insert
+
+    bindkey -s '^J' '^[^V^J'
 
     # ESC でキャンセルできるようにする.
     bindkey -M command '^[' send-break
@@ -100,7 +121,7 @@ __bindkey_setup() {
     # Ghostty
     if [[ "$TERM_PROGRAM" == ghostty ]]; then
         bindkey \
-            "${meta}e"  ghostty-screen-edit \
-            "${meta}^E" ghostty-screen-edit
+            '^[e'  ghostty-screen-edit \
+            '^[^E' ghostty-screen-edit
     fi
 }
