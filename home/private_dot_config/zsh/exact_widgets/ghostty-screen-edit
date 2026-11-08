@@ -1,18 +1,88 @@
-emulate -L zsh
+# Ghostty が貼り付けた画面キャプチャのパスを取得し, エディタで開く.
+# コマンドラインを確定せずに実行することで, 実行履歴や画面への表示を避ける.
+__ghostty_screen_edit_execute() {
+    emulate -L zsh
 
-if [[ $DOTS_OS != Darwin ]]; then
-    return
-fi
+    {
+        local file="$BUFFER"
 
-# EDITOR が nvim で始まる場合のみ, normal! G で末尾へ移動する.
-osascript >/dev/null <<'EOF'
-tell application "Ghostty"
-    set term to focused terminal of selected tab of front window
+        # コマンドラインを消去し, 空のプロンプトを再描画する.
+        BUFFER=''
+        zle -R
 
-    input text "$EDITOR ${${EDITOR#nvim*}++'normal! G'} " to term
-    perform action "write_screen_file:paste" on term
-    send key "enter" to term
-end tell
+        [[ -f "$file" ]] || return 1
+
+        local -a editor_argv=(${(Q)${(z)EDITOR}})
+        (( $#editor_argv )) || return 1
+
+        # Vim / Neovim の場合は, ファイルを開いた直後に最終行へ移動する.
+        local option
+        [[ ${editor_argv[1]:t} =~ ^n?vim$ ]] && option='+normal! G'
+
+        # クォートしていない空の option は省略される.
+        editor_argv+=($option "$file")
+
+        "${editor_argv[@]}" </dev/tty
+    } always {
+        (( $? )) && zle -I
+
+        # 元の入力内容を復元する.
+        if (( __ghostty_screen_edit_push )); then
+            zle get-line && __ghostty_screen_edit_push=0
+        fi
+
+        # Ghostty の一時ファイルとディレクトリを削除する.
+        local dir="${file:h}"
+        if [[ -f "$file" &&
+              "${file:t}" == screen.txt &&
+              "${dir:t}" =~ '^[A-Za-z0-9_-]{22}$' &&
+              "$file" == /(var|private/var|tmp)/* ]]
+        then
+            command rm -f -- "$file" && command rmdir -- "$dir" 2>/dev/null
+        fi
+    }
+}
+
+zle -N __ghostty_screen_edit_execute
+bindkey '^[x' execute-named-cmd
+typeset -gi __ghostty_screen_edit_push=0
+
+# Ghostty の画面を一時ファイルに保存してエディタで開く.
+ghostty-screen-edit() {
+    emulate -L zsh
+
+    if [[ $DOTS_OS != Darwin ]]; then
+        return
+    fi
+
+    # 現在の入力内容をバッファスタックに退避する.
+    zle push-input || return 1
+    __ghostty_screen_edit_push=1
+
+    # Ghostty の AppleScript API を利用して画面を保存する.
+    # 一時ファイルのパスを直接 ZLE に貼り付けるため, クリップボードを変更しない.
+    # Ghostty 側の入力処理は非同期に実行される.
+    osascript >/dev/null <<'EOF'
+        tell application "Ghostty"
+            set term to focused terminal of selected tab of front window
+
+            if not (perform action "write_screen_file:paste" on term) then
+                error "Failed to capture Ghostty screen"
+            end if
+
+            send key "x" modifiers "option" to term
+            input text "__ghostty_screen_edit_execute" to term
+            send key "enter" to term
+        end tell
 EOF
+
+    # osascript が失敗したらバッファを元に戻す.
+    if (( $? )); then
+        zle -I
+        zle get-line && __ghostty_screen_edit_push=0
+    fi
+}
+
+ghostty-screen-edit "$@"
 
 # vi: set ft=zsh:
