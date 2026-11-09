@@ -6,7 +6,8 @@
 setopt AUTO_CD
 
 # 移動先が存在しない場合, named directory としての展開 (~ 展開) を試みる.
-setopt CDABLE_VARS
+# ~ を省略できるだけであり, 誤爆や cd foo*(/)<Tab> でエラーがでるので無効推奨.
+# setopt CDABLE_VARS
 
 # cd 履歴を自動でディレクトリスタックに積む.
 # setopt AUTO_PUSHD
