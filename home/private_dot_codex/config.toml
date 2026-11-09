@@ -1,0 +1,64 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Approval
+approval_policy = "on-request"
+approvals_reviewer = "user"
+
+# Shell
+allow_login_shell = false
+
+# Permissions
+default_permissions = "work-local"
+
+[permissions.work-local]
+description = "Restricted local development"
+extends = ":workspace"
+
+# Filesystem
+[permissions.work-local.filesystem]
+":root" = "deny"
+":minimal" = "read"
+
+# Sensitive directories
+"~/.aws" = "deny"
+"~/.codex" = "deny"
+"~/.gnupg" = "deny"
+"~/.ssh" = "deny"
+"~/Library/Keychains" = "deny"
+
+# Homebrew
+"/opt/homebrew" = "read"
+"/opt/homebrew/etc" = "deny"
+"/opt/homebrew/var" = "deny"
+
+# Dotfiles repo
+"~/.local/share/chezmoi" = "read"
+
+# Workspace
+[permissions.work-local.filesystem.":workspace_roots"]
+"." = "write"
+".git" = "read"
+".codex" = "read"
+"**/.env" = "deny"
+"**/.env.*" = "deny"
+
+# Network
+[permissions.work-local.network]
+enabled = false
+
+# Computer Use
+[computer_use]
+default_app_access = "deny"
+
+# Browser Use
+[browser_use]
+allow_history_access = false
+disable_auto_review = true
+
+[browser_use.default_origin_policy]
+access = "deny"
+
+# Shell environment
+[shell_environment_policy]
+inherit = "core"
+ignore_default_excludes = false
