@@ -59,11 +59,14 @@ __bindkey_setup() {
         '^H'   backward-delete-char \
         '^Q'   meta-prefix \
         '^V'   vi-quoted-insert \
+        '^Xh'  _complete_help \
+        '^XH'  _complete_params \
         '^X^A' expand-absolute-path \
         '^X^E' edit-command-line \
         '^X*'  expand-word \
-        '^[Q'  push-line-or-edit \
+        '^X?'  _complete_debug \
         '^[q'  push-line-or-edit \
+        '^[Q'  push-line-or-edit \
         '^[^Q' push-line-or-edit \
         '^[^V' quoted-insert
 
@@ -104,12 +107,12 @@ __bindkey_setup() {
             '^V'  vi-insert \
             '^?'  undo \
             '^['  send-break \
-            '^[G' end-of-history \
             '^[g' beginning-of-history \
             '^[j' vi-forward-blank-word \
             '^[k' vi-backward-blank-word \
             '^[n' vi-forward-blank-word \
             '^[p' vi-backward-blank-word \
+            '^[G' end-of-history \
             '/'   accept-and-infer-next-history
 
         # Shift+Tab で補完候補を逆順に選択.

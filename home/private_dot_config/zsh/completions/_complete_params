@@ -1,0 +1,54 @@
+#compdef -k complete-word '^XH'
+
+emulate -L zsh
+
+local key label
+local -i i width
+
+zle -I
+
+print -u2 -r -- '=== Completion Parameters ==='
+
+print -u2 -r -- '--- ZLE ---'
+
+print -u2 -f '%-7s = %s\n' BUFFER "${(qqq)BUFFER}"
+print -u2 -f '%-7s = %s\n' LBUFFER "${(qqq)LBUFFER}"
+print -u2 -f '%-7s = %s\n' RBUFFER "${(qqq)RBUFFER}"
+print -u2 -f '%-7s = %s\n' CURSOR "$CURSOR"
+
+print -u2 -r -- '--- Words ---'
+
+width=${#:-words[CURRENT]}
+
+print -u2 -f '%-*s = %s\n' "$width" CURRENT "$CURRENT"
+print -u2 -f '%-*s = %s\n' "$width" 'words[CURRENT]' "${(qqq)words[CURRENT]}"
+
+for (( i = 1; i <= $#words; i++ )); do
+    print -u2 -f '%-*s = %s\n' "$width" "words[$i]" "${(qqq)words[i]}"
+done
+
+print -u2 -r -- '--- Completion Parameters ---'
+
+print -u2 -f '%-9s = %s\n' QIPREFIX "${(qqq)QIPREFIX}"
+print -u2 -f '%-9s = %s\n' IPREFIX "${(qqq)IPREFIX}"
+print -u2 -f '%-9s = %s\n' PREFIX "${(qqq)PREFIX}"
+print -u2 -f '%-9s = %s\n' SUFFIX "${(qqq)SUFFIX}"
+print -u2 -f '%-9s = %s\n' ISUFFIX "${(qqq)ISUFFIX}"
+print -u2 -f '%-9s = %s\n' QISUFFIX "${(qqq)QISUFFIX}"
+
+# compstate の全キーを名前順に表示する.
+print -u2 -r -- '--- compstate ---'
+
+width=0
+for key in ${(ok)compstate}; do
+    label="compstate[$key]"
+    (( ${#label} > width )) && width=${#label}
+done
+
+for key in ${(ok)compstate}; do
+    print -u2 -f '%-*s = %s\n' "$width" "compstate[$key]" "${(qqq)compstate[$key]}"
+done
+
+return 1
+
+# vi: set ft=zsh:
