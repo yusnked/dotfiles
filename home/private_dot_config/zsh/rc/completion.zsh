@@ -20,8 +20,8 @@ unsetopt AUTO_LIST
 # 補完開始時にカーソルを単語末尾へ移動せず, カーソル位置の前後を使って補完する.
 setopt COMPLETE_IN_WORD
 
-# glob パターンを含む語を, 即展開せず補完候補として扱う.
-setopt GLOB_COMPLETE
+# _complete で glob パターンを考慮して補完する.
+# setopt GLOB_COMPLETE
 
 # 曖昧補完時に BEL を鳴らさない.
 unsetopt LIST_BEEP
@@ -47,13 +47,44 @@ setopt LIST_PACKED
 zstyle ':completion:*' use-cache true
 zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/zcompcache"
 
-zstyle ':completion:*' completer _expand_alias _complete _match _prefix _ignored
-zstyle ':completion:*:prefix:*:*:*' completer _complete
+# _expand はコマンドの補完文脈を考慮せず、グロブ展開などを先に試す.
+# そのためグロブ展開はパス補完専用と割り切り _match は使用しない.
+zstyle ':completion:*' completer _expand_alias _expand _complete _ignored
+zstyle ':completion:*:ignored:*:*:*' completer _complete
 
-# smart-case によるマッチングを行い, 区切り文字や部分語による補完も試す.
-zstyle ':completion:*' matcher-list \
-    'm:{a-z}={A-Z}' '+r:|[-_./]=* r:|=*' 'm:{a-z}={A-Z} l:|=* r:|=*'
-zstyle ':completion:*:prefix:*:*:*' matcher-list 'm:{a-z}={A-Z}'
+# matcher-list は completer ごとに先頭から順番に試行される.
+# _main_complete は各試行の規則を _matcher に設定するが, 入力自体は変換しない.
+# _description などを通じて compadd -M に渡され, 候補の照合時に適用される.
+#
+# マッチング規則:
+#   m:word-pat=match-pat         文字の対応関係を定義する.
+#   l:anchor|word-pat=match-pat  anchor を左側として右側の word-pat を match-pat に対応させる.
+#   r:word-pat|anchor=match-pat  anchor を右側として左側の word-pat を match-pat に対応させる.
+#
+#   anchor が空の場合 l: は左端 r: は右端が anchor になる.
+#
+# matcher-list の各要素は独立しており, + で始めた場合のみ前の規則を引き継ぐ.
+() {
+    # 小文字の入力を対応する大文字の候補にも一致させる.
+    local smart_case='m:{a-z}={A-Z}'
+
+    local -a matcher_list=(
+        # 1回目: smart case の前方一致.
+        "$smart_case"
+
+        # 2回目: 区切り文字の直前と右端に * を補ったかのように一致させる.
+        # 例: f-b -> foo-bar
+        "$smart_case r:|[-_./]=* r:|=*"
+
+        # 3回目: 左端と右端に * を補ったかのように一致させる.
+        # 例: bar -> foobar.txt
+        "$smart_case l:|=* r:|=*"
+    )
+
+    # 通常補完は3段階で試し, その他は1段階だけ試す.
+    zstyle ':completion:*:complete:*:*:*' matcher-list "${matcher_list[@]}"
+    zstyle ':completion:*' matcher-list "$smart_case"
+}
 
 # パス中の // を / と同じように扱う (false なら // は /*/ と同じになる).
 zstyle ':completion:*' squeeze-slashes true
@@ -66,6 +97,9 @@ zstyle ':completion:*' file-sort modification
 
 # 補完候補をグループごとにまとめる.
 zstyle ':completion:*' group-name ''
+
+# ~ 補完では named directory をユーザー名より先に表示する.
+zstyle ':completion:*:complete:-tilde-:*' group-order named-directories users directory-stack
 
 # 補完候補の説明を表示する.
 zstyle ':completion:*:descriptions' format '%F{cyan}-- %d --%f'

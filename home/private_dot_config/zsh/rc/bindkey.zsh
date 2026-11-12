@@ -57,6 +57,7 @@ __bindkey_setup() {
 
     bindkey \
         '^H'   backward-delete-char \
+        '^I'   complete-word \
         '^Q'   meta-prefix \
         '^V'   vi-quoted-insert \
         '^Xh'  _complete_help \
