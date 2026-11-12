@@ -1,4 +1,4 @@
-#compdef -k complete-word '^XH'
+#compdef -k complete-word ^XH
 
 emulate -L zsh
 
