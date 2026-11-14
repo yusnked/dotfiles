@@ -28,6 +28,7 @@ opt.listchars = {
     'trail:-',
 }
 opt.ambiwidth = 'single'
+vim.o.guifont = 'HackGen Console NF,' .. vim.o.guifont .. ':h16'
 
 opt.scrolloff = 3
 opt.sidescrolloff = 3

@@ -58,6 +58,7 @@ endif
 set list " 不可視文字を表示.
 set listchars=eol:↴,extends:…,nbsp:+,precedes:…,space:⋅,tab:>\ ,trail:-
 set ambiwidth=single
+set guifont=HackGen\ Console\ NF:h16
 
 set scrolloff=3
 set sidescrolloff=3
