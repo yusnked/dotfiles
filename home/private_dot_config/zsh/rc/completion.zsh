@@ -49,7 +49,7 @@ zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/zcompcache"
 
 # _expand はコマンドの補完文脈を考慮せず、グロブ展開などを先に試す.
 # そのためグロブ展開はパス補完専用と割り切り _match は使用しない.
-zstyle ':completion:*' completer _expand_alias _expand _complete _ignored
+zstyle ':completion:*' completer _expand_alias _expand _complete _ignored _complete_migemo
 zstyle ':completion:*:ignored:*:*:*' completer _complete
 
 # matcher-list は completer ごとに先頭から順番に試行される.

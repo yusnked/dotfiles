@@ -102,6 +102,9 @@ __plugin_fzf_tab_setup() {
     # グループごとの色を識別しやすくするために表示される候補先頭の中点を非表示にする.
     zstyle ':fzf-tab:*' prefix ''
 
+    # Migemo 補完時のみ, fzf の初期検索クエリを空にする.
+    zstyle ':fzf-tab:complete-migemo:*' query-string ''
+
     # fzf-tab はデフォルトで FZF_DEFAULT_OPTS を使用しない.
     # {} を含まない --bind='...' から ... を抽出して配列で指定する.
     zstyle ':fzf-tab:*' fzf-bindings \

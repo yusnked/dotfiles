@@ -64,6 +64,7 @@ __bindkey_setup() {
         '^XH'  _complete_params \
         '^X^A' expand-absolute-path \
         '^X^E' edit-command-line \
+        '^X^M' _complete_migemo \
         '^X*'  expand-word \
         '^X?'  _complete_debug \
         '^[q'  push-line-or-edit \

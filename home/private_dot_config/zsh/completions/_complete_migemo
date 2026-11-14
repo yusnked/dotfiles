@@ -1,0 +1,282 @@
+#compdef -k complete-word ^X^M ^X\e[109;5u
+
+# Migemo でローマ字を正規表現に変換し, zsh のグロブパターンとして
+# ファイルやディレクトリのパスを補完する.
+#
+# macOS の Finder はファイル名の作成や変更時に Unicode を分解形式に正規化するため,
+# NFC 形式の入力パターンでは一致しない場合がある.
+# zsh は macOS 上で iconv が利用可能な場合, ディレクトリから取得したファイル名を
+# UTF-8-MAC から UTF-8 に変換する仕組みを持つ.
+# グロブパターンを利用することで, この正規化形式の違いを zsh 側で吸収する.
+
+zmodload zsh/parameter
+
+_complete_migemo_clear_cache() {
+    unset _complete_migemo_cache _complete_migemo_cache_candidates
+}
+
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _complete_migemo_clear_cache
+
+_complete_migemo() {
+    emulate -L zsh
+    setopt extendedglob nobareglobqual caseglob nomarkdirs
+
+    # _main_complete から呼ばれたかどうかで挙動を変える.
+    # パフォーマンスに問題が出れば {N} 件のマッチで終了する (Y{N}) 修飾子を検討する.
+    local qualifier='(#qN)'
+    local -i query_len_min=1 query_len_max=20
+    if (( ${funcstack[(I)_main_complete]} )); then
+        () {
+            # _matcher_num, _matchers, _comp_tags は _main_complete の内部変数.
+
+            # matcher-list の最初の試行でのみ実行する.
+            (( _matcher_num == 1 )) || return 1
+
+            # 先行するコンプリータが試した関連タグを取得する.
+            local -a tags=(${=_comp_tags})
+            local -i files_tag=${tags[(I)*files]}
+            local -i directories_tag=${tags[(I)*directories]}
+
+            # パス補完じゃなさそうな位置では補完しない.
+            (( files_tag || directories_tag )) || return 1
+
+            # ディレクトリ関連タグだけならディレクトリ専用補完にする.
+            (( directories_tag && ! files_tag )) && qualifier='(#qN-/)'
+
+            query_len_min=2
+        } || return 1
+    fi
+
+    # 現在位置がクォートされている可能性があれば補完しない.
+    # compstate[quote] は現在の word の先頭しか見ないため,
+    # エスケープされていないクォートが存在すれば予防的にスキップする.
+    [[ -n "$compstate[quote]" || "${${words[CURRENT]}//\\\\/}" == (*[^\\]|)[\'\"]* ]] && return 1
+
+    # PREFIX からグロブを含まない最長の実在ディレクトリを探し, IPREFIX へ移動する.
+    # compset による変更は compstate[restore]=auto により関数終了時に復元される.
+    # この復元処理は入れ子の補完関数にも適用される.
+    local match_dir="${PWD%/}/"
+    local -i iprefix_len=0
+    () {
+        # PREFIX が ~/ または ~user/ で始まる場合, 展開先のディレクトリを取得する.
+        local tilde tilde_resolved
+        if [[ "$PREFIX" == \~*/* ]]; then
+            tilde="${PREFIX%%/*}"
+            [[ "$tilde" == \~[[:alnum:]_.-]# ]] || return 1
+            if [[ "$tilde" == '~' ]]; then
+                tilde_resolved="$HOME"
+            else
+                # ~user が存在しないと展開エラーになるため, サブシェルで確認する.
+                # 末尾に / を付け, コマンド置換によるパス末尾の改行の除去を防ぐ.
+                tilde_resolved=$(print -r -- ${~tilde}/) 2>/dev/null || return 1
+                tilde_resolved="${tilde_resolved%/}"
+            fi
+            [[ -d "$tilde_resolved" ]] || return 1
+        fi
+
+        local prefix_dir="$PREFIX" dir
+        local glob_chars='[][*?#^|<>~()]'
+
+        while [[ "$prefix_dir" == */* ]]; do
+            prefix_dir="${prefix_dir%/*}"
+            # 同名の実ディレクトリがあっても, 引用されていないグロブは検索パターンに残す.
+            [[ "${${prefix_dir#"$tilde"}//\\?/}" == *${~glob_chars}* ]] && continue
+
+            dir="$prefix_dir/"
+            dir="${(Q)dir}"
+            [[ -n "$tilde" ]] && dir="${tilde_resolved%/}${dir#"$tilde"}"
+
+            if [[ -d "$dir" ]]; then
+                [[ "$dir" != /* ]] && dir="$match_dir$dir"
+                match_dir="$dir"
+                iprefix_len=$(( $#prefix_dir + 1 ))
+                break
+            fi
+        done
+    } || return 1
+
+    # 関数から戻るときに IPREFIX 等が復元されてしまうので外側で実行する.
+    (( iprefix_len )) && compset -p "$iprefix_len"
+
+    local qualifier_pattern
+    () {
+        # コマンド実行や候補名の書き換えを伴わない修飾子だけを受け付ける.
+        local allowed_flag='([./@=p*rwxAIERWXsStNDnF^,%-]|%[bc]|[oO][nLlamcdN]|Y[0-9]##)'
+        local explicit_qualifier="\(\#q${allowed_flag}#\)"
+        local bare_qualifier="\(${allowed_flag}##\)"
+
+        # 1 個のグロブ修飾子のみに対応.
+        local qualifier="(${explicit_qualifier}|${bare_qualifier})"
+
+        # 修飾子がカーソル以降にある場合, 間に / が含まれないよう制限する.
+        # 修飾子がカーソル以前に始まる場合は, 開始位置を PREFIX の長さ以下に制限する.
+        # どちらの場合も, 修飾子より前に (#q が含まれるパターンを除外する.
+        local before_qualifier="(?(#c$#PREFIX)[^/]#|?(#c0,$#PREFIX))~*\(\#q*"
+
+        # (#b) でキャプチャを有効にし, (#B) で内部の括弧のキャプチャを抑制する.
+        qualifier_pattern="(#b)((#B)${before_qualifier})((#B)${qualifier})(|/*)"
+    }
+
+    # エスケープされている文字に修飾子のパターンが引っかかるのを防ぐため,
+    # エスケープされた文字を同じ長さの印に置き換える.
+    local word_sanitized="$PREFIX$SUFFIX"
+    word_sanitized="${word_sanitized//\\?/::}"
+
+    local query_prefix="$PREFIX" query_suffix input_qualifier
+    local -i qualifier_in_suffix=0 after_qualifier_len=0
+
+    local -a match mbegin mend
+    # 修飾子の前, 修飾子, 修飾子の後を match[1..3] に取得する.
+    if [[ "$word_sanitized" == ${~qualifier_pattern} ]] &&
+        # 修飾子の終了位置がカーソル以降.
+        (( ${#match[3]} <= $#SUFFIX )) &&
+        # 裸の修飾子は, 検索パターン全体の末尾にある場合だけ認識する.
+        [[ -z "$match[3]$ISUFFIX" || "${match[2]##*\(}" == \#q* ]]
+    then
+        input_qualifier="$match[2]"
+        after_qualifier_len=${#match[3]}
+
+        if (( ${#match[1]} >= $#PREFIX )); then
+            # 修飾子の開始がカーソル以降ならフラグを立てる.
+            qualifier_in_suffix=1
+        elif (( $#word_sanitized - after_qualifier_len == $#PREFIX )); then
+            # 修飾子がカーソル直前の場合 query 用に修飾子を除去する.
+            query_prefix="${PREFIX%"$input_qualifier"}"
+        else
+            return 1
+        fi
+    fi
+
+    # カーソルより後のパスの /* を ISUFFIX へ移動する.
+    # 修飾子に / が含まれている場合は長さで指定する.
+    if (( qualifier_in_suffix )) && [[ "$input_qualifier" == */* ]]; then
+        (( after_qualifier_len )) && compset -s "$after_qualifier_len"
+    else
+        compset -S '/*'
+    fi
+
+    query_suffix="$SUFFIX"
+    (( qualifier_in_suffix )) && query_suffix="${SUFFIX%"$input_qualifier"}"
+
+    # カーソル前後の英小文字とハイフンを query にする.
+    local query query_before query_after
+    () {
+        local query_left="${query_prefix##*[^a-z-]}"
+        local query_right="${query_suffix%%[^a-z-]*}"
+
+        query="${query_left}${query_right}"
+        query_before="${query_prefix%"$query_left"}"
+        query_after="${query_suffix#"$query_right"}"
+    }
+
+    (( query_len_min <= $#query && $#query <= query_len_max )) || return 1
+
+    # 未処理の (#q...) があったら補完をスキップする.
+    local query_pattern="$query_prefix$query_suffix"
+    [[ "${query_pattern//\\?/::}" == *\(\#q* ]] && return 1
+
+    # 分割位置に残ったバックスラッシュが, 後続のパターンを引用するのを防ぐ.
+    local last_backslash='(\\?|[^\\])#\\'
+    [[ "$query_before" == ${~last_backslash} ||
+        "$query_after" == ${~last_backslash} ]] && return 1
+
+    # 検索パターンの末尾にある修飾子で, デフォルトの修飾子を置き換える.
+    if [[ -n "$input_qualifier" ]]; then
+        [[ -z "$ISUFFIX" ]] || return 1
+
+        qualifier="$input_qualifier"
+        # 裸の修飾子を明示的な形式に変換する.
+        [[ "$qualifier" == '(#q'* ]] || qualifier="(#q${qualifier#\(}"
+    fi
+
+    local isuffix_unquoted="${(Q)ISUFFIX}"
+    local -a candidates
+
+    # カーソルの位置が変わっても, 検索基準とクエリなどの条件が同じならキャッシュを再利用する.
+    if [[ -v _complete_migemo_cache &&
+        "$match_dir"        == "$_complete_migemo_cache[match_dir]" &&
+        "$query_before"     == "$_complete_migemo_cache[query_before]" &&
+        "$query"            == "$_complete_migemo_cache[query]" &&
+        "$query_after"      == "$_complete_migemo_cache[query_after]" &&
+        "$isuffix_unquoted" == "$_complete_migemo_cache[isuffix]" &&
+        "$qualifier"        == "$_complete_migemo_cache[qualifier]" ]]
+    then
+        candidates=("${_complete_migemo_cache_candidates[@]}")
+    else
+        (( $+commands[cmigemo] )) || return 1
+
+        local migemo_dict="$HOMEBREW_PREFIX/share/migemo/utf-8/migemo-dict"
+        [[ -f "$migemo_dict" ]] || return 1
+
+        # ローマ字を Migemo の正規表現に変換する.
+        # Migemo の正規表現は (|) や [] を使った簡単なものであり,
+        # zsh の通常のグロブパターンとしても解釈できる.
+        local regex
+        regex=$(command cmigemo -q -n -d "$migemo_dict" -w "$query" 2>/dev/null) || return 1
+        [[ -n "$regex" ]] || return 1
+
+        # 検索基準と後続パスは実際のパス名なのでエスケープする.
+        # PREFIX と SUFFIX の残りは, 引用とエスケープを維持したままグロブとして解釈する.
+        local -a pattern=(
+            ${(b)match_dir}
+            ${query_before}
+            "*((#i)${regex})*"
+            ${query_after}
+            ${(b)isuffix_unquoted}
+            ${qualifier}
+        )
+
+        # 入力途中の角括弧などでグロブが不正な場合は, 通常の補完に委ねる.
+        {
+            candidates=(${~${(j::)pattern}})
+        } always {
+            if (( TRY_BLOCK_ERROR )); then
+                TRY_BLOCK_ERROR=0
+                return 1
+            fi
+        } 2>/dev/null
+
+        # match_dir からの相対パスに揃え, ISUFFIX を除去する.
+        candidates=("${(@)candidates#"$match_dir"}")
+        candidates=("${(@)candidates%"$isuffix_unquoted"}")
+
+        # 検索結果と条件をキャッシュする.
+        typeset -gA _complete_migemo_cache=(
+            match_dir    "$match_dir"
+            query_before "$query_before"
+            query        "$query"
+            query_after  "$query_after"
+            isuffix      "$isuffix_unquoted"
+            qualifier    "$qualifier"
+        )
+        typeset -ga _complete_migemo_cache_candidates
+        _complete_migemo_cache_candidates=("${candidates[@]}")
+    fi
+
+    (( $#candidates )) || return 1
+
+    # 共通部分が 0 文字の場合に PREFIX が空文字に置換されるのを防ぐため,
+    # メニュー補完を指定する.
+    compstate[insert]=menu
+
+    # 後続パスがある場合, ディレクトリ末尾の / を追加しない.
+    local -a suffix_opts
+    [[ -n "$ISUFFIX" ]] && suffix_opts=(-S '')
+
+    # ソート指定があれば, グロブで得た順序を補完メニューでも維持する.
+    local -a sort_opts
+    [[ "$qualifier" == *[noO]* ]] && sort_opts=(-V migemo)
+
+    # 検索基準からの相対パスを補完候補として登録する.
+    # -W に展開済みの検索基準を渡し, サブディレクトリ内の候補もファイル種別を判定する.
+    # IPREFIX, ISUFFIX の部分は保持され PREFIX, SUFFIX 部分が候補に置き換えられる.
+    compadd -U -f -a "${suffix_opts[@]}" "${sort_opts[@]}" \
+        -i "$IPREFIX" -I "$ISUFFIX" \
+        -W "$match_dir" \
+        -- candidates
+}
+
+_complete_migemo "$@"
+
+# vi: set ft=zsh:
