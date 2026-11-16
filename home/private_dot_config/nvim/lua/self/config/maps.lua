@@ -27,9 +27,9 @@ map('x', 'x', '"_x', { desc = 'Delete without yanking' })
 
 map({ 'n', 'x' }, '+', '"+', { desc = 'Use system clipboard register' })
 map('n', '++', function()
-    vim.fn.setreg('+', vim.fn.getreg('"'), vim.fn.getregtype('"'))
+    vim.fn.setreg('+', vim.fn.getreg('"', 0, 1), vim.fn.getregtype('"'))
     vim.notify('Copied @" to clipboard.', vim.log.levels.INFO)
-end, { desc = 'Copy unnamed register to system clipboard' })
+end, { desc = 'Copy unnamed register to clipboard' })
 
 map('n', 'g=', "'[=']", { desc = 'Indent the last changed or yanked text' })
 
@@ -88,3 +88,16 @@ end, { desc = 'Jump down by virtual column' })
 map('o', '<leader>k', function()
     require('self.actions.jump_vertical')('up', 'operator')
 end, { desc = 'Jump up by virtual column' })
+
+do -- クリップボードへのコピー・貼り付けキーを設定.
+    local mod = vim.fn.has('mac') == 1 and 'D' or 'C-S'
+
+    map('v', '<' .. mod .. '-c>', '"+y', { desc = 'Copy selection to clipboard' })
+    map('n', '<' .. mod .. '-c>', function()
+        require('self.actions.copy_visual_selection_to_clipboard')()
+    end, { desc = 'Copy last visual selection to clipboard' })
+
+    map({ 'n', 'i', 'v', 'c', 't' }, '<' .. mod .. '-v>', function()
+        vim.api.nvim_paste(vim.fn.getreg('+'), true, -1)
+    end, { desc = 'Paste from clipboard' })
+end
