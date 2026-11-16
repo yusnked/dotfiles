@@ -14,11 +14,10 @@ if require('self.env').is_root then
     return
 end
 
--- TODO: vscode-neovim / neovide 向けの設定分岐を実装する.
+-- TODO: vscode-neovim 向けの設定分岐を実装する.
 -- 現時点では基本設定のみ読み込み, LSP やプラグインは読み込まない.
-local is_neovide = vim.g.neovide
 local is_vscode = vim.g.vscode == 1
-if is_neovide or is_vscode then
+if is_vscode then
     return
 end
 
