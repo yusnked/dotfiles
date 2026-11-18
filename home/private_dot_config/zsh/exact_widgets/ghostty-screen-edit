@@ -3,6 +3,8 @@
 __ghostty_screen_edit_execute() {
     emulate -L zsh
 
+    (( __ghostty_screen_edit_cursor >= 0 )) || return 1
+
     {
         local file="$BUFFER"
 
@@ -12,17 +14,15 @@ __ghostty_screen_edit_execute() {
 
         [[ -f "$file" ]] || return 1
 
-        local -a editor_argv=(${(Q)${(z)EDITOR}})
-        (( $#editor_argv )) || return 1
+        # 空の引数を保持するために代入を 2 回に分ける.
+        local -a editor_argv=(${(z)EDITOR})
+        editor_argv=("${(@Q)editor_argv}")
+        [[ -n "${editor_argv[1]}" ]] || return 1
 
         # Vim / Neovim の場合は, ファイルを開いた直後に最終行へ移動する.
-        local option
-        [[ ${editor_argv[1]:t} =~ ^n?vim$ ]] && option='+normal! G'
+        [[ ${editor_argv[1]:t} == (vim|nvim) ]] && editor_argv+=('+normal! G')
 
-        # クォートしていない空の option は省略される.
-        editor_argv+=($option "$file")
-
-        "${editor_argv[@]}" </dev/tty
+        "${editor_argv[@]}" "$file" </dev/tty
         local ret=$?
 
         # EDITOR によって変更されたタイトルを PWD 表示に戻す.
@@ -41,16 +41,17 @@ __ghostty_screen_edit_execute() {
         (( $? )) && zle -I
 
         # 元の入力内容を復元する.
-        if (( __ghostty_screen_edit_push )); then
-            zle get-line && __ghostty_screen_edit_push=0
-        fi
+        zle get-line && CURSOR=$__ghostty_screen_edit_cursor
+        __ghostty_screen_edit_cursor=-1
 
         # Ghostty の一時ファイルとディレクトリを削除する.
+        # .. やシンボリックリンク等がパスに含まれていた場合は削除しない.
         local dir="${file:h}"
-        if [[ -f "$file" &&
-              "${file:t}" == screen.txt &&
-              "${dir:t}" =~ '^[A-Za-z0-9_-]{22}$' &&
-              "$file" == /(var|private/var|tmp)/* ]]
+        if [[ -f "$file" && -O "$file" && -O "$dir" &&
+            "$file" == "${file:P}" &&
+            "${file:t}" == screen.txt &&
+            "${dir:t}" =~ '^[A-Za-z0-9_-]{22}$' &&
+            "$file" == /(var|private/var|tmp)/* ]]
         then
             command rm -f -- "$file" && command rmdir -- "$dir" 2>/dev/null
         fi
@@ -59,7 +60,14 @@ __ghostty_screen_edit_execute() {
 
 zle -N __ghostty_screen_edit_execute
 bindkey '^[x' execute-named-cmd
-typeset -gi __ghostty_screen_edit_push=0
+typeset -gi __ghostty_screen_edit_cursor=-1
+
+# コールバック前に入力が中断された場合も, 次の行で再実行できるようにする.
+__ghostty_screen_edit_line_init() {
+    __ghostty_screen_edit_cursor=-1
+}
+autoload -Uz add-zle-hook-widget
+add-zle-hook-widget line-init __ghostty_screen_edit_line_init
 
 # Ghostty の画面を一時ファイルに保存してエディタで開く.
 ghostty-screen-edit() {
@@ -69,31 +77,62 @@ ghostty-screen-edit() {
         return
     fi
 
-    # 現在の入力内容をバッファスタックに退避する.
-    zle push-input || return 1
-    __ghostty_screen_edit_push=1
+    # 現在の入力内容をバッファスタックに退避しカーソル位置を保存する.
+    (( __ghostty_screen_edit_cursor < 0 )) || return 1
+    local -i cursor=$CURSOR
+    zle push-line -n 1 || return 1
+    __ghostty_screen_edit_cursor=$cursor
 
-    # Ghostty の AppleScript API を利用して画面を保存する.
-    # 一時ファイルのパスを直接 ZLE に貼り付けるため, クリップボードを変更しない.
+    # AppleScript で画面の内容を書き出した一時ファイルのパスを直接 ZLE に貼り付ける.
+    # この方式を採用するのはクリップボードの内容を上書きせずに済むため.
     # Ghostty 側の入力処理は非同期に実行される.
-    osascript >/dev/null <<'EOF'
-        tell application "Ghostty"
-            set term to focused terminal of selected tab of front window
+    #
+    # TTY を利用してパスを貼り付ける対象のサーフェス UUID を特定する.
+    # tmux/screen 利用時は現在フォーカスされているサーフェスにフォールバックする.
+    local target_tty=$TTY
+    [[ -n $TMUX || -n $STY ]] && target_tty=''
 
-            if not (perform action "write_screen_file:paste" on term) then
-                error "Failed to capture Ghostty screen"
-            end if
+    osascript - "$target_tty" >/dev/null <<'EOF'
+        on run argv
+            set targetTTY to item 1 of argv
 
-            send key "x" modifiers "option" to term
-            input text "__ghostty_screen_edit_execute" to term
-            send key "enter" to term
-        end tell
+            tell application "Ghostty"
+                if targetTTY is "" then
+                    set term to focused terminal of selected tab of front window
+                else
+                    set matches to {}
+
+                    repeat with term in terminals
+                        if (tty of term) is targetTTY then
+                            set end of matches to (id of term)
+                        end if
+                    end repeat
+
+                    if (count of matches) is not 1 then
+                        error "Unable to uniquely identify Ghostty terminal"
+                    end if
+
+                    set term to terminal id (item 1 of matches)
+                end if
+
+                if not (perform action "write_screen_file:paste" on term) then
+                    error "Failed to capture Ghostty screen"
+                end if
+
+                send key "x" modifiers "option" to term
+                input text "__ghostty_screen_edit_execute" to term
+                send key "enter" to term
+            end tell
+        end run
 EOF
 
     # osascript が失敗したらバッファを元に戻す.
-    if (( $? )); then
+    local ret=$?
+    if (( ret )); then
         zle -I
-        zle get-line && __ghostty_screen_edit_push=0
+        zle get-line && CURSOR=$cursor
+        __ghostty_screen_edit_cursor=-1
+        return $ret
     fi
 }
 
