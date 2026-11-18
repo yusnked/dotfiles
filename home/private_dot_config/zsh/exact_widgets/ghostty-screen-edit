@@ -23,6 +23,20 @@ __ghostty_screen_edit_execute() {
         editor_argv+=($option "$file")
 
         "${editor_argv[@]}" </dev/tty
+        local ret=$?
+
+        # EDITOR によって変更されたタイトルを PWD 表示に戻す.
+        if (( $+functions[_ghostty_precmd] )); then
+            () {
+                # _ghostty_precmd が OSC 133 マーカーをプロンプトの改行直後に挿入し
+                # 変数展開がおかしくなり, Powerlevel10k プロンプトで :-}} のような
+                # 記号が表示されるため PS1 と PS2 を保護する.
+                local PS1="$PS1" PS2="$PS2"
+                _ghostty_precmd
+            }
+        fi
+
+        return $ret
     } always {
         (( $? )) && zle -I
 
