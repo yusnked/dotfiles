@@ -5,19 +5,34 @@ emulate -L zsh
     return 2
 }
 
-tag="$1"
+local tag="$1" file tmp out
+local -i ret=0
 shift
 
 for file in "$@"; do
-    [[ -f "$file" ]] || continue
-
-    out="${file:r}.$$.$RANDOM.${file:e}"
-
-    if ffmpeg -y -i "$file" -c copy -tag:v "$tag" "$out"; then
-        mv -- "$out" "$file"
-    else
-        rm -f -- "$out"
+    [[ "$file" == /* ]] || file="./$file"
+    if [[ ! -f "$file" ]]; then
+        print -u2 -r -- "${0:t}: not a regular file: $file"
+        ret=1
+        continue
     fi
+
+    tmp=$(command mktemp -d "${file:h}/.ffretag.XXXXXXXX") || {
+        ret=1
+        continue
+    }
+    out="$tmp/${file:t}"
+
+    {
+        # カバー画像を除いた先頭の映像ストリームのタグだけを変更する.
+        ffmpeg -nostdin -i "$file" -map 0 -c copy -tag:V:0 "$tag" "$out" &&
+            command mv -- "$out" "$file" || ret=1
+    } always {
+        command rm -f -- "$out"
+        command rmdir -- "$tmp"
+    }
 done
+
+return $ret
 
 # vi: set ft=zsh:
