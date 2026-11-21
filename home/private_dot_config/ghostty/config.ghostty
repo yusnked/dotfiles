@@ -3,7 +3,10 @@ shell-integration = none
 
 font-family = HackGen Console NF
 font-size = 16
-theme = tokyonight
+
+# 単一テーマではライト・ダークの判定が誤って報告される不具合があるので回避する.
+# See: https://github.com/ghostty-org/ghostty/pull/13605
+theme = dark:TokyoNight Night,light:TokyoNight Day
 minimum-contrast = 1.1
 
 window-padding-x = 6
