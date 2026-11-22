@@ -16,10 +16,17 @@ EOF
 prompt_dots_fallback_precmd() {
     emulate -L zsh
 
-    vcs_info
+    # 第1引数にコンテキスト名を指定できる.
+    vcs_info dots_fallback
 
-    PS1="%B%F{yellow}%n@%m%f%b:%F{green}%(4~|%-1~/|)%(5~|.../|)%3~%f${vcs_info_msg_0_}
-%B%(?|%F{green}|%F{red})%(2L|%L|)%#%f%b "
+    PS1='%B%F{yellow}%n@%m%f%b:%F{green}%(4~|%-1~/|)%(5~|.../|)%3~%f${vcs_info_msg_0_}
+%B%(?|%F{green}|%F{red})%(2L|%L|)%#%f%b '
+}
+
+# +vi- は vcs_info のフック関数のプレフィックス.
++vi-prompt-dots-fallback-escape-branch() {
+    # ブランチ名に % が含まれるとプロンプト展開されるためエスケープする.
+    hook_com[branch]="${hook_com[branch]//\%/%%}"
 }
 
 prompt_dots_fallback_setup() {
@@ -38,6 +45,7 @@ prompt_dots_fallback_setup() {
     zstyle ':vcs_info:git:*' unstagedstr '%F{yellow}!%f'
     zstyle ':vcs_info:git:*' formats ' %F{blue}[%b%f%c%u%F{blue}]%f'
     zstyle ':vcs_info:git:*' actionformats ' %F{blue}[%b|%a%f%c%u%F{blue}]%f'
+    zstyle ':vcs_info:git+post-backend:dots_fallback:*' hooks prompt-dots-fallback-escape-branch
 
     # prompt_THEME_HOOK 形式の関数はテーマ切り替え時に自動でフック解除される.
     add-zsh-hook precmd prompt_dots_fallback_precmd
