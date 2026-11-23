@@ -1,0 +1,15 @@
+# 現在のプロンプトテーマの prompt_THEME_refresh 関数を呼び出し,
+# プロンプトを再描画する.
+
+builtin zle || return 1
+
+local theme="${prompt_theme[0]:-${prompt_theme[1]:-}}"
+local fn="prompt_${theme}_refresh"
+
+if (( ${+functions[$fn]} )); then
+    "$fn"
+else
+    zle .reset-prompt
+fi
+
+# vi: set ft=zsh:
