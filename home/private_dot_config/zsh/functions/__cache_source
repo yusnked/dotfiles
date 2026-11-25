@@ -14,6 +14,8 @@ if [[ ! "$watch" -ot "$cache" ]]; then
             return 0
         }
 
+        local tmp
+
         {
             if [[ ! -e "$watch" ]]; then
                 __cache_source_print ERROR watch
@@ -26,7 +28,9 @@ if [[ ! "$watch" -ot "$cache" ]]; then
                 return 1
             fi
 
-            local cmd=${${(z)cmdline}[1]}
+            local -a cmd_words=(${(z)cmdline})
+            local cmd=${(Q)cmd_words[1]}
+            [[ -n "$cmd" ]] || return 1
 
             # cmd が利用可能な外部コマンド, 実行可能な絶対パス, 関数のいずれでもなければ
             # キャッシュは不要と判断し, エラーメッセージを出さずに return する.
@@ -38,7 +42,12 @@ if [[ ! "$watch" -ot "$cache" ]]; then
                 return 1
             fi
 
-            local tmp="${cache}.$$"
+            # 起動時の設定読み込み専用であり, サブシェルでの並行実行は想定しない.
+            # そのため一時ファイル名には $$ のみを使用し, mktemp による
+            # 排他的なファイル生成は不要と判断する.
+            # なお, $$ と RANDOM の内部状態はサブシェルに引き継がれるため,
+            # RANDOM を追加してもサブシェル間の衝突対策にはならない.
+            tmp="${cache}.$$"
 
             if [[ -n "$env" ]]; then
                 local value
