@@ -2,8 +2,13 @@
 hash -d dots="$XDG_DATA_HOME/chezmoi"
 hash -d dots-config=~dots/home/private_dot_config
 
-# Prompt
-autoload -Uz promptinit && promptinit
+autoload -Uz promptinit _terminal_title
+
+# プロンプトテーマシステムを有効にする.
+promptinit
+
+# OSC 2 による CWD / 実行コマンドのタイトル設定を有効にする.
+_terminal_title enable
 
 if [[ "$FPATH" == *powerlevel10k* ]]; then
     prompt powerlevel10k

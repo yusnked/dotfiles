@@ -1,0 +1,80 @@
+# OSC 2 によるタイトルセット.
+
+emulate -L zsh
+
+[[ -w $TTY ]] || return 1
+builtin zmodload zsh/system || return 1
+
+# TTY への FD を確保する.
+if (( ! $+_terminal_title_fd )); then
+    typeset -gi _terminal_title_fd
+    builtin sysopen -o cloexec -wu _terminal_title_fd -- "$TTY" || {
+        unset _terminal_title_fd
+        return 1
+    }
+fi
+
+typeset -gi _terminal_title_enabled=0
+
+autoload -Uz add-zsh-hook
+
+_terminal_title_set() {
+    builtin print -rnu $_terminal_title_fd $'\e]2;'"${1//[[:cntrl:]]}"$'\a'
+}
+
+_terminal_title_cwd() {
+    _terminal_title_set "${(%):-%(4~|…/%3~|%~)}"
+}
+
+_terminal_title_precmd() {
+    _terminal_title_cwd || :
+}
+
+_terminal_title_preexec() {
+    _terminal_title_set "$1" || :
+}
+
+_terminal_title_enable() {
+    add-zsh-hook precmd _terminal_title_precmd
+    add-zsh-hook preexec _terminal_title_preexec
+    _terminal_title_enabled=1
+}
+
+_terminal_title_disable() {
+    add-zsh-hook -d precmd _terminal_title_precmd 2>/dev/null || :
+    add-zsh-hook -d preexec _terminal_title_preexec 2>/dev/null || :
+    _terminal_title_enabled=0
+}
+
+_terminal_title() {
+    emulate -L zsh
+
+    local cmd="$1"
+    (( $# )) && shift
+
+    case "$cmd" in
+        enable)
+            _terminal_title_enable
+            ;;
+        disable)
+            _terminal_title_disable
+            # _terminal_title disable がタイトルに残るので cwd に更新する.
+            _terminal_title_cwd
+            ;;
+        cwd)
+            _terminal_title_cwd
+            ;;
+        set)
+            _terminal_title_disable
+            _terminal_title_set "$1"
+            ;;
+        *)
+            print -u2 'usage: _terminal_title {enable|disable|cwd|set <title>}'
+            return 1
+            ;;
+    esac
+}
+
+_terminal_title "$@"
+
+# vi: set ft=zsh:

@@ -1,5 +1,6 @@
 command = shell:$HOME/.config/ghostty/scripts/command.sh
 shell-integration = none
+shell-integration-features = no-title
 
 font-family = HackGen Console NF
 font-size = 16

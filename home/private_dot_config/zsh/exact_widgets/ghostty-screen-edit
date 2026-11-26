@@ -1,5 +1,8 @@
 # Ghostty が貼り付けた画面キャプチャのパスを取得し, エディタで開く.
 # コマンドラインを確定せずに実行することで, 実行履歴や画面への表示を避ける.
+
+autoload -Uz add-zle-hook-widget _terminal_title
+
 __ghostty_screen_edit_execute() {
     emulate -L zsh
 
@@ -25,16 +28,8 @@ __ghostty_screen_edit_execute() {
         "${editor_argv[@]}" "$file" </dev/tty
         local ret=$?
 
-        # EDITOR によって変更されたタイトルを PWD 表示に戻す.
-        if (( $+functions[_ghostty_precmd] )); then
-            () {
-                # _ghostty_precmd が OSC 133 マーカーをプロンプトの改行直後に挿入し
-                # 変数展開がおかしくなり, Powerlevel10k プロンプトで :-}} のような
-                # 記号が表示されるため PS1 と PS2 を保護する.
-                local PS1="$PS1" PS2="$PS2"
-                _ghostty_precmd
-            }
-        fi
+        # EDITOR によって変更されたタイトルを CWD 表示に戻す.
+        (( _terminal_title_enabled )) && _terminal_title cwd
 
         return $ret
     } always {
@@ -66,7 +61,6 @@ typeset -gi __ghostty_screen_edit_cursor=-1
 __ghostty_screen_edit_line_init() {
     __ghostty_screen_edit_cursor=-1
 }
-autoload -Uz add-zle-hook-widget
 add-zle-hook-widget line-init __ghostty_screen_edit_line_init
 
 # Ghostty の画面を一時ファイルに保存してエディタで開く.
