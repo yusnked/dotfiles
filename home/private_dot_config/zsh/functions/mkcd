@@ -1,9 +1,9 @@
 emulate -L zsh
 
 [[ -z "$1" ]] && printf 'mkcd: missing operand.\n' >&2 && return 1
-command mkdir -p -- "$1"
+local dir="$1"
+[[ "$dir" == /* ]] || dir="./$dir"
 
-[[ ! -d "$1" || ! -x "$1" ]] && printf 'mkcd: cannot change directory: %s\n' "$1" >&2 && return 1
-builtin cd -- "$1"
+command mkdir -p -- "$dir" && builtin cd -- "$dir"
 
 # vi: set ft=zsh:
