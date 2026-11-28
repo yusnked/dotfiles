@@ -1,0 +1,47 @@
+emulate -L zsh
+
+(( $+commands[yazi] )) || return 127
+
+local tmp
+tmp="$(mktemp -t "yazi-tmp.XXXXXX")" || return
+
+local -x ZSH_WIDGET_YAZI=1
+
+{
+    if (( ${#${BUFFER// /}} == 0 )); then
+        command yazi --cwd-file="$tmp" </dev/tty
+
+        local cwd
+        IFS='' read -r -d '' cwd < "$tmp"
+
+        [[ "$cwd" != "$PWD" && -d "$cwd" ]] && builtin cd -- "$cwd" || :
+    else
+        # --chooser-file は LF 区切りで書き出す為, パスに LF が含まれていたら壊れる.
+        # 現在 NUL 区切りで出力出来るようなオプションはない (v26.9.1).
+        command yazi --chooser-file="$tmp" </dev/tty
+
+        local file insertion=''
+        while IFS='' read -r file || [[ -n "$file" ]]; do
+            insertion+="${(q)file} "
+        done < "$tmp"
+
+        if [[ -n "$insertion" ]]; then
+            [[ "${LBUFFER[-1]}" != ' ' ]] && insertion=" $insertion"
+            LBUFFER+="$insertion"
+        fi
+    fi
+} always {
+    command rm -f -- "$tmp"
+
+    autoload -Uz prompt_refresh _terminal_title _osc7_notify_cwd
+    prompt_refresh
+    (( _terminal_title_enabled )) && _terminal_title cwd
+    _osc7_notify_cwd
+
+    # Yazi が終了時に解除した bracketed paste を ZLE 用に戻す.
+    if (( ${#zle_bracketed_paste} == 2 )); then
+        builtin printf '%s' "${zle_bracketed_paste[1]}" >/dev/tty
+    fi
+}
+
+# vi: set ft=zsh:

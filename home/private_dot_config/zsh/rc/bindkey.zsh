@@ -40,6 +40,8 @@ __bindkey_register_widgets() {
     done
 }
 
+# zsh-vi-mode 経由でこの関数が呼ばれる場合, zvm_exec_commands() が
+# commands 変数をシャドーイングするため, コマンドの存在確認に使えない (26/11/23).
 __bindkey_setup() {
     __bindkey_import_emacs_meta
     __bindkey_register_widgets
@@ -129,4 +131,7 @@ __bindkey_setup() {
             '^[e'  ghostty-screen-edit \
             '^[^E' ghostty-screen-edit
     fi
+
+    # yazi
+    command -v yazi &>/dev/null && bindkey '^Y' yazi-cd-or-pick
 }

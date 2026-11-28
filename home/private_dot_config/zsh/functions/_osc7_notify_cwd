@@ -1,0 +1,25 @@
+emulate -L zsh -o extendedglob -o nomultibyte
+local LC_ALL=C MATCH MBEGIN MEND
+
+[[ -w "$TTY" && $HOST != *[[:cntrl:]]* ]] || return 1
+
+local scheme cwd term="$TERM_PROGRAM"
+[[ $PWD == *[[:cntrl:]]* ]] && term=''
+
+case "${(L)term}" in
+    ghostty|kitty)
+        scheme='kitty-shell-cwd'
+        cwd="$PWD"
+        ;;
+    *)
+        scheme='file'
+        # / は除いてパーセントエンコードを行う.
+        cwd=${PWD//(#m)[^a-zA-Z0-9._~\/-]/%${(l:2::0:)$(([##16] #MATCH))}}
+        ;;
+esac
+
+# FD を確保して毎回使い回す方法に比べて遅いが, 差は数十マイクロ秒程度なので
+# シンプルな方式を採用する.
+builtin printf '\e]7;%s://%s%s\e\\' "$scheme" "$HOST" "$cwd" > "$TTY"
+
+# vi: set ft=zsh:
